@@ -13,6 +13,12 @@ createInertiaApp({
         switch (true) {
             case name === 'welcome':
                 return null;
+            case name.startsWith('admin/'):
+                return null;   // AdminLayout manages its own full shell
+            case name === 'chat':
+                return null;   // ChatPage manages its own full shell
+            case name === 'chat-empty':
+                return null;
             case name.startsWith('auth/'):
                 return AuthLayout;
             case name.startsWith('settings/'):
@@ -26,7 +32,7 @@ createInertiaApp({
         return <TooltipProvider delayDuration={0}>{app}</TooltipProvider>;
     },
     progress: {
-        color: '#4B5563',
+        color: '#005ac2',
     },
 });
 
