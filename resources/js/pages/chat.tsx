@@ -134,7 +134,7 @@ export default function ChatPage() {
     const [activeDoc, setActiveDoc] = useState(assignedDocs[0]);
 
     return (
-        <AppLayout>
+        <>
             <Head title="Chat" />
 
             <div className="flex h-[calc(100vh-3.5rem)] overflow-hidden">
@@ -281,6 +281,6 @@ export default function ChatPage() {
                     </div>
                 </div>
             </div>
-        </AppLayout>
+        </>
     );
 }

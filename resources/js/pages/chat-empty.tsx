@@ -25,7 +25,7 @@ const suggestedDocs = [
 
 export default function ChatEmptyState() {
     return (
-        <AppLayout>
+        <>
             <Head title="Chat — Select Document" />
 
             <div className="flex h-[calc(100vh-3.5rem)] flex-col items-center justify-center px-4">
@@ -85,6 +85,6 @@ export default function ChatEmptyState() {
                     </p>
                 </div>
             </div>
-        </AppLayout>
+        </>
     );
 }

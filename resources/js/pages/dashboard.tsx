@@ -19,7 +19,7 @@ const recentChats = [
 
 export default function Dashboard() {
     return (
-        <AppLayout>
+        <>
             <Head title="My Workspace" />
 
             <div className="mx-auto max-w-5xl space-y-8 p-6">
@@ -150,6 +150,6 @@ export default function Dashboard() {
                     </p>
                 </div>
             </div>
-        </AppLayout>
+        </>
     );
 }
