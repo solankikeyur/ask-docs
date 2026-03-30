@@ -52,7 +52,9 @@ export function AdminSidebar({ activePath }: AdminSidebarProps) {
             {/* Nav */}
             <nav className="flex-1 space-y-0.5 px-3 py-2">
                 {navItems.map(({ label, href, icon: Icon }) => {
-                    const active = activePath === href || activePath.startsWith(href + '/');
+                    const active = href === '/admin' 
+                        ? activePath === href 
+                        : activePath === href || activePath.startsWith(href + '/');
                     return (
                         <Link
                             key={href}
