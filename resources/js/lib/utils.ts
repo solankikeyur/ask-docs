@@ -10,3 +10,17 @@ export function cn(...inputs: ClassValue[]) {
 export function toUrl(url: NonNullable<InertiaLinkProps['href']>): string {
     return typeof url === 'string' ? url : url.url;
 }
+
+/**
+ * Custom debounce utility for standard event handling.
+ */
+export function debounce<T extends (...args: any[]) => void>(fn: T, delay: number) {
+    let timeoutId: ReturnType<typeof setTimeout>;
+    const debounced = function (...args: Parameters<T>) {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => fn(...args), delay);
+    };
+    debounced.cancel = () => clearTimeout(timeoutId);
+
+    return debounced;
+}
