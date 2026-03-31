@@ -5,12 +5,8 @@ import {
     FileText,
     MessageSquare,
     Users,
-    Settings,
-    HelpCircle,
     LogOut,
     BookOpen,
-    Code2,
-    LifeBuoy,
     ChevronRight,
 } from 'lucide-react';
 
@@ -18,15 +14,7 @@ const navItems = [
     { label: 'Dashboard',  href: '/admin',           icon: LayoutGrid },
     { label: 'Documents',  href: '/admin/documents',  icon: FileText },
     { label: 'Chat',       href: '/admin/chat',       icon: MessageSquare },
-    { label: 'Team',       href: '/admin/users',      icon: Users },
-    { label: 'Settings',   href: '/admin/settings',   icon: Settings },
-    { label: 'Help',       href: '/admin/help',       icon: HelpCircle },
-];
-
-const bottomLinks = [
-    { label: 'Docs',    href: '#', icon: BookOpen },
-    { label: 'API',     href: '#', icon: Code2 },
-    { label: 'Support', href: '#', icon: LifeBuoy },
+    { label: 'Users',      href: '/admin/users',      icon: Users },
 ];
 
 interface AdminSidebarProps {
@@ -73,22 +61,6 @@ export function AdminSidebar({ activePath }: AdminSidebarProps) {
                     );
                 })}
             </nav>
-
-            {/* Bottom links */}
-            <div className="border-t border-outline-variant/15 px-3 py-2">
-                <div className="flex gap-1">
-                    {bottomLinks.map(({ label, href, icon: Icon }) => (
-                        <Link
-                            key={label}
-                            href={href}
-                            className="flex flex-1 flex-col items-center gap-1 rounded-[var(--radius-md)] py-2 text-[10px] text-on-surface-variant transition-colors hover:bg-surface-container hover:text-on-surface"
-                        >
-                            <Icon size={14} />
-                            {label}
-                        </Link>
-                    ))}
-                </div>
-            </div>
 
             {/* User info */}
             <div className="border-t border-outline-variant/15 px-4 py-3">
