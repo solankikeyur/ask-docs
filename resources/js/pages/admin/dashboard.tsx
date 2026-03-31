@@ -1,7 +1,4 @@
 import { Head } from '@inertiajs/react';
-import AdminLayout from '@/layouts/admin/AdminLayout';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import {
     FileText,
     Users,
@@ -13,6 +10,9 @@ import {
     ArrowRight,
     AlertTriangle,
 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import AdminLayout from '@/layouts/admin/AdminLayout';
 
 // ─── Stat Card ───────────────────────────────────────────────
 function StatCard({
@@ -61,6 +61,7 @@ function ActivityRow({
         user:   'bg-primary-fixed-dim',
         error:  'bg-error',
     };
+
     return (
         <div className="flex items-start gap-3 py-2.5">
             <div className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${colors[type]}`} />
@@ -73,6 +74,8 @@ function ActivityRow({
 }
 
 export default function AdminDashboard() {
+
+
     return (
         <AdminLayout activePath="/admin">
             <Head title="Admin — Dashboard" />

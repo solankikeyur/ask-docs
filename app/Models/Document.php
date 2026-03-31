@@ -29,11 +29,20 @@ class Document extends Model
     {
         return $this->hasMany(DocumentChunk::class);
     }
+
     /**
      * The users that have access to the document.
      */
     public function users()
     {
         return $this->belongsToMany(User::class);
+    }
+
+    /**
+     * Get the chats associated with the document.
+     */
+    public function chats(): HasMany
+    {
+        return $this->hasMany(Chat::class);
     }
 }

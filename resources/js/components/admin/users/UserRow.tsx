@@ -1,7 +1,8 @@
-import { memo } from 'react';
 import { Mail, FileText, Settings, Trash2 } from 'lucide-react';
+import { memo } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { AdminUser, ROLE_COLORS } from '@/types/admin/user';
+import type { AdminUser} from '@/types/admin/user';
+import { ROLE_COLORS } from '@/types/admin/user';
 
 interface UserRowProps {
     user: AdminUser;

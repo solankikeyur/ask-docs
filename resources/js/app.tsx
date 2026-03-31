@@ -27,6 +27,7 @@ createInertiaApp({
                     return AppLayout; // Standard persistent layout
             }
         };
+
         return resolve(name);
     },
     strictMode: true,

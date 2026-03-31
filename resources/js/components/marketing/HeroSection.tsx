@@ -1,7 +1,7 @@
 import { Link } from '@inertiajs/react';
+import { ArrowRight, Sparkles, FileText, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { register } from '@/routes';
-import { ArrowRight, Sparkles, FileText, MessageSquare } from 'lucide-react';
 
 export function HeroSection() {
     return (

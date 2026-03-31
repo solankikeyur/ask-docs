@@ -1,12 +1,5 @@
+import type { Message } from '@/types/chat';
 import { ChatMessageBubble } from './ChatMessageBubble';
-import { RiskIcon } from './ChatRiskItem';
-
-interface Message {
-    role: 'user' | 'ai';
-    content: string;
-    risks?: { icon: RiskIcon; text: string }[];
-    hasTables?: boolean;
-}
 
 interface ChatMessageListProps {
     messages: Message[];

@@ -1,5 +1,4 @@
 import { Link, usePage } from '@inertiajs/react';
-import { cn } from '@/lib/utils';
 import {
     LayoutGrid,
     FileText,
@@ -9,6 +8,7 @@ import {
     BookOpen,
     ChevronRight,
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const navItems = [
     { label: 'Dashboard',  href: '/admin',           icon: LayoutGrid },
@@ -33,7 +33,7 @@ export function AdminSidebar({ activePath }: AdminSidebarProps) {
                 </div>
                 <div>
                     <p className="text-sm font-bold leading-tight tracking-tight text-on-surface">Curator AI</p>
-                    <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-primary">Enterprise Tier</p>
+                    <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-on-surface-variant">Admin Control Unit</p>
                 </div>
             </div>
 
@@ -43,6 +43,7 @@ export function AdminSidebar({ activePath }: AdminSidebarProps) {
                     const active = href === '/admin' 
                         ? activePath === href 
                         : activePath === href || activePath.startsWith(href + '/');
+
                     return (
                         <Link
                             key={href}

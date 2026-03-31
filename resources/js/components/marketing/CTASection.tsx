@@ -1,7 +1,7 @@
 import { Link } from '@inertiajs/react';
+import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { register } from '@/routes';
-import { ArrowRight } from 'lucide-react';
 
 export function CTASection() {
     return (

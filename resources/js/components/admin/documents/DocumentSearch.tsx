@@ -1,6 +1,6 @@
-import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
-import { ChangeEvent } from 'react';
+import type { ChangeEvent } from 'react';
+import { Input } from '@/components/ui/input';
 
 interface DocumentSearchProps {
     value: string;

@@ -1,9 +1,9 @@
 import { useForm } from '@inertiajs/react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { X, Loader2 } from 'lucide-react';
 import InputError from '@/components/input-error';
-import { AdminUser } from '@/types/admin/user';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import type { AdminUser } from '@/types/admin/user';
 
 interface EditUserModalProps {
     user: AdminUser;

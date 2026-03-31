@@ -1,9 +1,9 @@
 import { useForm } from '@inertiajs/react';
+import { X, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useState } from 'react';
+import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { X, Eye, EyeOff, Loader2 } from 'lucide-react';
-import InputError from '@/components/input-error';
 
 interface CreateUserModalProps {
     onClose: () => void;

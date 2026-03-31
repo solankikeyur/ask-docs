@@ -1,32 +1,26 @@
 import { MessageSquare } from 'lucide-react';
+import type { Message } from '@/types/chat';
 import { ChatCitation } from './ChatCitation';
-import { ChatRiskItem, RiskIcon } from './ChatRiskItem';
 import { ChatRevenueTable } from './ChatRevenueTable';
-
-interface Message {
-    role: 'user' | 'ai';
-    content: string;
-    risks?: { icon: RiskIcon; text: string }[];
-    hasTables?: boolean;
-}
+import { ChatRiskItem } from './ChatRiskItem';
 
 interface ChatMessageBubbleProps {
     message: Message;
 }
 
 export function ChatMessageBubble({ message }: ChatMessageBubbleProps) {
-    const isAi = message.role === 'ai';
+    const isAssistant = message.role === 'assistant';
 
     return (
         <div className={`flex gap-3 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}>
             <div
                 className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-                    isAi
+                    isAssistant
                         ? 'bg-primary-gradient text-primary-foreground'
                         : 'bg-secondary-container text-on-secondary-container'
                 }`}
             >
-                {isAi ? <MessageSquare size={13} /> : 'ME'}
+                {isAssistant ? <MessageSquare size={13} /> : 'ME'}
             </div>
 
             <div
@@ -36,22 +30,30 @@ export function ChatMessageBubble({ message }: ChatMessageBubbleProps) {
                         : 'bg-surface-container text-on-surface'
                 }`}
             >
-                {isAi ? (
+                {isAssistant ? (
                     <>
                         <p dangerouslySetInnerHTML={{ __html: message.content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }} />
-                        {message.hasTables && <ChatRevenueTable />}
-                        {message.risks && (
-                            <>
-                                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Key Risks:</p>
-                                {message.risks.map((risk, ri) => (
+                        
+                        {message.metadata?.tableData && (
+                            <ChatRevenueTable rows={message.metadata.tableData} />
+                        )}
+
+                        {message.metadata?.risks && (
+                            <div className="mt-3 space-y-2">
+                                <p className="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Key Risks:</p>
+                                {message.metadata.risks.map((risk, ri) => (
                                     <ChatRiskItem key={ri} icon={risk.icon} text={risk.text} />
                                 ))}
-                            </>
+                            </div>
                         )}
-                        <div className="mt-3 flex flex-wrap gap-1.5">
-                            <ChatCitation doc="2024_Financial_Q3_Report.pdf" page="p.12" />
-                            <ChatCitation doc="2024_Financial_Q3_Report.pdf" page="p.18-19" />
-                        </div>
+
+                        {message.metadata?.citations && (
+                            <div className="mt-3 flex flex-wrap gap-1.5">
+                                {message.metadata.citations.map((cite, ci) => (
+                                    <ChatCitation key={ci} doc={cite.doc} page={cite.page} />
+                                ))}
+                            </div>
+                        )}
                     </>
                 ) : (
                     <p>{message.content}</p>

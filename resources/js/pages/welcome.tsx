@@ -1,22 +1,22 @@
 import { Head, usePage } from '@inertiajs/react';
-import { Navbar } from '@/components/marketing/Navbar';
-import { HeroSection } from '@/components/marketing/HeroSection';
-import { FeaturesSection } from '@/components/marketing/FeaturesSection';
-import { HowItWorksSection } from '@/components/marketing/HowItWorksSection';
-import { TestimonialsSection } from '@/components/marketing/TestimonialsSection';
-import { PricingSection } from '@/components/marketing/PricingSection';
 import { CTASection } from '@/components/marketing/CTASection';
+import { FeaturesSection } from '@/components/marketing/FeaturesSection';
 import { Footer } from '@/components/marketing/Footer';
+import { HeroSection } from '@/components/marketing/HeroSection';
+import { HowItWorksSection } from '@/components/marketing/HowItWorksSection';
+import { Navbar } from '@/components/marketing/Navbar';
+import { PricingSection } from '@/components/marketing/PricingSection';
+import { TestimonialsSection } from '@/components/marketing/TestimonialsSection';
 
 export default function Welcome({ canRegister = true }: { canRegister?: boolean }) {
     const { auth } = usePage().props;
 
     return (
         <>
-            <Head title="AskDocs — AI-Powered Document Q&A">
+            <Head title="Curator AI — Administrative Intelligence Unit">
                 <meta
                     name="description"
-                    content="Upload your documents and ask any question. AskDocs uses AI to give precise, cited answers from your own knowledge base."
+                    content="Enterprise-grade document analysis and administrative control for high-stakes intelligence."
                 />
                 <link rel="preconnect" href="https://fonts.googleapis.com" />
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

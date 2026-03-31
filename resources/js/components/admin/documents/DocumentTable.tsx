@@ -1,8 +1,8 @@
 import { FileText, Users, Trash2 } from 'lucide-react';
+import { Pagination } from '@/components/admin/Pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Pagination } from '@/components/admin/Pagination';
-import { Doc, PaginatedDocs } from '@/types/admin';
+import type { Doc, PaginatedDocs } from '@/types/admin';
 
 interface DocumentTableProps {
     documents: PaginatedDocs;

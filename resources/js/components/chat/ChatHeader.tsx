@@ -1,12 +1,7 @@
-import { useState } from 'react';
 import { BookOpen, FileText, ChevronDown } from 'lucide-react';
+import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
-
-interface Doc {
-    id: number;
-    name: string;
-    status: 'ready' | 'processing';
-}
+import type { Doc } from '@/types/chat';
 
 interface DocSelectorProps {
     active: Doc;
@@ -16,18 +11,19 @@ interface DocSelectorProps {
 
 function DocSelector({ active, docs, onSelect }: DocSelectorProps) {
     const [open, setOpen] = useState(false);
+
     return (
         <div className="relative">
             <button
                 onClick={() => setOpen((o) => !o)}
-                className="flex items-center gap-1.5 rounded-full bg-surface-container px-2.5 py-1 text-[11px] text-on-surface hover:bg-surface-container-highest transition-colors"
+                className="flex items-center gap-1.5 rounded-full bg-sidebar-accent/50 px-2.5 py-1 text-[11px] text-on-surface hover:bg-sidebar-accent transition-colors"
             >
-                <FileText size={10} className="text-primary" />
+                <FileText size={10} className="text-secondary" />
                 <span className="max-w-[120px] truncate">{active.name}</span>
                 <ChevronDown size={10} className="text-on-surface-variant" />
             </button>
             {open && (
-                <div className="absolute left-0 top-full z-20 mt-1 w-64 overflow-hidden rounded-[var(--radius-lg)] bg-surface-container-lowest shadow-elevated">
+                <div className="absolute left-0 top-full z-20 mt-1 w-64 overflow-hidden rounded-lg bg-popover text-popover-foreground shadow-md border border-border">
                     {docs.map((doc) => (
                         <button
                             key={doc.id}
@@ -36,11 +32,11 @@ function DocSelector({ active, docs, onSelect }: DocSelectorProps) {
                                 setOpen(false);
                             }}
                             disabled={doc.status !== 'ready'}
-                            className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-xs hover:bg-surface-container-low disabled:opacity-40"
+                            className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-xs hover:bg-accent hover:text-accent-foreground disabled:opacity-40"
                         >
-                            <FileText size={12} className="shrink-0 text-primary-fixed-dim" />
-                            <span className="flex-1 truncate text-on-surface">{doc.name}</span>
-                            <Badge variant={doc.status} className="h-4 text-[10px]">
+                            <FileText size={12} className="shrink-0 text-secondary" />
+                            <span className="flex-1 truncate">{doc.name}</span>
+                            <Badge variant={doc.status} className="h-4 text-[9px] px-1 capitalize">
                                 {doc.status}
                             </Badge>
                         </button>
@@ -59,12 +55,12 @@ interface ChatHeaderProps {
 
 export function ChatHeader({ activeDoc, docs, onDocSelect }: ChatHeaderProps) {
     return (
-        <div className="flex items-center gap-3 border-b border-outline-variant/15 bg-surface-container-low px-4 py-2">
-            <BookOpen size={13} className="shrink-0 text-on-surface-variant" />
-            <span className="text-xs text-on-surface-variant">Chatting with:</span>
+        <div className="flex items-center gap-3 py-1">
+            <BookOpen size={14} className="shrink-0 text-muted-foreground" />
+            <span className="text-xs font-medium">Chatting with:</span>
             <DocSelector active={activeDoc} docs={docs} onSelect={onDocSelect} />
-            <span className="ml-auto text-[10px] text-on-surface-variant">
-                Only your assigned documents appear here
+            <span className="hidden ml-auto text-[10px] text-muted-foreground md:inline">
+                Only assigned documents available
             </span>
         </div>
     );

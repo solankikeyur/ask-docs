@@ -1,9 +1,9 @@
 import { Head, Link } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
-import { Badge } from '@/components/ui/badge';
 import {
     FileText, MessageSquare, Clock, BookOpen, ArrowRight, Sparkles, AlertCircle,
 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import AppLayout from '@/layouts/app-layout';
 
 // In the real app these come from Inertia page props passed from the controller
 const assignedDocs = [

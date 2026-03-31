@@ -1,7 +1,7 @@
+import { X, Check, FileText } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { X, Check, FileText } from 'lucide-react';
-import { AdminUser } from '@/types/admin/user';
+import type { AdminUser } from '@/types/admin/user';
 
 interface ManageAccessModalProps {
     user: AdminUser;
@@ -43,6 +43,7 @@ export default function ManageAccessModal({ user, allDocuments, onClose, onSave 
                     {allDocuments.length > 0 ? (
                         allDocuments.map((doc) => {
                             const active = selected.includes(doc.id);
+
                             return (
                                 <button
                                     key={doc.id}
@@ -69,7 +70,9 @@ export default function ManageAccessModal({ user, allDocuments, onClose, onSave 
 
                 <div className="mt-6 flex justify-end gap-2 border-t border-outline-variant/10 pt-4">
                     <Button variant="ghost" size="sm" onClick={onClose}>Cancel</Button>
-                    <Button size="sm" onClick={() => { onSave(selected); }}>
+                    <Button size="sm" onClick={() => {
+ onSave(selected); 
+}}>
                         Save Access ({selected.length})
                     </Button>
                 </div>

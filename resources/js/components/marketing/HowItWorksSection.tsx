@@ -58,6 +58,7 @@ export function HowItWorksSection() {
 
                     {steps.map((step) => {
                         const Icon = step.icon;
+
                         return (
                             <div key={step.number} className="relative flex flex-col items-center text-center">
                                 {/* Step circle */}

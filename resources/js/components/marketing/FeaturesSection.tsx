@@ -89,6 +89,7 @@ export function FeaturesSection() {
                     {features.map((feat) => {
                         const Icon = feat.icon;
                         const colors = colorMap[feat.color as keyof typeof colorMap];
+
                         return (
                             <div
                                 key={feat.title}

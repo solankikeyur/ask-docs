@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 use App\Http\Controllers\Admin\DocumentController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\ChatController;
 
 Route::inertia('/', 'welcome', [
     'canRegister' => Features::enabled(Features::registration()),
@@ -12,8 +13,13 @@ Route::inertia('/', 'welcome', [
 Route::middleware(['auth', 'verified'])->group(function () {
     // User routes
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
-    Route::inertia('chat', 'chat')->name('chat');
+    
+    // Chat routes
+    Route::get('chat', [ChatController::class, 'index'])->name('chat');
+    Route::get('chat/{chat}', [ChatController::class, 'show'])->name('chat.show');
+    Route::post('chat', [ChatController::class, 'store'])->name('chat.store');
     Route::get('chat/new', fn () => inertia('chat-empty'))->name('chat.empty');
+    
     Route::inertia('documents', 'dashboard')->name('documents');
 
     // Admin routes
@@ -31,7 +37,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
         Route::post('/users/{user}/access', [UserController::class, 'updateAccess'])->name('users.access');
 
-        Route::inertia('/chat', 'admin/chat')->name('chat');
+        Route::get('/chat', [ChatController::class, 'index'])->name('chat');
+        Route::get('/chat/{chat}', [ChatController::class, 'show'])->name('chat.show');
+        Route::post('/chat', [ChatController::class, 'store'])->name('chat.store');
     });
 });
 

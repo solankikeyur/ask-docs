@@ -1,7 +1,7 @@
 import { useForm } from '@inertiajs/react';
 import { X, Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Doc } from '@/types/admin';
+import type { Doc } from '@/types/admin';
 
 interface AssignModalProps {
     doc: Doc;
@@ -50,6 +50,7 @@ export function AssignModal({ doc, allUsers, onClose }: AssignModalProps) {
                 <div className="max-h-[350px] space-y-2 overflow-y-auto px-1 py-1">
                     {allUsers.map((user) => {
                         const active = data.userIds.includes(user.id);
+
                         return (
                             <button
                                 key={user.id}

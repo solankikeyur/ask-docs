@@ -1,9 +1,9 @@
 import { Link } from '@inertiajs/react';
+import { BookOpen, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { login, register, dashboard } from '@/routes';
-import { BookOpen, Menu, X } from 'lucide-react';
 
 const navLinks = [
     { label: 'Features',  href: '#features' },

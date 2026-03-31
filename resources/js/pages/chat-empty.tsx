@@ -1,9 +1,9 @@
 import { Head } from '@inertiajs/react';
 import { Link } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
 import { FileText, Upload, ArrowRight, Sparkles } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import AppLayout from '@/layouts/app-layout';
 
 const suggestedDocs = [
     {

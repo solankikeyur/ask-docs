@@ -1,4 +1,5 @@
-import { AlertTriangle, AlertCircle, Info, LucideIcon } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import { AlertTriangle, AlertCircle, Info } from 'lucide-react';
 
 export type RiskIcon = 'warn' | 'alert' | 'info';
 
@@ -21,6 +22,7 @@ interface ChatRiskItemProps {
 
 export function ChatRiskItem({ icon, text }: ChatRiskItemProps) {
     const Icon = riskIcons[icon];
+
     return (
         <div className={`mb-2 flex items-start gap-2.5 rounded-[var(--radius-md)] p-2.5 text-xs ${riskColors[icon]}`}>
             <Icon size={13} className="mt-0.5 shrink-0" />

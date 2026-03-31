@@ -1,6 +1,6 @@
 import { useForm } from '@inertiajs/react';
-import { useState } from 'react';
 import { Upload, X } from 'lucide-react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 
 interface UploadModalProps {
@@ -47,10 +47,12 @@ export function UploadModal({ onClose }: UploadModalProps) {
                             e.preventDefault();
                             setDragging(false);
                             const file = e.dataTransfer.files[0];
+
                             if (file) {
                                 if (file.type !== 'application/pdf') {
                                     return;
                                 }
+
                                 setData('document', file);
                             }
                         }}
@@ -83,9 +85,11 @@ export function UploadModal({ onClose }: UploadModalProps) {
                             accept=".pdf"
                             onChange={(e) => {
                                 const file = e.target.files?.[0];
+
                                 if (file && file.type !== 'application/pdf') {
                                     return;
                                 }
+
                                 setData('document', file || null);
                             }}
                         />

@@ -1,15 +1,15 @@
 import { Head, router } from '@inertiajs/react';
-import { useState, useEffect, useCallback } from 'react';
-import AdminLayout from '@/layouts/admin/AdminLayout';
-import { Button } from '@/components/ui/button';
 import { Upload } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
 import { ConfirmationDialog } from '@/components/admin/ConfirmationDialog';
-import { UploadModal } from '@/components/admin/documents/UploadModal';
 import { AssignModal } from '@/components/admin/documents/AssignModal';
-import { DocumentTable } from '@/components/admin/documents/DocumentTable';
 import { DocumentSearch } from '@/components/admin/documents/DocumentSearch';
+import { DocumentTable } from '@/components/admin/documents/DocumentTable';
+import { UploadModal } from '@/components/admin/documents/UploadModal';
+import { Button } from '@/components/ui/button';
+import AdminLayout from '@/layouts/admin/AdminLayout';
 import { debounce } from '@/lib/utils';
-import { Doc, PaginatedDocs } from '@/types/admin';
+import type { Doc, PaginatedDocs } from '@/types/admin';
 
 export default function AdminDocuments({ documents, allUsers }: { documents: PaginatedDocs, allUsers: { id: number, name: string }[] }) {
     const [showUpload, setShowUpload] = useState(false);
@@ -49,7 +49,10 @@ export default function AdminDocuments({ documents, allUsers }: { documents: Pag
      * Action Handlers
      */
     const confirmDelete = () => {
-        if (!deleteDoc) return;
+        if (!deleteDoc) {
+return;
+}
+
         router.delete(`/admin/documents/${deleteDoc.id}`, {
             onSuccess: () => setDeleteDoc(null),
         });
@@ -61,6 +64,8 @@ export default function AdminDocuments({ documents, allUsers }: { documents: Pag
             onSuccess: () => setAssignDoc(null),
         });
     };
+
+
 
     return (
         <AdminLayout activePath="/admin/documents">

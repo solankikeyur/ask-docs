@@ -1,13 +1,14 @@
-import { ReactNode } from 'react';
-import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { usePage } from '@inertiajs/react';
+import type { ReactNode } from 'react';
+import { AdminSidebar } from '@/components/admin/AdminSidebar';
 
 interface AdminLayoutProps {
     children: ReactNode;
     activePath?: string;
+    fullWidth?: boolean;
 }
 
-export default function AdminLayout({ children, activePath }: AdminLayoutProps) {
+export default function AdminLayout({ children, activePath, fullWidth = false }: AdminLayoutProps) {
     const { url } = usePage();
     const pathname = activePath ?? url;
 
@@ -27,7 +28,7 @@ export default function AdminLayout({ children, activePath }: AdminLayoutProps) 
                 </header>
 
                 {/* Page content */}
-                <main className="flex-1 overflow-y-auto p-6 scrollbar-thin">
+                <main className={`flex-1 ${fullWidth ? 'flex flex-col min-h-0' : 'overflow-y-auto scrollbar-thin p-6'}`}>
                     {children}
                 </main>
             </div>

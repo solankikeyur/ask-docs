@@ -1,16 +1,16 @@
-import AdminLayout from '@/layouts/admin/AdminLayout';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { AdminUser } from '@/types/admin/user';
 import { Head, router } from '@inertiajs/react';
 import { Search, UserPlus } from 'lucide-react';
 import { useCallback, useState } from 'react';
 
 // Components
 import CreateUserModal from '@/components/admin/users/CreateUserModal';
-import ManageAccessModal from '@/components/admin/users/ManageAccessModal';
 import EditUserModal from '@/components/admin/users/EditUserModal';
+import ManageAccessModal from '@/components/admin/users/ManageAccessModal';
 import UserRow from '@/components/admin/users/UserRow';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import AdminLayout from '@/layouts/admin/AdminLayout';
+import type { AdminUser } from '@/types/admin/user';
 
 interface Props {
     users: AdminUser[];
@@ -42,6 +42,8 @@ export default function AdminUsers({ users, allDocuments }: Props) {
     const handleManageAccess = useCallback((user: AdminUser) => {
         setManageUser(user);
     }, []);
+
+
 
     return (
         <AdminLayout activePath="/admin/users">
