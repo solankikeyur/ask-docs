@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 use App\Http\Controllers\Admin\DocumentController;
+use App\Http\Controllers\Admin\UserController;
 
 Route::inertia('/', 'welcome', [
     'canRegister' => Features::enabled(Features::registration()),
@@ -21,7 +22,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/documents', [DocumentController::class, 'index'])->name('documents');
         Route::post('/documents', [DocumentController::class, 'store'])->name('documents.store');
         Route::delete('/documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
-        Route::inertia('/users', 'admin/users')->name('users');
+        
+        // User management
+        Route::get('/users', [UserController::class, 'index'])->name('users');
+        Route::post('/users', [UserController::class, 'store'])->name('users.store');
+        Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
+        Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+        Route::post('/users/{user}/access', [UserController::class, 'updateAccess'])->name('users.access');
+
         Route::inertia('/chat', 'admin/chat')->name('chat');
     });
 });

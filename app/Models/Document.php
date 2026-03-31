@@ -29,4 +29,11 @@ class Document extends Model
     {
         return $this->hasMany(DocumentChunk::class);
     }
+    /**
+     * The users that have access to the document.
+     */
+    public function users()
+    {
+        return $this->belongsToMany(User::class);
+    }
 }
