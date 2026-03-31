@@ -46,7 +46,13 @@ export function UploadModal({ onClose }: UploadModalProps) {
                         onDrop={(e) => {
                             e.preventDefault();
                             setDragging(false);
-                            if (e.dataTransfer.files[0]) setData('document', e.dataTransfer.files[0]);
+                            const file = e.dataTransfer.files[0];
+                            if (file) {
+                                if (file.type !== 'application/pdf') {
+                                    return;
+                                }
+                                setData('document', file);
+                            }
                         }}
                         className={`flex flex-col items-center justify-center gap-3 rounded-[var(--radius-lg)] border-2 border-dashed p-10 text-center transition-all ${
                             dragging
@@ -66,7 +72,7 @@ export function UploadModal({ onClose }: UploadModalProps) {
                         ) : (
                             <div className="space-y-1">
                                 <p className="text-sm font-medium text-on-surface">Drag & Drop files here or browse</p>
-                                <p className="text-[10px] text-on-surface-variant">Supports PDF, DOCX, TXT up to 10MB</p>
+                                <p className="text-[10px] text-on-surface-variant">Supports PDF only up to 10MB</p>
                             </div>
                         )}
 
@@ -74,7 +80,14 @@ export function UploadModal({ onClose }: UploadModalProps) {
                             type="file"
                             id="file-upload"
                             className="hidden"
-                            onChange={(e) => setData('document', e.target.files?.[0] || null)}
+                            accept=".pdf"
+                            onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file && file.type !== 'application/pdf') {
+                                    return;
+                                }
+                                setData('document', file || null);
+                            }}
                         />
 
                         <Button

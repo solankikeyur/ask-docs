@@ -56,7 +56,7 @@ class DocumentController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'document' => 'required|file|mimes:pdf,docx,csv,txt|max:10240',
+            'document' => 'required|file|mimes:pdf|max:10240',
         ]);
 
         $file = $request->file('document');
