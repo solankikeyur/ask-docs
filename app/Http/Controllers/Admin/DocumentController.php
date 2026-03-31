@@ -18,22 +18,22 @@ class DocumentController extends Controller
 
         $documents = Document::query()
             ->when($query, function ($q) use ($query) {
-            $q->where('name', 'like', '%' . $query . '%');
-        })
+                $q->where('name', 'like', '%' . $query . '%');
+            })
             ->latest()
             ->paginate(10)
             ->withQueryString()
             ->through(function ($doc) {
-            return [
-            'id' => $doc->id,
-            'name' => $doc->name,
-            'size' => $doc->size,
-            'type' => $doc->type,
-            'status' => $doc->status,
-            'assignedTo' => [], // TODO: Implement user assignment
-            'updated' => $doc->updated_at->diffForHumans(),
-            ];
-        });
+                return [
+                    'id' => $doc->id,
+                    'name' => $doc->name,
+                    'size' => $doc->size,
+                    'type' => $doc->type,
+                    'status' => $doc->status,
+                    'assignedTo' => [], // TODO: Implement user assignment
+                    'updated' => $doc->updated_at->diffForHumans(),
+                ];
+            });
 
         return Inertia::render('admin/documents', [
             'documents' => $documents,
