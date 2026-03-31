@@ -21,6 +21,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::inertia('/', 'admin/dashboard')->name('dashboard');
         Route::get('/documents', [DocumentController::class, 'index'])->name('documents');
         Route::post('/documents', [DocumentController::class, 'store'])->name('documents.store');
+        Route::post('/documents/{document}/assign', [DocumentController::class, 'assign'])->name('documents.assign');
         Route::delete('/documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
         
         // User management

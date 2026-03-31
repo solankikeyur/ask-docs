@@ -1,26 +1,32 @@
-import { useState } from 'react';
-import { X, Check } from 'lucide-react';
+import { useForm } from '@inertiajs/react';
+import { X, Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Doc } from '@/types/admin';
 
 interface AssignModalProps {
     doc: Doc;
+    allUsers: { id: number; name: string }[];
     onClose: () => void;
-    onSave: (users: string[]) => void;
 }
 
-const ALL_USERS = ['Sarah Chen', 'James Okonkwo', 'Priya Nair', 'Marcus Webb', 'Elena Torres'];
+export function AssignModal({ doc, allUsers, onClose }: AssignModalProps) {
+    const { data, setData, post, processing } = useForm({
+        userIds: doc.assignedUserIds || [],
+    });
 
-export function AssignModal({ doc, onClose, onSave }: AssignModalProps) {
-    const [selected, setSelected] = useState<string[]>(doc.assignedTo || []);
-
-    const toggle = (name: string) => {
-        setSelected((prev) => (prev.includes(name) ? prev.filter((n) => n !== name) : [...prev, name]));
+    const toggle = (id: number) => {
+        const current = data.userIds;
+        const next = current.includes(id) 
+            ? current.filter(i => i !== id) 
+            : [...current, id];
+        setData('userIds', next);
     };
 
     const handleSave = () => {
-        onSave(selected);
-        onClose();
+        post(`/admin/documents/${doc.id}/assign`, {
+            preserveScroll: true,
+            onSuccess: () => onClose(),
+        });
     };
 
     return (
@@ -42,30 +48,32 @@ export function AssignModal({ doc, onClose, onSave }: AssignModalProps) {
                 </div>
 
                 <div className="max-h-[350px] space-y-2 overflow-y-auto px-1 py-1">
-                    {ALL_USERS.map((name) => {
-                        const active = selected.includes(name);
+                    {allUsers.map((user) => {
+                        const active = data.userIds.includes(user.id);
                         return (
                             <button
-                                key={name}
-                                onClick={() => toggle(name)}
+                                key={user.id}
+                                onClick={() => toggle(user.id)}
+                                disabled={processing}
                                 className={`flex w-full items-center gap-3 rounded-[var(--radius-md)] p-3 text-left transition-all ${
                                     active
                                         ? 'bg-primary-container ring-1 ring-primary/20'
                                         : 'bg-surface-container hover:bg-surface-container-high'
-                                }`}
+                                } ${processing ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
                                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-gradient text-[10px] font-bold text-primary-foreground shadow-sm">
-                                    {name
+                                    {user.name
                                         .split(' ')
                                         .map((n) => n[0])
-                                        .join('')}
+                                        .join('')
+                                        .toUpperCase()}
                                 </div>
                                 <span
                                     className={`flex-1 text-sm font-medium ${
                                         active ? 'text-primary' : 'text-on-surface'
                                     }`}
                                 >
-                                    {name}
+                                    {user.name}
                                 </span>
                                 {active && (
                                     <div className="rounded-full bg-primary p-0.5 text-white shadow-sm">
@@ -78,11 +86,12 @@ export function AssignModal({ doc, onClose, onSave }: AssignModalProps) {
                 </div>
 
                 <div className="mt-6 flex justify-end gap-3">
-                    <Button variant="ghost" size="sm" onClick={onClose}>
+                    <Button variant="ghost" size="sm" onClick={onClose} disabled={processing}>
                         Cancel
                     </Button>
-                    <Button size="sm" onClick={handleSave} className="px-6">
-                        Save Assignment
+                    <Button size="sm" onClick={handleSave} className="px-6 gap-2" disabled={processing}>
+                        {processing && <Loader2 size={14} className="animate-spin" />}
+                        {processing ? 'Sending...' : 'Send Assignment'}
                     </Button>
                 </div>
             </div>

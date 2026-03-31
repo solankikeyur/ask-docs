@@ -11,7 +11,7 @@ import { DocumentSearch } from '@/components/admin/documents/DocumentSearch';
 import { debounce } from '@/lib/utils';
 import { Doc, PaginatedDocs } from '@/types/admin';
 
-export default function AdminDocuments({ documents }: { documents: PaginatedDocs }) {
+export default function AdminDocuments({ documents, allUsers }: { documents: PaginatedDocs, allUsers: { id: number, name: string }[] }) {
     const [showUpload, setShowUpload] = useState(false);
     const [assignDoc, setAssignDoc] = useState<Doc | null>(null);
     const [deleteDoc, setDeleteDoc] = useState<Doc | null>(null);
@@ -55,9 +55,11 @@ export default function AdminDocuments({ documents }: { documents: PaginatedDocs
         });
     };
 
-    const handleSaveAssignment = (docId: number, users: string[]) => {
-        console.log('Assignment saved locally (simulated):', docId, users);
-        setAssignDoc(null);
+    const handleSaveAssignment = (docId: number, userIds: number[]) => {
+        router.post(`/admin/documents/${docId}/assign`, { userIds }, {
+            preserveScroll: true,
+            onSuccess: () => setAssignDoc(null),
+        });
     };
 
     return (
@@ -70,8 +72,8 @@ export default function AdminDocuments({ documents }: { documents: PaginatedDocs
             {assignDoc && (
                 <AssignModal
                     doc={assignDoc}
+                    allUsers={allUsers}
                     onClose={() => setAssignDoc(null)}
-                    onSave={(users) => handleSaveAssignment(assignDoc.id, users)}
                 />
             )}
 

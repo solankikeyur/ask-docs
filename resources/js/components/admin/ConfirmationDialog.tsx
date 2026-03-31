@@ -8,6 +8,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
 
 interface ConfirmationDialogProps {
     isOpen: boolean;
@@ -18,6 +19,7 @@ interface ConfirmationDialogProps {
     confirmText?: string;
     cancelText?: string;
     variant?: 'default' | 'destructive';
+    processing?: boolean;
 }
 
 export function ConfirmationDialog({
@@ -29,6 +31,7 @@ export function ConfirmationDialog({
     confirmText = 'Confirm',
     cancelText = 'Cancel',
     variant = 'default',
+    processing = false,
 }: ConfirmationDialogProps) {
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
@@ -38,10 +41,11 @@ export function ConfirmationDialog({
                     <DialogDescription>{description}</DialogDescription>
                 </DialogHeader>
                 <DialogFooter className="gap-2">
-                    <Button variant="ghost" onClick={onClose}>
+                    <Button variant="ghost" onClick={onClose} disabled={processing}>
                         {cancelText}
                     </Button>
-                    <Button variant={variant} onClick={onConfirm}>
+                    <Button variant={variant} onClick={onConfirm} disabled={processing} className="gap-2">
+                        {processing && <Loader2 size={14} className="animate-spin" />}
                         {confirmText}
                     </Button>
                 </DialogFooter>

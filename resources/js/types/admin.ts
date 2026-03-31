@@ -7,6 +7,7 @@ export interface Doc {
     type: string;
     status: DocStatus;
     assignedTo: string[];   // user names
+    assignedUserIds: number[];
     updated: string;
 }
 
