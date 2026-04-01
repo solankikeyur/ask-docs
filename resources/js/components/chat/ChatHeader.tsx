@@ -36,9 +36,6 @@ function DocSelector({ active, docs, onSelect }: DocSelectorProps) {
                         >
                             <FileText size={12} className="shrink-0 text-secondary" />
                             <span className="flex-1 truncate">{doc.name}</span>
-                            <Badge variant={doc.status} className="h-4 text-[9px] px-1 capitalize">
-                                {doc.status}
-                            </Badge>
                         </button>
                     ))}
                 </div>

@@ -17,6 +17,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/chat', [UserChatController::class, 'index'])->name('user.chat');
         Route::get('/chat/{chat}', [UserChatController::class, 'show'])->name('user.chat.show');
         Route::post('/chat', [UserChatController::class, 'store'])->name('user.chat.store');
+        Route::delete('/chat', [UserChatController::class, 'destroyAll'])->name('user.chat.destroyAll');
         Route::put('/chat/{chat}', [UserChatController::class, 'update'])->name('user.chat.update');
         Route::delete('/chat/{chat}', [UserChatController::class, 'destroy'])->name('user.chat.destroy');
     });
@@ -39,6 +40,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/chat', [ChatController::class, 'index'])->name('chat');
         Route::get('/chat/{chat}', [ChatController::class, 'show'])->name('chat.show');
         Route::post('/chat', [ChatController::class, 'store'])->name('chat.store');
+        Route::delete('/chat', [ChatController::class, 'destroyAll'])->name('chat.destroyAll');
         Route::put('/chat/{chat}', [ChatController::class, 'update'])->name('chat.update');
         Route::delete('/chat/{chat}', [ChatController::class, 'destroy'])->name('chat.destroy');
     });

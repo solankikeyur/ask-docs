@@ -298,6 +298,28 @@ return;
         [localChatId, clearData, resetTyping],
     );
 
+    const handleClearAllChats = useCallback(
+        (options?: { onFinish?: () => void; onError?: () => void }) => {
+            setLocalChatHistory([]);
+            setLocalChatId(undefined);
+            setLocalMessages([]);
+            clearData();
+            resetTyping();
+
+            if (typeof window !== 'undefined') {
+                window.history.pushState({}, '', '/admin/chat');
+            }
+
+            router.delete('/admin/chat', {
+                preserveScroll: true,
+                preserveState: true,
+                onFinish: () => options?.onFinish?.(),
+                onError: () => options?.onError?.(),
+            });
+        },
+        [clearData, resetTyping],
+    );
+
     const displayMessages = [...localMessages];
     const showSkeleton = (isFetching || isStreaming || streamEnded) && streamedDisplay.length === 0;
 
@@ -316,6 +338,7 @@ return;
                     onNewChat={handleNewChatSelection}
                     onRenameChat={handleRenameChat}
                     onDeleteChat={handleDeleteChat}
+                    onClearAllChats={handleClearAllChats}
                 />
 
                 <main className="flex flex-1 flex-col overflow-hidden bg-background min-w-0">

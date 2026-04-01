@@ -40,6 +40,7 @@ interface ChatSidebarProps {
     onNewChat?: (doc: Doc) => void;
     onRenameChat?: (chatId: number, title: string, options?: { onFinish?: () => void; onError?: () => void }) => void;
     onDeleteChat?: (chatId: number, options?: { onFinish?: () => void; onError?: () => void }) => void;
+    onClearAllChats?: (options?: { onFinish?: () => void; onError?: () => void }) => void;
 }
 
 export function ChatSidebar({
@@ -50,6 +51,7 @@ export function ChatSidebar({
     onNewChat,
     onRenameChat,
     onDeleteChat,
+    onClearAllChats,
 }: ChatSidebarProps) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [renameChatId, setRenameChatId] = useState<number | null>(null);
@@ -57,6 +59,8 @@ export function ChatSidebar({
     const [isRenaming, setIsRenaming] = useState(false);
     const [deleteChatId, setDeleteChatId] = useState<number | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [clearAllOpen, setClearAllOpen] = useState(false);
+    const [isClearingAll, setIsClearingAll] = useState(false);
 
     const handleSelectForNewChat = (doc: Doc) => {
         setIsModalOpen(false);
@@ -76,15 +80,28 @@ export function ChatSidebar({
                         <History size={16} className="text-secondary" />
                         <span className="text-sm font-semibold tracking-tight">Chat History</span>
                     </div>
-                    {showNewChatButton && (
-                        <button
-                            onClick={() => setIsModalOpen(true)}
-                            className="flex h-7 w-7 items-center justify-center rounded-md hover:bg-sidebar-accent transition-colors"
-                            title="New Chat"
-                        >
-                            <Plus size={16} className="text-on-surface-variant" />
-                        </button>
-                    )}
+                    <div className="flex items-center gap-1">
+                        {onClearAllChats && chatHistory.length > 0 && (
+                            <button
+                                onClick={() => setClearAllOpen(true)}
+                                className="flex h-7 w-7 items-center justify-center rounded-md hover:bg-sidebar-accent transition-colors"
+                                title="Clear all chats"
+                                type="button"
+                            >
+                                <Trash2 size={16} className="text-on-surface-variant" />
+                            </button>
+                        )}
+                        {showNewChatButton && (
+                            <button
+                                onClick={() => setIsModalOpen(true)}
+                                className="flex h-7 w-7 items-center justify-center rounded-md hover:bg-sidebar-accent transition-colors"
+                                title="New Chat"
+                                type="button"
+                            >
+                                <Plus size={16} className="text-on-surface-variant" />
+                            </button>
+                        )}
+                    </div>
                 </SidebarHeader>
 
                 <SidebarContent>
@@ -292,6 +309,52 @@ return;
                         >
                             {isDeleting && <Spinner className="mr-2" />}
                             Delete
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog
+                open={clearAllOpen}
+                onOpenChange={(open) => {
+                    if (isClearingAll) {
+ return;
+ }
+
+                    setClearAllOpen(open);
+                }}
+            >
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Clear all chats?</DialogTitle>
+                        <DialogDescription>This permanently deletes all chats and messages in your history.</DialogDescription>
+                    </DialogHeader>
+
+                    <DialogFooter>
+                        <Button type="button" variant="ghost" onClick={() => setClearAllOpen(false)} disabled={isClearingAll}>
+                            Cancel
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="destructive"
+                            onClick={() => {
+                                if (!onClearAllChats) {
+ return;
+ }
+
+                                setIsClearingAll(true);
+                                onClearAllChats({
+                                    onFinish: () => {
+                                        setIsClearingAll(false);
+                                        setClearAllOpen(false);
+                                    },
+                                    onError: () => setIsClearingAll(false),
+                                });
+                            }}
+                            disabled={isClearingAll}
+                        >
+                            {isClearingAll && <Spinner className="mr-2" />}
+                            Clear all
                         </Button>
                     </DialogFooter>
                 </DialogContent>

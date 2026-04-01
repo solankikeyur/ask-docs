@@ -170,6 +170,21 @@ class ChatController extends Controller
     }
 
     /**
+     * Delete all chats (and their messages) for the current user.
+     */
+    public function destroyAll(Request $request): RedirectResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+
+        Chat::query()
+            ->where('user_id', $user->id)
+            ->delete();
+
+        return redirect()->route('user.chat');
+    }
+
+    /**
      * Shared data for the chat page.
      *
      * @return array{documents: \Illuminate\Support\Collection<int, array{id:int,name:string,status:string}>, chatHistory: \Illuminate\Support\Collection<int, array{id:int,title:?string,docId:int,active:bool}>}
