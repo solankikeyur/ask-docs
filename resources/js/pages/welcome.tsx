@@ -13,7 +13,7 @@ export default function Welcome({ canRegister = true }: { canRegister?: boolean 
 
     return (
         <>
-            <Head title="Curator AI — Administrative Intelligence Unit">
+            <Head title="AskDocs — Administrative Intelligence Unit">
                 <meta
                     name="description"
                     content="Enterprise-grade document analysis and administrative control for high-stakes intelligence."

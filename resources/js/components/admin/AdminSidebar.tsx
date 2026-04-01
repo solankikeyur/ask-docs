@@ -32,7 +32,7 @@ export function AdminSidebar({ activePath }: AdminSidebarProps) {
                     <BookOpen size={15} />
                 </div>
                 <div>
-                    <p className="text-sm font-bold leading-tight tracking-tight text-on-surface">Curator AI</p>
+                    <p className="text-sm font-bold leading-tight tracking-tight text-on-surface">AskDocs</p>
                     <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-on-surface-variant">Admin Control Unit</p>
                 </div>
             </div>

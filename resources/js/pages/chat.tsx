@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { useStream } from '@laravel/stream-react';
 import { MessageSquare } from 'lucide-react';
 import { useCallback, useEffect, useState, useRef } from 'react';
@@ -35,6 +35,30 @@ export default function ChatPage({
     const [localChatId, setLocalChatId] = useState<number | undefined>(chat?.id);
     const [localChatHistory, setLocalChatHistory] = useState<ChatHistory[]>(chatHistory);
     const pendingNewChatRef = useRef<{ title: string; docId: number } | null>(null);
+    const [streamedDisplay, setStreamedDisplay] = useState('');
+    const streamedFullRef = useRef('');
+    const streamBufferRef = useRef('');
+    const typingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const [streamEnded, setStreamEnded] = useState(false);
+
+    const stopTyping = useCallback(() => {
+        if (typingIntervalRef.current) {
+            clearInterval(typingIntervalRef.current);
+            typingIntervalRef.current = null;
+        }
+    }, []);
+
+    const resetTyping = useCallback(() => {
+        stopTyping();
+        streamedFullRef.current = '';
+        streamBufferRef.current = '';
+        setStreamedDisplay('');
+        setStreamEnded(false);
+    }, [stopTyping]);
+
+    useEffect(() => {
+        return () => stopTyping();
+    }, [stopTyping]);
 
     const csrfToken =
         typeof document !== 'undefined'
@@ -80,18 +104,70 @@ export default function ChatPage({
     const isStreamingRef = useRef(false);
     useEffect(() => {
         if (isStreamingRef.current && !isStreaming) {
-            if (streamedData) {
-                setLocalMessages((prev) => [
-                    ...prev,
-                    { id: Date.now(), role: 'assistant', content: streamedData },
-                ]);
+            if (streamedFullRef.current) {
+                setStreamEnded(true);
+            } else {
+                clearData();
             }
+        }
+        isStreamingRef.current = isStreaming;
+    }, [isStreaming, clearData]);
 
+    useEffect(() => {
+        const full = streamedData ?? '';
+        const prev = streamedFullRef.current;
+
+        if (full === prev) return;
+
+        const delta = full.startsWith(prev) ? full.slice(prev.length) : full;
+        streamedFullRef.current = full;
+
+        if (!delta) return;
+
+        streamBufferRef.current += delta;
+
+        if (!typingIntervalRef.current) {
+            typingIntervalRef.current = setInterval(() => {
+                const buffer = streamBufferRef.current;
+                if (!buffer) {
+                    stopTyping();
+                    return;
+                }
+
+                const charsPerTick = 2;
+                const take = Math.min(buffer.length, charsPerTick);
+                const next = buffer.slice(0, take);
+                streamBufferRef.current = buffer.slice(take);
+                setStreamedDisplay((current) => current + next);
+
+                if (streamBufferRef.current.length === 0) {
+                    stopTyping();
+                }
+            }, 25);
+        }
+    }, [streamedData, stopTyping]);
+
+    useEffect(() => {
+        if (!streamEnded) return;
+        if (streamBufferRef.current.length > 0) return;
+
+        const full = streamedFullRef.current;
+        if (!full) {
+            setStreamEnded(false);
             clearData();
+            setStreamedDisplay('');
+            return;
         }
 
-        isStreamingRef.current = isStreaming;
-    }, [isStreaming, streamedData, clearData]);
+        if (streamedDisplay.length < full.length) {
+            setStreamedDisplay(full);
+            return;
+        }
+
+        setLocalMessages((prev) => [...prev, { id: Date.now(), role: 'assistant', content: full }]);
+        clearData();
+        resetTyping();
+    }, [streamEnded, streamedDisplay, clearData, resetTyping]);
 
     useEffect(() => {
         setLocalMessages(messages);
@@ -135,6 +211,7 @@ export default function ChatPage({
             setLocalMessages((prev) => [...prev, userMsg]);
             
             clearData();
+            resetTyping();
 
             if (!localChatId) {
                 pendingNewChatRef.current = {
@@ -149,7 +226,7 @@ export default function ChatPage({
                 content: content,
             });
         },
-        [activeDoc, localChatId, send, clearData],
+        [activeDoc, localChatId, send, clearData, resetTyping],
     );
 
     const handleNewChatSelection = (doc: Doc) => {
@@ -157,6 +234,7 @@ export default function ChatPage({
         setLocalChatId(undefined);
         setLocalMessages([]);
         clearData();
+        resetTyping();
         pendingNewChatRef.current = null;
         setLocalChatHistory((prev) => prev.map((c) => ({ ...c, active: false })));
 
@@ -165,11 +243,49 @@ export default function ChatPage({
         }
     };
 
+    const handleRenameChat = useCallback((chatId: number, title: string, options?: { onFinish?: () => void; onError?: () => void }) => {
+        setLocalChatHistory((prev) => prev.map((c) => (c.id === chatId ? { ...c, title } : c)));
+        router.put(
+            `/chat/${chatId}`,
+            { title },
+            {
+                preserveScroll: true,
+                preserveState: true,
+                onFinish: () => options?.onFinish?.(),
+                onError: () => options?.onError?.(),
+            },
+        );
+    }, []);
+
+    const handleDeleteChat = useCallback(
+        (chatId: number, options?: { onFinish?: () => void; onError?: () => void }) => {
+            setLocalChatHistory((prev) => prev.filter((c) => c.id !== chatId));
+
+            if (localChatId === chatId) {
+                setLocalChatId(undefined);
+                setLocalMessages([]);
+                clearData();
+                resetTyping();
+                if (typeof window !== 'undefined') {
+                    window.history.pushState({}, '', '/chat');
+                }
+            }
+
+            router.delete(`/chat/${chatId}`, {
+                preserveScroll: true,
+                preserveState: true,
+                onFinish: () => options?.onFinish?.(),
+                onError: () => options?.onError?.(),
+            });
+        },
+        [localChatId, clearData, resetTyping],
+    );
+
     const displayMessages = [...localMessages];
-    const showSkeleton = (isFetching || isStreaming) && !streamedData;
+    const showSkeleton = (isFetching || isStreaming || streamEnded) && streamedDisplay.length === 0;
     
-    if (streamedData) {
-        displayMessages.push({ id: -1, role: 'assistant', content: streamedData });
+    if (streamedDisplay) {
+        displayMessages.push({ id: -1, role: 'assistant', content: streamedDisplay });
     }
 
     return (
@@ -180,9 +296,9 @@ export default function ChatPage({
                 <ChatSidebar
                     chatHistory={localChatHistory}
                     assignedDocs={documents}
-                    activeDoc={activeDoc}
-                    onDocSelect={handleNewChatSelection}
                     onNewChat={handleNewChatSelection}
+                    onRenameChat={handleRenameChat}
+                    onDeleteChat={handleDeleteChat}
                 />
             }
             header={

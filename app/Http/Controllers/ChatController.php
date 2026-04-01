@@ -135,6 +135,40 @@ class ChatController extends Controller
     }
 
     /**
+     * Rename a chat.
+     */
+    public function update(Request $request, Chat $chat): RedirectResponse
+    {
+        if ($chat->user_id !== $request->user()->id) {
+            abort(403, 'Unauthorized access to this chat.');
+        }
+
+        $validated = $request->validate([
+            'title' => 'nullable|string|max:255',
+        ]);
+
+        $chat->update([
+            'title' => blank($validated['title'] ?? null) ? null : $validated['title'],
+        ]);
+
+        return redirect()->back(303);
+    }
+
+    /**
+     * Delete a chat and its messages.
+     */
+    public function destroy(Request $request, Chat $chat): RedirectResponse
+    {
+        if ($chat->user_id !== $request->user()->id) {
+            abort(403, 'Unauthorized access to this chat.');
+        }
+
+        $chat->delete();
+
+        return redirect()->route($request->routeIs('admin.*') ? 'admin.chat' : 'chat');
+    }
+
+    /**
      * Determine the correct Inertia view based on the current route prefix.
      */
     protected function getViewName(Request $request): string

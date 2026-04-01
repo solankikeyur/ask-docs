@@ -1,4 +1,5 @@
 import { MessageSquare } from 'lucide-react';
+import { useEffect, useRef } from 'react';
 import type { Message } from '@/types/chat';
 import { ChatMessageBubble } from './ChatMessageBubble';
 
@@ -8,8 +9,43 @@ interface ChatMessageListProps {
 }
 
 export function ChatMessageList({ messages, isLoading }: ChatMessageListProps) {
+    const containerRef = useRef<HTMLDivElement | null>(null);
+    const lastMessageIdRef = useRef<number | undefined>(undefined);
+    const lastMessageCountRef = useRef<number>(0);
+    const lastStreamingLenRef = useRef<number>(0);
+
+    useEffect(() => {
+        const container = containerRef.current;
+        if (!container) return;
+
+        const last = messages[messages.length - 1];
+        const lastId = last?.id;
+        const isStreaming = lastId === -1;
+        const streamingLen = isStreaming ? (last?.content?.length ?? 0) : 0;
+
+        const messageCountChanged = messages.length !== lastMessageCountRef.current;
+        const lastMessageChanged = lastId !== lastMessageIdRef.current;
+        const streamingAdvanced = isStreaming && streamingLen !== lastStreamingLenRef.current;
+
+        lastMessageCountRef.current = messages.length;
+        lastMessageIdRef.current = lastId;
+        lastStreamingLenRef.current = streamingLen;
+
+        const behavior: ScrollBehavior = messageCountChanged || lastMessageChanged ? 'smooth' : 'auto';
+        if (streamingAdvanced) {
+            // Avoid jitter during rapid typing updates.
+            container.scrollTop = container.scrollHeight;
+            return;
+        }
+
+        // Ensure DOM has rendered before measuring scrollHeight.
+        requestAnimationFrame(() => {
+            container.scrollTo({ top: container.scrollHeight, behavior });
+        });
+    }, [messages, isLoading]);
+
     return (
-        <div className="flex-1 space-y-5 overflow-y-auto p-5">
+        <div ref={containerRef} className="flex-1 space-y-5 overflow-y-auto p-5">
             {messages.map((msg, i) => (
                 <ChatMessageBubble key={msg.id || i} message={msg} />
             ))}

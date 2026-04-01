@@ -1,18 +1,22 @@
 import { Link, usePage } from '@inertiajs/react';
-import { Plus, FileText, History, Files } from 'lucide-react';
+import { FileText, History, MoreVertical, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
-import { 
-    Sidebar, 
-    SidebarContent, 
-    SidebarHeader, 
-    SidebarGroup, 
-    SidebarGroupLabel, 
+import {
+    SidebarContent,
+    SidebarGroup,
     SidebarGroupContent,
+    SidebarGroupLabel,
+    SidebarHeader,
     SidebarMenu,
+    SidebarMenuAction,
     SidebarMenuItem,
     SidebarMenuButton,
-    SidebarSeparator
 } from '@/components/ui/sidebar';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Spinner } from '@/components/ui/spinner';
 import { DocSelectionModal } from './DocSelectionModal';
 
 interface Doc {
@@ -31,28 +35,41 @@ interface ChatHistory {
 interface ChatSidebarProps {
     chatHistory: ChatHistory[];
     assignedDocs: Doc[];
-    activeDoc?: Doc | null;
-    onDocSelect: (doc: Doc) => void;
     onNewChat?: (doc: Doc) => void;
+    onRenameChat?: (chatId: number, title: string, options?: { onFinish?: () => void; onError?: () => void }) => void;
+    onDeleteChat?: (chatId: number, options?: { onFinish?: () => void; onError?: () => void }) => void;
 }
 
-export function ChatSidebar({ chatHistory, assignedDocs, activeDoc, onDocSelect, onNewChat }: ChatSidebarProps) {
+export function ChatSidebar({
+    chatHistory,
+    assignedDocs,
+    onNewChat,
+    onRenameChat,
+    onDeleteChat,
+}: ChatSidebarProps) {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [renameChatId, setRenameChatId] = useState<number | null>(null);
+    const [renameTitle, setRenameTitle] = useState('');
+    const [isRenaming, setIsRenaming] = useState(false);
+    const [deleteChatId, setDeleteChatId] = useState<number | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const handleSelectForNewChat = (doc: Doc) => {
         setIsModalOpen(false);
 
         if (onNewChat) {
-onNewChat(doc);
-}
+            onNewChat(doc);
+        }
     };
 
     const { url } = usePage();
     const chatPrefix = url.startsWith('/admin/') ? '/admin/chat' : '/chat';
 
+    const deleteChat = chatHistory.find((c) => c.id === deleteChatId) ?? null;
+
     return (
         <>
-        <aside className="w-64 shrink-0 flex flex-col border-r border-sidebar-border/50 bg-sidebar/50 backdrop-blur-sm overflow-hidden">
+            <aside className="w-64 shrink-0 flex flex-col border-r border-sidebar-border/50 bg-sidebar/50 backdrop-blur-sm overflow-hidden">
                 <SidebarHeader className="h-16 border-b border-sidebar-border/50 flex flex-row items-center justify-between px-4 py-0">
                     <div className="flex items-center gap-2">
                         <History size={16} className="text-secondary" />
@@ -92,6 +109,53 @@ onNewChat(doc);
                                                     </span>
                                                 </Link>
                                             </SidebarMenuButton>
+
+                                            {(onRenameChat || onDeleteChat) && (
+                                                <DropdownMenu>
+                                                    <SidebarMenuAction asChild showOnHover>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <button
+                                                                type="button"
+                                                                className="h-7 w-7"
+                                                                onClick={(e) => {
+                                                                    e.preventDefault();
+                                                                    e.stopPropagation();
+                                                                }}
+                                                                title="Chat actions"
+                                                            >
+                                                                <MoreVertical size={14} />
+                                                            </button>
+                                                        </DropdownMenuTrigger>
+                                                    </SidebarMenuAction>
+
+                                                    <DropdownMenuContent side="right" align="start">
+                                                        {onRenameChat && (
+                                                            <DropdownMenuItem
+                                                                onSelect={(e) => {
+                                                                    e.preventDefault();
+                                                                    setRenameChatId(c.id);
+                                                                    setRenameTitle(c.title || '');
+                                                                }}
+                                                            >
+                                                                <Pencil size={14} />
+                                                                Rename
+                                                            </DropdownMenuItem>
+                                                        )}
+
+                                                        {onDeleteChat && (
+                                                            <DropdownMenuItem
+                                                                onSelect={(e) => {
+                                                                    e.preventDefault();
+                                                                    setDeleteChatId(c.id);
+                                                                }}
+                                                            >
+                                                                <Trash2 size={14} />
+                                                                Delete
+                                                            </DropdownMenuItem>
+                                                        )}
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            )}
                                         </SidebarMenuItem>
                                     ))
                                 ) : (
@@ -112,6 +176,107 @@ onNewChat(doc);
                 documents={assignedDocs}
                 onSelect={handleSelectForNewChat}
             />
+
+            <Dialog
+                open={renameChatId !== null}
+                onOpenChange={(open) => {
+                    if (isRenaming) return;
+                    if (!open) setRenameChatId(null);
+                }}
+            >
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Rename chat</DialogTitle>
+                        <DialogDescription>Update the title shown in your chat history.</DialogDescription>
+                    </DialogHeader>
+
+                    <div className="space-y-2">
+                        <Input
+                            value={renameTitle}
+                            onChange={(e) => setRenameTitle(e.target.value)}
+                            placeholder="Chat title"
+                            disabled={isRenaming}
+                            autoFocus
+                        />
+                    </div>
+
+                    <DialogFooter>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={() => setRenameChatId(null)}
+                            disabled={isRenaming}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type="button"
+                            onClick={() => {
+                                if (!onRenameChat || renameChatId === null) return;
+                                setIsRenaming(true);
+                                onRenameChat(renameChatId, renameTitle.trim(), {
+                                    onFinish: () => {
+                                        setIsRenaming(false);
+                                        setRenameChatId(null);
+                                    },
+                                    onError: () => setIsRenaming(false),
+                                });
+                            }}
+                            disabled={isRenaming || renameChatId === null}
+                        >
+                            {isRenaming && <Spinner className="mr-2" />}
+                            Save
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog
+                open={deleteChatId !== null}
+                onOpenChange={(open) => {
+                    if (isDeleting) return;
+                    if (!open) setDeleteChatId(null);
+                }}
+            >
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Delete chat?</DialogTitle>
+                        <DialogDescription>
+                            This permanently deletes{deleteChat?.title ? ` “${deleteChat.title}”` : ' this chat'} and all its messages.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <DialogFooter>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={() => setDeleteChatId(null)}
+                            disabled={isDeleting}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="destructive"
+                            onClick={() => {
+                                if (!onDeleteChat || deleteChatId === null) return;
+                                setIsDeleting(true);
+                                onDeleteChat(deleteChatId, {
+                                    onFinish: () => {
+                                        setIsDeleting(false);
+                                        setDeleteChatId(null);
+                                    },
+                                    onError: () => setIsDeleting(false),
+                                });
+                            }}
+                            disabled={isDeleting || deleteChatId === null}
+                        >
+                            {isDeleting && <Spinner className="mr-2" />}
+                            Delete
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </>
     );
 }

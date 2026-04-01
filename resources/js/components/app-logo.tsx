@@ -8,7 +8,7 @@ export default function AppLogo() {
             </div>
             <div className="ml-1 grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-bold tracking-tight text-on-surface">
-                    Curator AI
+                    AskDocs
                 </span>
                 <span className="truncate text-[10px] text-on-surface-variant">
                     Admin Control Unit
