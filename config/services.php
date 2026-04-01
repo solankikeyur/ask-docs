@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'cohere' => [
+        'key' => env('COHERE_API_KEY'),
+        'rerank_model' => env('COHERE_RERANK_MODEL', 'rerank-v4.0-fast'),
+    ],
+
 ];
