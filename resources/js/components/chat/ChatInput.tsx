@@ -4,13 +4,14 @@ import { useState } from 'react';
 interface ChatInputProps {
     activeDocName: string;
     onSend: (message: string) => void;
+    disabled?: boolean;
 }
 
-export function ChatInput({ activeDocName, onSend }: ChatInputProps) {
+export function ChatInput({ activeDocName, onSend, disabled }: ChatInputProps) {
     const [input, setInput] = useState('');
 
     const handleSend = () => {
-        if (input.trim()) {
+        if (input.trim() && !disabled) {
             onSend(input);
             setInput('');
         }
@@ -18,10 +19,11 @@ export function ChatInput({ activeDocName, onSend }: ChatInputProps) {
 
     return (
         <div className="border-t border-outline-variant/15 bg-surface-container-low p-4">
-            <div className="flex items-end gap-2 rounded-[var(--radius-lg)] border-ghost bg-surface-container-lowest p-3">
+            <div className={`flex items-end gap-2 rounded-[var(--radius-lg)] border-ghost bg-surface-container-lowest p-3 ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}>
                 <textarea
                     rows={1}
                     value={input}
+                    disabled={disabled}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={(e) => {
                         if (e.key === 'Enter' && !e.shiftKey) {
@@ -29,13 +31,13 @@ export function ChatInput({ activeDocName, onSend }: ChatInputProps) {
                             handleSend();
                         }
                     }}
-                    className="flex-1 resize-none bg-transparent text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none"
-                    placeholder={`Ask anything about ${activeDocName.split('_')[0]}…`}
+                    className={`flex-1 resize-none bg-transparent text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none ${disabled ? 'cursor-not-allowed' : ''}`}
+                    placeholder={disabled ? "Processing previous request..." : `Ask anything about ${activeDocName.split('_')[0]}…`}
                 />
                 <button
                     onClick={handleSend}
                     className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-gradient text-primary-foreground disabled:opacity-40"
-                    disabled={!input.trim()}
+                    disabled={!input.trim() || disabled}
                 >
                     <Send size={14} />
                 </button>

@@ -10,6 +10,10 @@ interface ChatMessageBubbleProps {
 
 export function ChatMessageBubble({ message }: ChatMessageBubbleProps) {
     const isAssistant = message.role === 'assistant';
+    const isStreamingMessage = isAssistant && message.id === -1;
+    const formattedContent = isAssistant
+        ? message.content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        : message.content;
 
     return (
         <div className={`flex gap-3 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}>
@@ -32,7 +36,15 @@ export function ChatMessageBubble({ message }: ChatMessageBubbleProps) {
             >
                 {isAssistant ? (
                     <>
-                        <p dangerouslySetInnerHTML={{ __html: message.content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }} />
+                        <p
+                            className={isStreamingMessage ? 'animate-in fade-in duration-150 whitespace-pre-wrap' : 'whitespace-pre-wrap'}
+                            aria-live={isStreamingMessage ? 'polite' : undefined}
+                        >
+                            <span dangerouslySetInnerHTML={{ __html: formattedContent }} />
+                            {isStreamingMessage && (
+                                <span className="ml-0.5 inline-block h-4 w-px animate-caret-blink bg-on-surface/70 align-middle duration-1000" />
+                            )}
+                        </p>
                         
                         {message.metadata?.tableData && (
                             <ChatRevenueTable rows={message.metadata.tableData} />

@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import { useStream } from '@laravel/stream-react';
 import { MessageSquare } from 'lucide-react';
 import { useCallback, useEffect, useState, useRef } from 'react';
@@ -8,6 +8,10 @@ import { ChatMessageList } from '@/components/chat/ChatMessageList';
 import { ChatSidebar } from '@/components/chat/ChatSidebar';
 import AppLayout from '@/layouts/app-layout';
 import type { Message, Doc, ChatHistory } from '@/types/chat';
+
+const EMPTY_MESSAGES: Message[] = [];
+const EMPTY_DOCS: Doc[] = [];
+const EMPTY_CHAT_HISTORY: ChatHistory[] = [];
 
 interface ChatPageProps {
     documents: Doc[];
@@ -20,38 +24,82 @@ interface ChatPageProps {
     messages?: Message[];
 }
 
-export default function ChatPage({ documents = [], chatHistory = [], chat, messages = [] }: ChatPageProps) {
+export default function ChatPage({
+    documents = EMPTY_DOCS,
+    chatHistory = EMPTY_CHAT_HISTORY,
+    chat,
+    messages = EMPTY_MESSAGES,
+}: ChatPageProps) {
     const [localMessages, setLocalMessages] = useState<Message[]>(messages);
     const [activeDoc, setActiveDoc] = useState<Doc | null>(null);
     const [localChatId, setLocalChatId] = useState<number | undefined>(chat?.id);
+    const [localChatHistory, setLocalChatHistory] = useState<ChatHistory[]>(chatHistory);
+    const pendingNewChatRef = useRef<{ title: string; docId: number } | null>(null);
 
-    const { data: streamedData, isStreaming, send, clearData } = useStream('/chat', {
+    const csrfToken =
+        typeof document !== 'undefined'
+            ? (document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '')
+            : '';
+
+    const { data: streamedData, isFetching, isStreaming, send, clearData } = useStream('/chat', {
+        id: 'chat-stream',
+        csrfToken,
         onResponse: (response: Response) => {
             const newChatId = response.headers.get('X-Chat-Id');
+
             if (newChatId && !localChatId) {
-                setLocalChatId(Number(newChatId));
-                window.history.pushState({}, '', `/chat/${newChatId}`);
+                const chatId = Number(newChatId);
+                setLocalChatId(chatId);
+
+                if (typeof window !== 'undefined') {
+                    window.history.pushState({}, '', `/chat/${newChatId}`);
+                }
+
+                const pending = pendingNewChatRef.current;
+                setLocalChatHistory((prev) => {
+                    const next = prev.map((c) => ({ ...c, active: false }));
+
+                    if (next.some((c) => c.id === chatId)) {
+                        return next.map((c) => (c.id === chatId ? { ...c, active: true } : c));
+                    }
+
+                    return [
+                        {
+                            id: chatId,
+                            title: pending?.title || 'Untitled Chat',
+                            docId: pending?.docId ?? activeDoc?.id ?? 0,
+                            active: true,
+                        },
+                        ...next,
+                    ];
+                });
             }
-        }
+        },
     });
 
     const isStreamingRef = useRef(false);
     useEffect(() => {
         if (isStreamingRef.current && !isStreaming) {
             if (streamedData) {
-                setLocalMessages(prev => [
+                setLocalMessages((prev) => [
                     ...prev,
-                    { id: Date.now(), role: 'assistant', content: streamedData }
+                    { id: Date.now(), role: 'assistant', content: streamedData },
                 ]);
             }
+
             clearData();
         }
+
         isStreamingRef.current = isStreaming;
     }, [isStreaming, streamedData, clearData]);
 
     useEffect(() => {
-        setLocalMessages(messages || []);
+        setLocalMessages(messages);
     }, [messages]);
+
+    useEffect(() => {
+        setLocalChatHistory(chatHistory);
+    }, [chatHistory]);
 
     useEffect(() => {
         if (chat) {
@@ -61,8 +109,25 @@ export default function ChatPage({ documents = [], chatHistory = [], chat, messa
                 setActiveDoc(doc);
             }
         }
+
         setLocalChatId(chat?.id);
     }, [chat, documents]);
+
+    useEffect(() => {
+        setLocalChatHistory((prev) => prev.map((c) => ({ ...c, active: !!localChatId && c.id === localChatId })));
+    }, [localChatId]);
+
+    useEffect(() => {
+        if (localChatId) {
+            if (typeof window !== 'undefined') {
+                const url = `/chat/${localChatId}`;
+
+                if (window.location.pathname !== url) {
+                    window.history.pushState({}, '', url);
+                }
+            }
+        }
+    }, [localChatId]);
 
     const handleSendMessage = useCallback(
         (content: string) => {
@@ -70,6 +135,13 @@ export default function ChatPage({ documents = [], chatHistory = [], chat, messa
             setLocalMessages((prev) => [...prev, userMsg]);
             
             clearData();
+
+            if (!localChatId) {
+                pendingNewChatRef.current = {
+                    title: content.trim().slice(0, 80) || 'Untitled Chat',
+                    docId: activeDoc?.id ?? 0,
+                };
+            }
             
             send({
                 document_id: activeDoc?.id,
@@ -85,12 +157,19 @@ export default function ChatPage({ documents = [], chatHistory = [], chat, messa
         setLocalChatId(undefined);
         setLocalMessages([]);
         clearData();
-        window.history.pushState({}, '', '/chat');
+        pendingNewChatRef.current = null;
+        setLocalChatHistory((prev) => prev.map((c) => ({ ...c, active: false })));
+
+        if (typeof window !== 'undefined') {
+            window.history.pushState({}, '', '/chat');
+        }
     };
 
     const displayMessages = [...localMessages];
-    if (isStreaming || (streamedData && !isStreamingRef.current)) {
-        displayMessages.push({ id: -1, role: 'assistant', content: streamedData || 'Thinking...' });
+    const showSkeleton = (isFetching || isStreaming) && !streamedData;
+    
+    if (streamedData) {
+        displayMessages.push({ id: -1, role: 'assistant', content: streamedData });
     }
 
     return (
@@ -99,7 +178,7 @@ export default function ChatPage({ documents = [], chatHistory = [], chat, messa
             breadcrumbs={[{ title: 'Chat', href: '/chat' }]}
             sidebar={
                 <ChatSidebar
-                    chatHistory={chatHistory}
+                    chatHistory={localChatHistory}
                     assignedDocs={documents}
                     activeDoc={activeDoc}
                     onDocSelect={handleNewChatSelection}
@@ -117,13 +196,13 @@ export default function ChatPage({ documents = [], chatHistory = [], chat, messa
                 )
             }
         >
-            <Head title={chat ? `Chat — ${chat.document.name}` : 'Chat'} />
+            <Head title={activeDoc ? `Chat — ${activeDoc.name}` : (chat?.document?.name ? `Chat — ${chat.document.name}` : 'Chat')} />
 
             <main className="flex flex-1 flex-col overflow-hidden bg-background">
                 {activeDoc ? (
                     <div className="flex flex-1 flex-col overflow-hidden">
-                        {displayMessages.length > 0 ? (
-                            <ChatMessageList messages={displayMessages} />
+                        {displayMessages.length > 0 || showSkeleton ? (
+                            <ChatMessageList messages={displayMessages} isLoading={showSkeleton} />
                         ) : (
                             <div className="flex flex-1 items-center justify-center p-10 text-center">
                                 <div className="max-w-xs space-y-3">
@@ -132,12 +211,12 @@ export default function ChatPage({ documents = [], chatHistory = [], chat, messa
                                     </div>
                                     <p className="text-sm font-semibold text-on-surface">Starting new chat session</p>
                                     <p className="text-[11px] leading-relaxed text-on-surface-variant">
-                                        Type your first message below to begin analyzing <strong>{activeDoc.name}</strong>.
+                                        Type your first message below to begin analyzing <strong>{activeDoc?.name}</strong>.
                                     </p>
                                 </div>
                             </div>
                         )}
-                        <ChatInput activeDocName={activeDoc.name} onSend={handleSendMessage} />
+                        <ChatInput activeDocName={activeDoc?.name || ''} onSend={handleSendMessage} disabled={isFetching || isStreaming} />
                     </div>
                 ) : (
                     <div className="flex flex-1 items-center justify-center p-10 text-center bg-sidebar/30">
