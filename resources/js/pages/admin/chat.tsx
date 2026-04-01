@@ -23,6 +23,7 @@ interface AdminChatProps {
 export default function AdminChat({ documents = [], chatHistory = [], chat, messages = [] }: AdminChatProps) {
     const [localMessages, setLocalMessages] = useState<Message[]>(messages);
     const [activeDoc, setActiveDoc] = useState<Doc | null>(null);
+    const [localChatId, setLocalChatId] = useState<number | undefined>(chat?.id);
 
     useEffect(() => {
         setLocalMessages(messages || []);
@@ -36,6 +37,7 @@ export default function AdminChat({ documents = [], chatHistory = [], chat, mess
                 setActiveDoc(doc);
             }
         }
+        setLocalChatId(chat?.id);
     }, [chat, documents]);
 
     const handleSendMessage = useCallback(
@@ -47,7 +49,7 @@ export default function AdminChat({ documents = [], chatHistory = [], chat, mess
                 '/admin/chat',
                 {
                     document_id: activeDoc?.id,
-                    chat_id: chat?.id,
+                    chat_id: localChatId,
                     content: content,
                 },
                 {
@@ -56,12 +58,14 @@ export default function AdminChat({ documents = [], chatHistory = [], chat, mess
                 },
             );
         },
-        [activeDoc, chat],
+        [activeDoc, localChatId],
     );
 
     const handleNewChatSelection = (doc: Doc) => {
         setActiveDoc(doc);
+        setLocalChatId(undefined);
         setLocalMessages([]);
+        window.history.pushState({}, '', '/admin/chat');
     };
 
     return (
@@ -73,7 +77,7 @@ export default function AdminChat({ documents = [], chatHistory = [], chat, mess
                     chatHistory={chatHistory}
                     assignedDocs={documents}
                     activeDoc={activeDoc}
-                    onDocSelect={setActiveDoc}
+                    onDocSelect={handleNewChatSelection}
                     onNewChat={handleNewChatSelection}
                 />
 
@@ -84,6 +88,7 @@ export default function AdminChat({ documents = [], chatHistory = [], chat, mess
                                 activeDoc={activeDoc} 
                                 docs={documents} 
                                 onDocSelect={setActiveDoc} 
+                                isExistingChat={!!localChatId}
                             />
                         </div>
                     )}

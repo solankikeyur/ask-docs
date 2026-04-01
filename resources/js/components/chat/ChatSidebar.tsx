@@ -103,32 +103,6 @@ onNewChat(doc);
                         </SidebarGroupContent>
                     </SidebarGroup>
 
-                    <SidebarSeparator />
-
-                    <SidebarGroup>
-                        <div className="flex items-center gap-2 px-2 py-2">
-                            <Files size={14} className="text-muted-foreground" />
-                            <SidebarGroupLabel className="p-0 h-auto">Documents</SidebarGroupLabel>
-                        </div>
-                        <SidebarGroupContent>
-                            <SidebarMenu>
-                                {assignedDocs.map((doc) => (
-                                    <SidebarMenuItem key={doc.id}>
-                                        <SidebarMenuButton 
-                                            onClick={() => doc.status === 'ready' && onDocSelect(doc)}
-                                            disabled={doc.status !== 'ready'}
-                                            isActive={activeDoc?.id === doc.id}
-                                            size="sm"
-                                            className="min-w-0"
-                                        >
-                                            <FileText size={12} className="shrink-0" />
-                                            <span className="truncate min-w-0">{doc.name.split('_').slice(0, 2).join('_')}…</span>
-                                        </SidebarMenuButton>
-                                    </SidebarMenuItem>
-                                ))}
-                            </SidebarMenu>
-                        </SidebarGroupContent>
-                    </SidebarGroup>
                 </SidebarContent>
             </aside>
 

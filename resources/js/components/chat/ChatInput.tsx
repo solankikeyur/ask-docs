@@ -1,4 +1,4 @@
-import { Paperclip, Send } from 'lucide-react';
+import { Send } from 'lucide-react';
 import { useState } from 'react';
 
 interface ChatInputProps {
@@ -19,9 +19,6 @@ export function ChatInput({ activeDocName, onSend }: ChatInputProps) {
     return (
         <div className="border-t border-outline-variant/15 bg-surface-container-low p-4">
             <div className="flex items-end gap-2 rounded-[var(--radius-lg)] border-ghost bg-surface-container-lowest p-3">
-                <button className="mb-0.5 text-on-surface-variant hover:text-on-surface">
-                    <Paperclip size={16} />
-                </button>
                 <textarea
                     rows={1}
                     value={input}

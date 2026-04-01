@@ -21,10 +21,6 @@ export default function AdminLayout({ children, activePath, fullWidth = false }:
                 {/* Top header */}
                 <header className="flex h-12 shrink-0 items-center justify-between border-b border-outline-variant/15 px-6">
                     <div />
-                    <div className="flex items-center gap-2">
-                        <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-                        <span className="text-xs text-on-surface-variant">System Nominal</span>
-                    </div>
                 </header>
 
                 {/* Page content */}

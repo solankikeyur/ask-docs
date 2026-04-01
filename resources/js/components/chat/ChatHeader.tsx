@@ -19,7 +19,7 @@ function DocSelector({ active, docs, onSelect }: DocSelectorProps) {
                 className="flex items-center gap-1.5 rounded-full bg-sidebar-accent/50 px-2.5 py-1 text-[11px] text-on-surface hover:bg-sidebar-accent transition-colors"
             >
                 <FileText size={10} className="text-secondary" />
-                <span className="max-w-[120px] truncate">{active.name}</span>
+                <span className="truncate max-w-full">{active.name}</span>
                 <ChevronDown size={10} className="text-on-surface-variant" />
             </button>
             {open && (
@@ -51,16 +51,24 @@ interface ChatHeaderProps {
     activeDoc: Doc;
     docs: Doc[];
     onDocSelect: (doc: Doc) => void;
+    isExistingChat?: boolean;
 }
 
-export function ChatHeader({ activeDoc, docs, onDocSelect }: ChatHeaderProps) {
+export function ChatHeader({ activeDoc, docs, onDocSelect, isExistingChat }: ChatHeaderProps) {
     return (
         <div className="flex items-center gap-3 py-1">
             <BookOpen size={14} className="shrink-0 text-muted-foreground" />
             <span className="text-xs font-medium">Chatting with:</span>
-            <DocSelector active={activeDoc} docs={docs} onSelect={onDocSelect} />
+            {isExistingChat ? (
+                <div className="flex items-center gap-1.5 rounded-full bg-sidebar-accent/50 px-2.5 py-1 text-[11px] text-on-surface">
+                    <FileText size={10} className="text-secondary" />
+                    <span className="truncate max-w-full">{activeDoc.name}</span>
+                </div>
+            ) : (
+                <DocSelector active={activeDoc} docs={docs} onSelect={onDocSelect} />
+            )}
             <span className="hidden ml-auto text-[10px] text-muted-foreground md:inline">
-                Only assigned documents available
+                {isExistingChat ? 'Document selection is locked for this chat' : 'Only assigned documents available'}
             </span>
         </div>
     );

@@ -22,6 +22,7 @@ interface ChatPageProps {
 export default function ChatPage({ documents = [], chatHistory = [], chat, messages = [] }: ChatPageProps) {
     const [localMessages, setLocalMessages] = useState<Message[]>(messages);
     const [activeDoc, setActiveDoc] = useState<Doc | null>(null);
+    const [localChatId, setLocalChatId] = useState<number | undefined>(chat?.id);
 
     useEffect(() => {
         setLocalMessages(messages || []);
@@ -32,9 +33,10 @@ export default function ChatPage({ documents = [], chatHistory = [], chat, messa
             const doc = documents.find((d) => d.id === chat.docId);
 
             if (doc) {
-setActiveDoc(doc);
-}
+                setActiveDoc(doc);
+            }
         }
+        setLocalChatId(chat?.id);
     }, [chat, documents]);
 
     const handleSendMessage = useCallback(
@@ -46,7 +48,7 @@ setActiveDoc(doc);
                 '/chat',
                 {
                     document_id: activeDoc?.id,
-                    chat_id: chat?.id,
+                    chat_id: localChatId,
                     content: content,
                 },
                 {
@@ -55,12 +57,14 @@ setActiveDoc(doc);
                 },
             );
         },
-        [activeDoc, chat],
+        [activeDoc, localChatId],
     );
 
     const handleNewChatSelection = (doc: Doc) => {
         setActiveDoc(doc);
+        setLocalChatId(undefined);
         setLocalMessages([]);
+        window.history.pushState({}, '', '/chat');
     };
 
     return (
@@ -72,7 +76,7 @@ setActiveDoc(doc);
                     chatHistory={chatHistory}
                     assignedDocs={documents}
                     activeDoc={activeDoc}
-                    onDocSelect={setActiveDoc}
+                    onDocSelect={handleNewChatSelection}
                     onNewChat={handleNewChatSelection}
                 />
             }
@@ -82,6 +86,7 @@ setActiveDoc(doc);
                         activeDoc={activeDoc} 
                         docs={documents} 
                         onDocSelect={setActiveDoc} 
+                        isExistingChat={!!localChatId}
                     />
                 )
             }
