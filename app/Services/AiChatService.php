@@ -36,22 +36,22 @@ class AiChatService
     ) {}
 
     /**
-     * Generate an answer for the given message using the document context.
+     * Generate a streamed answer for the given message using the document context.
+     *
+     * @return \Laravel\Ai\Responses\StreamableAgentResponse
      */
-    public function answer(string $message): string
+    public function streamAnswer(string $message)
     {
         $context = $this->getDocContext($message);
         
         $prompt = sprintf("Question: %s\n\nContext:\n%s", $message, $context);
 
-        $response = (new AskDoc($this->chat))->prompt(
+        return (new AskDoc($this->chat))->stream(
             $prompt,
             model: $this->completionModel,
             provider: Lab::OpenAI,
             timeout: 120
         );
-
-        return (string) $response;
     }
 
     /**

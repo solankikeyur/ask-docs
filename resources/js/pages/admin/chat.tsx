@@ -1,6 +1,7 @@
 import { Head, router } from '@inertiajs/react';
+import { useStream } from '@laravel/stream-react';
 import { MessageSquare } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import { ChatHeader } from '@/components/chat/ChatHeader';
 import { ChatInput } from '@/components/chat/ChatInput';
 import { ChatMessageList } from '@/components/chat/ChatMessageList';
@@ -25,6 +26,30 @@ export default function AdminChat({ documents = [], chatHistory = [], chat, mess
     const [activeDoc, setActiveDoc] = useState<Doc | null>(null);
     const [localChatId, setLocalChatId] = useState<number | undefined>(chat?.id);
 
+    const { data: streamedData, isStreaming, send, clearData } = useStream('/admin/chat', {
+        onResponse: (response: Response) => {
+            const newChatId = response.headers.get('X-Chat-Id');
+            if (newChatId && !localChatId) {
+                setLocalChatId(Number(newChatId));
+                window.history.pushState({}, '', `/admin/chat/${newChatId}`);
+            }
+        }
+    });
+
+    const isStreamingRef = useRef(false);
+    useEffect(() => {
+        if (isStreamingRef.current && !isStreaming) {
+            if (streamedData) {
+                setLocalMessages(prev => [
+                    ...prev,
+                    { id: Date.now(), role: 'assistant', content: streamedData }
+                ]);
+            }
+            clearData();
+        }
+        isStreamingRef.current = isStreaming;
+    }, [isStreaming, streamedData, clearData]);
+
     useEffect(() => {
         setLocalMessages(messages || []);
     }, [messages]);
@@ -42,31 +67,32 @@ export default function AdminChat({ documents = [], chatHistory = [], chat, mess
 
     const handleSendMessage = useCallback(
         (content: string) => {
-            const userMsg: Message = { role: 'user', content };
+            const userMsg: Message = { id: Date.now(), role: 'user', content };
             setLocalMessages((prev) => [...prev, userMsg]);
-
-            router.post(
-                '/admin/chat',
-                {
-                    document_id: activeDoc?.id,
-                    chat_id: localChatId,
-                    content: content,
-                },
-                {
-                    preserveScroll: true,
-                    onSuccess: () => {},
-                },
-            );
+            
+            clearData();
+            
+            send({
+                document_id: activeDoc?.id,
+                chat_id: localChatId,
+                content: content,
+            });
         },
-        [activeDoc, localChatId],
+        [activeDoc, localChatId, send, clearData],
     );
 
     const handleNewChatSelection = (doc: Doc) => {
         setActiveDoc(doc);
         setLocalChatId(undefined);
         setLocalMessages([]);
+        clearData();
         window.history.pushState({}, '', '/admin/chat');
     };
+
+    const displayMessages = [...localMessages];
+    if (isStreaming || (streamedData && !isStreamingRef.current)) {
+        displayMessages.push({ id: -1, role: 'assistant', content: streamedData || 'Thinking...' });
+    }
 
     return (
         <AdminLayout activePath="/admin/chat" fullWidth={true}>
@@ -95,8 +121,8 @@ export default function AdminChat({ documents = [], chatHistory = [], chat, mess
 
                     {activeDoc ? (
                         <div className="flex flex-1 flex-col overflow-hidden">
-                            {localMessages.length > 0 ? (
-                                <ChatMessageList messages={localMessages} />
+                            {displayMessages.length > 0 ? (
+                                <ChatMessageList messages={displayMessages} />
                             ) : (
                                 <div className="flex flex-1 items-center justify-center p-10 text-center">
                                     <div className="max-w-xs space-y-3">

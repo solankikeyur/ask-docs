@@ -9,6 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Laravel\Ai\Responses\StreamedAgentResponse;
 
 class ChatController extends Controller
 {
@@ -78,7 +79,7 @@ class ChatController extends Controller
     /**
      * Store new chat or message with dynamic mock metadata.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request)
     {
         $validated = $request->validate([
             'document_id' => 'required|exists:documents,id',
@@ -96,21 +97,41 @@ class ChatController extends Controller
                 'title' => str($validated['content'])->limit(50)->toString(),
             ]);
 
-        $aiChatService = new AiChatService($chat);
-
-        $aiAnswer = $aiChatService->answer($validated['content']);
-
         $chat->messages()->create([
             'role' => 'user', 
             'content' => $validated['content']
         ]);
 
-        $chat->messages()->create([
-            'role' => 'assistant',
-            'content' => $aiAnswer,
-        ]);
+        $aiChatService = new AiChatService($chat);
 
-        return redirect()->route($this->getShowRouteName($request), $chat->id);
+        $stream = $aiChatService->streamAnswer($validated['content'])
+            ->then(function (StreamedAgentResponse $response) use ($chat) {
+                $chat->messages()->create([
+                    'role' => 'assistant',
+                    'content' => $response->text,
+                ]);
+            });
+
+        return response()->stream(function () use ($stream) {
+            foreach ($stream as $event) {
+                if (is_string($event)) {
+                    echo $event;
+                } elseif (method_exists($event, 'toArray') && isset($event->toArray()['delta'])) {
+                    echo $event->toArray()['delta'];
+                }
+                
+                if (ob_get_level() > 0) {
+                    ob_flush();
+                }
+                flush();
+            }
+        }, 200, [
+            'X-Chat-Id' => $chat->id,
+            'Content-Type' => 'text/event-stream',
+            'Cache-Control' => 'no-cache, no-transform',
+            'X-Accel-Buffering' => 'no',
+            'Connection' => 'keep-alive',
+        ]);
     }
 
     /**
