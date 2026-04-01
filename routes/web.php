@@ -5,14 +5,24 @@ use Laravel\Fortify\Features;
 use App\Http\Controllers\Admin\DocumentController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\ChatController;
+use App\Http\Controllers\User\ChatController as UserChatController;
 
 Route::inertia('/', 'welcome', [
     'canRegister' => Features::enabled(Features::registration()),
 ])->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    // Viewer routes (normal users)
+    Route::middleware('viewer')->group(function () {
+        Route::get('/chat', [UserChatController::class, 'index'])->name('user.chat');
+        Route::get('/chat/{chat}', [UserChatController::class, 'show'])->name('user.chat.show');
+        Route::post('/chat', [UserChatController::class, 'store'])->name('user.chat.store');
+        Route::put('/chat/{chat}', [UserChatController::class, 'update'])->name('user.chat.update');
+        Route::delete('/chat/{chat}', [UserChatController::class, 'destroy'])->name('user.chat.destroy');
+    });
+
     // Admin routes (admin-only app)
-    Route::prefix('admin')->name('admin.')->group(function () {
+    Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
         Route::inertia('/', 'admin/dashboard')->name('dashboard');
         Route::get('/documents', [DocumentController::class, 'index'])->name('documents');
         Route::post('/documents', [DocumentController::class, 'store'])->name('documents.store');

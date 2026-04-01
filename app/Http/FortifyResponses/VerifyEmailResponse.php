@@ -1,0 +1,16 @@
+<?php
+
+namespace App\Http\FortifyResponses;
+
+use Illuminate\Http\Request;
+use Laravel\Fortify\Contracts\VerifyEmailResponse as VerifyEmailResponseContract;
+
+class VerifyEmailResponse implements VerifyEmailResponseContract
+{
+    public function toResponse($request)
+    {
+        /** @var Request $request */
+        return redirect()->to(RedirectAfterAuthentication::to($request, 'verified=1'));
+    }
+}
+

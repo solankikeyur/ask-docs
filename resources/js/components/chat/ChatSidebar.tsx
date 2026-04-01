@@ -35,6 +35,8 @@ interface ChatHistory {
 interface ChatSidebarProps {
     chatHistory: ChatHistory[];
     assignedDocs: Doc[];
+    chatPrefix?: string;
+    showNewChatButton?: boolean;
     onNewChat?: (doc: Doc) => void;
     onRenameChat?: (chatId: number, title: string, options?: { onFinish?: () => void; onError?: () => void }) => void;
     onDeleteChat?: (chatId: number, options?: { onFinish?: () => void; onError?: () => void }) => void;
@@ -43,6 +45,8 @@ interface ChatSidebarProps {
 export function ChatSidebar({
     chatHistory,
     assignedDocs,
+    chatPrefix = '/admin/chat',
+    showNewChatButton = true,
     onNewChat,
     onRenameChat,
     onDeleteChat,
@@ -62,8 +66,6 @@ export function ChatSidebar({
         }
     };
 
-    const chatPrefix = '/admin/chat';
-
     const deleteChat = chatHistory.find((c) => c.id === deleteChatId) ?? null;
 
     return (
@@ -74,13 +76,15 @@ export function ChatSidebar({
                         <History size={16} className="text-secondary" />
                         <span className="text-sm font-semibold tracking-tight">Chat History</span>
                     </div>
-                    <button
-                        onClick={() => setIsModalOpen(true)}
-                        className="flex h-7 w-7 items-center justify-center rounded-md hover:bg-sidebar-accent transition-colors"
-                        title="New Chat"
-                    >
-                        <Plus size={16} className="text-on-surface-variant" />
-                    </button>
+                    {showNewChatButton && (
+                        <button
+                            onClick={() => setIsModalOpen(true)}
+                            className="flex h-7 w-7 items-center justify-center rounded-md hover:bg-sidebar-accent transition-colors"
+                            title="New Chat"
+                        >
+                            <Plus size={16} className="text-on-surface-variant" />
+                        </button>
+                    )}
                 </SidebarHeader>
 
                 <SidebarContent>

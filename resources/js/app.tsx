@@ -16,6 +16,8 @@ createInertiaApp({
                     return null;
                 case name.startsWith('admin/'):
                     return null; // Admin pages manage their own layouts
+                case name.startsWith('user/'):
+                    return null; // User pages manage their own layouts
                 case name.startsWith('auth/'):
                     return AuthLayout;
                 case name.startsWith('settings/'):
