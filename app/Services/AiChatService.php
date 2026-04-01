@@ -11,43 +11,80 @@ use Laravel\Ai\Messages\Message;
 
 class AiChatService
 {
-    protected $chat;
+    /**
+     * The model to use for the AI completion.
+     */
+    protected string $completionModel = 'gpt-4o-mini-2024-07-18';
 
-    public function __construct(Chat $chat)
-    {
-        $this->chat = $chat;
-    }
+    /**
+     * The model to use for embeddings.
+     */
+    protected string $embeddingModel = 'text-embedding-3-small';
 
-    public function answer($message)
+    /**
+     * The dimensions for the embeddings.
+     */
+    protected int $embeddingDimensions = 1536;
+
+    /**
+     * The similarity threshold for the vector search.
+     */
+    protected float $similarityThreshold = 0.4;
+
+    public function __construct(
+        protected Chat $chat
+    ) {}
+
+    /**
+     * Generate an answer for the given message using the document context.
+     */
+    public function answer(string $message): string
     {
-        $docContext = $this->getDocContext($message);
-        $userMessage = "Question: $message, Context: $docContext";
-        $response = (new AskDoc($this->chat))->prompt($userMessage, model: "gpt-4o-mini-2024-07-18", provider: Lab::OpenAI, timeout: 120);
+        $context = $this->getDocContext($message);
+        
+        $prompt = sprintf("Question: %s\n\nContext:\n%s", $message, $context);
+
+        $response = (new AskDoc($this->chat))->prompt(
+            $prompt,
+            model: $this->completionModel,
+            provider: Lab::OpenAI,
+            timeout: 120
+        );
+
         return (string) $response;
     }
 
-    public function getDocContext($message)
+    /**
+     * Retrieve the most relevant document chunks for the given message.
+     */
+    public function getDocContext(string $message): string
     {
-        $response = Embeddings::for([$message])->dimensions(1536)->generate(Lab::OpenAI, 'text-embedding-3-small');
-        $document = DocumentChunk::where("document_id", $this->chat->document_id)
-            ->whereVectorSimilarTo('embedding', $response->embeddings[0], 0.4)
+        $embeddings = Embeddings::for([$message])
+            ->dimensions($this->embeddingDimensions)
+            ->generate(Lab::OpenAI, $this->embeddingModel);
+
+        $similarChunks = DocumentChunk::query()
+            ->where('document_id', $this->chat->document_id)
+            ->whereVectorSimilarTo('embedding', $embeddings->embeddings[0], $this->similarityThreshold)
             ->get();
 
-        $context = $document->map(function ($chunk) {
-            return $chunk->content;
-        })->implode("\n");
-        return $context;
+        return $similarChunks->pluck('content')->implode("\n\n");
     }
 
-    public function getMessages()
+    /**
+     * Get the formatted conversation messages.
+     * 
+     * @return array<int, Message>
+     */
+    public function getMessages(): array
     {
-        return collect($this->chat->messages()
+        return $this->chat->messages()
             ->latest('id')
             ->limit(50)
             ->get()
             ->reverse()
-            ->map(function ($message) {
-                return new Message($message->role, $message->content);
-            })->all());
+            ->map(fn ($message) => new Message($message->role, $message->content))
+            ->values()
+            ->all();
     }
 }
