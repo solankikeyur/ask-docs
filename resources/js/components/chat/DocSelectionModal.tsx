@@ -41,9 +41,6 @@ export function DocSelectionModal({ open, onOpenChange, documents, onSelect }: D
                                     <div className="flex-1 overflow-hidden">
                                         <p className="truncate text-sm font-medium text-on-surface">{doc.name}</p>
                                     </div>
-                                    <Badge variant={doc.status} className="h-5 text-[10px]">
-                                        {doc.status}
-                                    </Badge>
                                     <ArrowRight size={14} className="text-on-surface-variant" />
                                 </button>
                             ))
