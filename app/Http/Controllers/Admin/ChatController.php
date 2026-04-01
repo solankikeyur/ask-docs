@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Models\Chat;
 use App\Models\Document;
 use App\Services\AiChatService;
@@ -14,31 +15,13 @@ use Laravel\Ai\Responses\StreamedAgentResponse;
 class ChatController extends Controller
 {
     /**
-     * Display the chat page with history and assigned docs.
+     * Display the admin chat page with history and docs.
      */
     public function index(Request $request): Response
     {
         $user = $request->user();
 
-        $documents = Document::select('id', 'name', 'status')
-            ->latest()
-            ->get();
-
-        $chatHistory = Chat::with('document:id,name')
-            ->where('user_id', $user->id)
-            ->latest()
-            ->get()
-            ->map(fn (Chat $chat) => [
-                'id' => $chat->id,
-                'title' => $chat->title,
-                'docId' => $chat->document_id,
-                'active' => false,
-            ]);
-
-        return Inertia::render($this->getViewName($request), [
-            'documents' => $documents,
-            'chatHistory' => $chatHistory,
-        ]);
+        return Inertia::render('admin/chat', $this->getChatPageData($user->id));
     }
 
     /**
@@ -50,23 +33,8 @@ class ChatController extends Controller
             abort(403, 'Unauthorized access to this chat.');
         }
 
-        $documents = Document::select('id', 'name', 'status')
-            ->latest()
-            ->get();
-
-        $chatHistory = Chat::where('user_id', $request->user()->id)
-            ->latest()
-            ->get()
-            ->map(fn (Chat $c) => [
-                'id' => $c->id,
-                'title' => $c->title,
-                'docId' => $c->document_id,
-                'active' => $c->id === $chat->id,
-            ]);
-
-        return Inertia::render($this->getViewName($request), [
-            'documents' => $documents,
-            'chatHistory' => $chatHistory,
+        return Inertia::render('admin/chat', [
+            ...$this->getChatPageData($request->user()->id, $chat->id),
             'chat' => [
                 'id' => $chat->id,
                 'docId' => $chat->document_id,
@@ -77,7 +45,7 @@ class ChatController extends Controller
     }
 
     /**
-     * Store new chat or message with dynamic mock metadata.
+     * Store new chat or message.
      */
     public function store(Request $request)
     {
@@ -98,8 +66,8 @@ class ChatController extends Controller
             ]);
 
         $chat->messages()->create([
-            'role' => 'user', 
-            'content' => $validated['content']
+            'role' => 'user',
+            'content' => $validated['content'],
         ]);
 
         $aiChatService = new AiChatService($chat);
@@ -119,7 +87,7 @@ class ChatController extends Controller
                 } elseif (method_exists($event, 'toArray') && isset($event->toArray()['delta'])) {
                     echo $event->toArray()['delta'];
                 }
-                
+
                 if (ob_get_level() > 0) {
                     ob_flush();
                 }
@@ -165,22 +133,35 @@ class ChatController extends Controller
 
         $chat->delete();
 
-        return redirect()->route($request->routeIs('admin.*') ? 'admin.chat' : 'chat');
+        return redirect()->route('admin.chat');
     }
 
     /**
-     * Determine the correct Inertia view based on the current route prefix.
+     * Shared data for the chat page.
+     *
+     * @return array{documents: \Illuminate\Support\Collection<int, array{id:int,name:string,status:string}>, chatHistory: \Illuminate\Support\Collection<int, array{id:int,title:?string,docId:int,active:bool}>}
      */
-    protected function getViewName(Request $request): string
+    private function getChatPageData(int $userId, ?int $activeChatId = null): array
     {
-        return $request->routeIs('admin.*') ? 'admin/chat' : 'chat';
-    }
+        $documents = Document::query()
+            ->select('id', 'name', 'status')
+            ->latest()
+            ->get();
 
-    /**
-     * Determine the correct chat show route name based on the current route prefix.
-     */
-    protected function getShowRouteName(Request $request): string
-    {
-        return $request->routeIs('admin.*') ? 'admin.chat.show' : 'chat.show';
+        $chatHistory = Chat::query()
+            ->where('user_id', $userId)
+            ->latest()
+            ->get()
+            ->map(fn (Chat $chat) => [
+                'id' => $chat->id,
+                'title' => $chat->title,
+                'docId' => $chat->document_id,
+                'active' => $activeChatId !== null && $chat->id === $activeChatId,
+            ]);
+
+        return [
+            'documents' => $documents,
+            'chatHistory' => $chatHistory,
+        ];
     }
 }

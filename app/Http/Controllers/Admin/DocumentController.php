@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\Document;
 use App\Models\User;
 use App\Jobs\ProcessDocument;
+use App\Support\FileSize;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
@@ -83,7 +84,7 @@ class DocumentController extends Controller
         $document = Document::create([
             'name' => $file->getClientOriginalName(),
             'path' => $path,
-            'size' => $this->formatBytes($file->getSize()),
+            'size' => FileSize::human((int) $file->getSize()),
             'type' => strtoupper($file->getClientOriginalExtension()),
             'status' => Document::STATUS_PROCESSING,
         ]);
@@ -91,18 +92,5 @@ class DocumentController extends Controller
         ProcessDocument::dispatch($document);
 
         return redirect()->back()->with('success', 'Document uploaded successfully and is being processed.');
-    }
-
-    private function formatBytes($bytes, $precision = 2)
-    {
-        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
-
-        $bytes = max($bytes, 0);
-        $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
-        $pow = min($pow, count($units) - 1);
-
-        $bytes /= pow(1024, $pow);
-
-        return round($bytes, $precision) . ' ' . $units[$pow];
     }
 }

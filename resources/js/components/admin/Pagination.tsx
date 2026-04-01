@@ -1,6 +1,4 @@
 import { Link } from '@inertiajs/react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import React from 'react';
 import { cn } from '@/lib/utils';
 
 interface LinkProp {
@@ -15,8 +13,9 @@ interface PaginationProps {
 
 export function Pagination({ links }: PaginationProps) {
     if (links.length <= 3) {
-return null;
-} // Previous, 1, Next - don't show if only one page
+        // Previous, 1, Next - don't show if only one page
+        return null;
+    }
 
     return (
         <div className="flex items-center gap-1">

@@ -1,6 +1,6 @@
 import { Head, router } from '@inertiajs/react';
 import { Upload } from 'lucide-react';
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ConfirmationDialog } from '@/components/admin/ConfirmationDialog';
 import { AssignModal } from '@/components/admin/documents/AssignModal';
 import { DocumentSearch } from '@/components/admin/documents/DocumentSearch';
@@ -20,8 +20,8 @@ export default function AdminDocuments({ documents, allUsers }: { documents: Pag
     /**
      * Debounced Search Implementation
      */
-    const debouncedSearch = useCallback(
-        debounce((q: string) => {
+    const debouncedSearch = useMemo(
+        () => debounce((q: string) => {
             router.get(
                 '/admin/documents',
                 { search: q },
@@ -50,22 +50,13 @@ export default function AdminDocuments({ documents, allUsers }: { documents: Pag
      */
     const confirmDelete = () => {
         if (!deleteDoc) {
-return;
-}
+            return;
+        }
 
         router.delete(`/admin/documents/${deleteDoc.id}`, {
             onSuccess: () => setDeleteDoc(null),
         });
     };
-
-    const handleSaveAssignment = (docId: number, userIds: number[]) => {
-        router.post(`/admin/documents/${docId}/assign`, { userIds }, {
-            preserveScroll: true,
-            onSuccess: () => setAssignDoc(null),
-        });
-    };
-
-
 
     return (
         <AdminLayout activePath="/admin/documents">

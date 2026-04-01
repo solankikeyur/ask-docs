@@ -3,7 +3,8 @@ import { BookOpen, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { login, register, dashboard } from '@/routes';
+import { login, register } from '@/routes';
+import { dashboard as adminDashboard } from '@/routes/admin';
 
 const navLinks = [
     { label: 'Features',  href: '#features' },
@@ -51,7 +52,7 @@ export function Navbar({ isAuthenticated, canRegister = true }: NavbarProps) {
                     <div className="hidden items-center gap-2 md:flex">
                         {isAuthenticated ? (
                             <Button asChild size="sm">
-                                <Link href={dashboard()}>Dashboard</Link>
+                                <Link href={adminDashboard()}>Dashboard</Link>
                             </Button>
                         ) : (
                             <>
@@ -98,7 +99,7 @@ export function Navbar({ isAuthenticated, canRegister = true }: NavbarProps) {
                         <div className="mt-2 flex flex-col gap-2 border-t border-outline-variant/20 pt-2">
                             {isAuthenticated ? (
                                 <Button asChild size="sm">
-                                    <Link href={dashboard()}>Dashboard</Link>
+                                    <Link href={adminDashboard()}>Dashboard</Link>
                                 </Button>
                             ) : (
                                 <>

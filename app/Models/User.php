@@ -20,9 +20,6 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, TwoFactorAuthenticatable;
 
-    const ROLE_ADMIN = 'admin';
-    const ROLE_VIEWER = 'viewer';
-
     /**
      * Get the attributes that should be cast.
      *

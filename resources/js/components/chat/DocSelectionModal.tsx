@@ -1,5 +1,4 @@
 import { FileText, ArrowRight } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface Doc {

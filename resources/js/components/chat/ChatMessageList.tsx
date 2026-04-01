@@ -16,7 +16,10 @@ export function ChatMessageList({ messages, isLoading }: ChatMessageListProps) {
 
     useEffect(() => {
         const container = containerRef.current;
-        if (!container) return;
+
+        if (!container) {
+return;
+}
 
         const last = messages[messages.length - 1];
         const lastId = last?.id;
@@ -32,9 +35,11 @@ export function ChatMessageList({ messages, isLoading }: ChatMessageListProps) {
         lastStreamingLenRef.current = streamingLen;
 
         const behavior: ScrollBehavior = messageCountChanged || lastMessageChanged ? 'smooth' : 'auto';
+
         if (streamingAdvanced) {
             // Avoid jitter during rapid typing updates.
             container.scrollTop = container.scrollHeight;
+
             return;
         }
 

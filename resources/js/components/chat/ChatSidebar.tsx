@@ -1,6 +1,10 @@
-import { Link, usePage } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import { FileText, History, MoreVertical, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
 import {
     SidebarContent,
     SidebarGroup,
@@ -12,10 +16,6 @@ import {
     SidebarMenuItem,
     SidebarMenuButton,
 } from '@/components/ui/sidebar';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { DocSelectionModal } from './DocSelectionModal';
 
@@ -62,8 +62,7 @@ export function ChatSidebar({
         }
     };
 
-    const { url } = usePage();
-    const chatPrefix = url.startsWith('/admin/') ? '/admin/chat' : '/chat';
+    const chatPrefix = '/admin/chat';
 
     const deleteChat = chatHistory.find((c) => c.id === deleteChatId) ?? null;
 
@@ -180,8 +179,13 @@ export function ChatSidebar({
             <Dialog
                 open={renameChatId !== null}
                 onOpenChange={(open) => {
-                    if (isRenaming) return;
-                    if (!open) setRenameChatId(null);
+                    if (isRenaming) {
+return;
+}
+
+                    if (!open) {
+setRenameChatId(null);
+}
                 }}
             >
                 <DialogContent>
@@ -212,7 +216,10 @@ export function ChatSidebar({
                         <Button
                             type="button"
                             onClick={() => {
-                                if (!onRenameChat || renameChatId === null) return;
+                                if (!onRenameChat || renameChatId === null) {
+return;
+}
+
                                 setIsRenaming(true);
                                 onRenameChat(renameChatId, renameTitle.trim(), {
                                     onFinish: () => {
@@ -234,8 +241,13 @@ export function ChatSidebar({
             <Dialog
                 open={deleteChatId !== null}
                 onOpenChange={(open) => {
-                    if (isDeleting) return;
-                    if (!open) setDeleteChatId(null);
+                    if (isDeleting) {
+return;
+}
+
+                    if (!open) {
+setDeleteChatId(null);
+}
                 }}
             >
                 <DialogContent>
@@ -259,7 +271,10 @@ export function ChatSidebar({
                             type="button"
                             variant="destructive"
                             onClick={() => {
-                                if (!onDeleteChat || deleteChatId === null) return;
+                                if (!onDeleteChat || deleteChatId === null) {
+return;
+}
+
                                 setIsDeleting(true);
                                 onDeleteChat(deleteChatId, {
                                     onFinish: () => {

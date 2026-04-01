@@ -16,9 +16,6 @@ createInertiaApp({
                     return null;
                 case name.startsWith('admin/'):
                     return null; // Admin pages manage their own layouts
-                case name === 'chat':
-                case name === 'chat-empty':
-                    return AppLayout; // PERSISTENT layout for chat pages
                 case name.startsWith('auth/'):
                     return AuthLayout;
                 case name.startsWith('settings/'):

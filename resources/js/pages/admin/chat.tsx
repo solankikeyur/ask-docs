@@ -111,6 +111,7 @@ export default function AdminChat({
                 clearData();
             }
         }
+
         isStreamingRef.current = isStreaming;
     }, [isStreaming, clearData]);
 
@@ -118,20 +119,26 @@ export default function AdminChat({
         const full = streamedData ?? '';
         const prev = streamedFullRef.current;
 
-        if (full === prev) return;
+        if (full === prev) {
+return;
+}
 
         const delta = full.startsWith(prev) ? full.slice(prev.length) : full;
         streamedFullRef.current = full;
 
-        if (!delta) return;
+        if (!delta) {
+return;
+}
 
         streamBufferRef.current += delta;
 
         if (!typingIntervalRef.current) {
             typingIntervalRef.current = setInterval(() => {
                 const buffer = streamBufferRef.current;
+
                 if (!buffer) {
                     stopTyping();
+
                     return;
                 }
 
@@ -149,19 +156,27 @@ export default function AdminChat({
     }, [streamedData, stopTyping]);
 
     useEffect(() => {
-        if (!streamEnded) return;
-        if (streamBufferRef.current.length > 0) return;
+        if (!streamEnded) {
+return;
+}
+
+        if (streamBufferRef.current.length > 0) {
+return;
+}
 
         const full = streamedFullRef.current;
+
         if (!full) {
             setStreamEnded(false);
             clearData();
             setStreamedDisplay('');
+
             return;
         }
 
         if (streamedDisplay.length < full.length) {
             setStreamedDisplay(full);
+
             return;
         }
 
@@ -267,6 +282,7 @@ export default function AdminChat({
                 setLocalMessages([]);
                 clearData();
                 resetTyping();
+
                 if (typeof window !== 'undefined') {
                     window.history.pushState({}, '', '/admin/chat');
                 }

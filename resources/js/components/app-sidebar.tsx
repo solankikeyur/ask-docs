@@ -1,12 +1,9 @@
-import { Link, usePage } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import {
     LayoutGrid,
     FileText,
     MessageSquare,
-    Search,
     Settings,
-    BarChart3,
-    FolderOpen,
     BookOpen,
     Users,
 } from 'lucide-react';
@@ -23,41 +20,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { dashboard } from '@/routes';
-import type { NavItem, SharedData } from '@/types';
-
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: dashboard(),
-        icon: LayoutGrid,
-    },
-    {
-        title: 'Documents',
-        href: '/documents',
-        icon: FileText,
-    },
-    {
-        title: 'Chat',
-        href: '/chat',
-        icon: MessageSquare,
-    },
-    {
-        title: 'Search',
-        href: '/search',
-        icon: Search,
-    },
-    {
-        title: 'Collections',
-        href: '/collections',
-        icon: FolderOpen,
-    },
-    {
-        title: 'Analytics',
-        href: '/analytics',
-        icon: BarChart3,
-    },
-];
+import type { NavItem } from '@/types';
 
 const adminNavItems: NavItem[] = [
     {
@@ -96,7 +59,6 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar({ variant }: { variant?: string }) {
-    const isAdmin = true; // Force Admin items globally
     const items = adminNavItems;
 
     return (
@@ -105,7 +67,7 @@ export function AppSidebar({ variant }: { variant?: string }) {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href={isAdmin ? '/admin' : dashboard()} prefetch>
+                            <Link href="/admin" prefetch>
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>
