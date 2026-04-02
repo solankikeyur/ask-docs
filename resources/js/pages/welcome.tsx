@@ -7,6 +7,7 @@ import {
     Users,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ThemeToggle } from '@/components/theme-toggle';
 import {
     Card,
     CardContent,
@@ -95,9 +96,11 @@ export default function Welcome() {
                                             </Button>
                                         </>
                                     )}
+                                    <ThemeToggle />
                                 </>
                             ) : (
                                 <>
+                                    <ThemeToggle />
                                     <Button asChild variant="ghost" size="sm">
                                         <Link href={login()}>Log in</Link>
                                     </Button>

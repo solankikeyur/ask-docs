@@ -2,6 +2,7 @@ import { Link, usePage } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import AppLogo from '@/components/app-logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ThemeToggle } from '@/components/theme-toggle';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -22,7 +23,8 @@ export default function UserLayout({ children }: { children: ReactNode }) {
                 <Link href="/" className="flex items-center gap-2">
                     <AppLogo />
                 </Link>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                    <ThemeToggle />
                     {user && (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>

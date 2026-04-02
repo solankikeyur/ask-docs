@@ -8,6 +8,7 @@ import {
     Users,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
+import { ThemeToggle } from '@/components/theme-toggle';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -80,6 +81,9 @@ export function AppSidebar({ variant }: { variant?: string }) {
             </SidebarContent>
 
             <SidebarFooter>
+                <div className="px-2 py-2">
+                    <ThemeToggle />
+                </div>
                 <NavFooter items={footerNavItems} className="mt-auto" />
                 <NavUser />
             </SidebarFooter>

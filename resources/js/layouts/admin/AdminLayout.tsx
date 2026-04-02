@@ -1,6 +1,7 @@
 import { usePage } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 interface AdminLayoutProps {
     children: ReactNode;
@@ -21,6 +22,7 @@ export default function AdminLayout({ children, activePath, fullWidth = false }:
                 {/* Top header */}
                 <header className="flex h-12 shrink-0 items-center justify-between border-b border-outline-variant/15 px-6">
                     <div />
+                    <ThemeToggle />
                 </header>
 
                 {/* Page content */}

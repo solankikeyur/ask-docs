@@ -11,9 +11,30 @@ use Illuminate\Support\Str;
 class CohereService
 {
     /**
+     * The Cohere API endpoint for reranking.
+     */
+    private const RERANK_URL = 'https://api.cohere.com/v2/rerank';
+
+    /**
      * Safety limit to keep rerank payloads small.
      */
     protected int $maxCharsPerChunk = 1000;
+
+    /**
+     * The Cohere API key.
+     */
+    protected string $apiKey;
+
+    /**
+     * The default model to use for reranking.
+     */
+    protected string $model;
+
+    public function __construct()
+    {
+        $this->apiKey = (string) config('services.cohere.key');
+        $this->model = (string) config('services.cohere.rerank_model', 'rerank-v4.0-fast');
+    }
 
     /**
      * Rerank candidate chunks with Cohere.
@@ -24,13 +45,9 @@ class CohereService
     {
         $chunks = collect($chunks);
 
-        $apiKey = (string) config('services.cohere.key');
-
-        if ($apiKey === '' || $chunks->isEmpty()) {
+        if ($this->apiKey === '' || $chunks->isEmpty()) {
             return $chunks;
         }
-
-        $model = (string) config('services.cohere.rerank_model', 'rerank-v4.0-fast');
 
         // Keep payload small and stable for caching.
         $documents = $chunks
@@ -39,16 +56,16 @@ class CohereService
             ->values()
             ->all();
 
-        $cacheKey = 'cohere:rerank:v2:' . sha1($model . '|' . $query . '|' . implode('|', $chunks->pluck('id')->map(fn($id) => (string) $id)->all()));
+        $cacheKey = 'cohere:rerank:v2:' . sha1($this->model . '|' . $query . '|' . implode('|', $chunks->pluck('id')->map(fn($id) => (string) $id)->all()));
 
-        $results = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($apiKey, $model, $query, $documents, $limit) {
+        $results = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($query, $documents, $limit) {
             try {
-                $response = Http::withToken($apiKey)
+                $response = Http::withToken($this->apiKey)
                     ->acceptJson()
                     ->timeout(8)
                     ->retry(2, 200)
-                    ->post('https://api.cohere.com/v2/rerank', [
-                        'model' => $model,
+                    ->post(self::RERANK_URL, [
+                        'model' => $this->model,
                         'query' => $query,
                         'documents' => $documents,
                         'top_n' => min($limit, count($documents)),
@@ -72,11 +89,8 @@ class CohereService
 
         foreach ($results as $item) {
             $index = is_array($item) ? ($item['index'] ?? null) : null;
-            if (!is_int($index)) {
-                continue;
-            }
 
-            if (!$chunks->has($index)) {
+            if (!is_int($index) || !$chunks->has($index)) {
                 continue;
             }
 
