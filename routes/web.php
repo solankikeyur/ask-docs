@@ -5,6 +5,7 @@ use Laravel\Fortify\Features;
 use App\Http\Controllers\Admin\DocumentController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\ChatController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\User\ChatController as UserChatController;
 
 Route::inertia('/', 'welcome', [
@@ -24,7 +25,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Admin routes (admin-only app)
     Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
-        Route::inertia('/', 'admin/dashboard')->name('dashboard');
+        Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
         Route::get('/documents', [DocumentController::class, 'index'])->name('documents');
         Route::post('/documents', [DocumentController::class, 'store'])->name('documents.store');
         Route::post('/documents/{document}/assign', [DocumentController::class, 'assign'])->name('documents.assign');

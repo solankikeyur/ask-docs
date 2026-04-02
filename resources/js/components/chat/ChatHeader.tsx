@@ -1,6 +1,5 @@
 import { BookOpen, FileText, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
-import { Badge } from '@/components/ui/badge';
 import type { Doc } from '@/types/chat';
 
 interface DocSelectorProps {
