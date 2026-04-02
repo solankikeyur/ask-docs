@@ -327,4 +327,55 @@
         background: var(--outline-variant);
         border-radius: 2px;
     }
+
+    /* ─── Premium Markdown Styling ───────────────────────────── */
+    .prose-chat {
+        @apply text-sm leading-relaxed;
+        color: inherit;
+    }
+
+    .prose-chat h1, .prose-chat h2, .prose-chat h3 {
+        @apply font-bold mt-4 mb-2 first:mt-0;
+        color: var(--on-surface);
+    }
+    .prose-chat h1 { @apply text-lg; }
+    .prose-chat h2 { @apply text-base; }
+    .prose-chat h3 { @apply text-sm; }
+
+    .prose-chat p {
+        @apply mb-3 last:mb-0;
+    }
+
+    .prose-chat ul, .prose-chat ol {
+        @apply mb-3 last:mb-0 pl-5;
+    }
+    .prose-chat ul { @apply list-disc; }
+    .prose-chat ol { @apply list-decimal; }
+
+    .prose-chat li {
+        @apply mb-1;
+    }
+
+    .prose-chat strong {
+        @apply font-bold;
+        color: var(--primary);
+    }
+
+    .prose-chat code {
+        @apply px-1.5 py-0.5 rounded-sm font-mono text-[13px];
+        background: rgba(var(--primary), 0.1);
+        color: var(--primary);
+    }
+
+    .prose-chat blockquote {
+        @apply pl-4 border-l-4 border-primary/30 italic my-3 text-on-surface-variant;
+    }
+
+    .prose-chat pre {
+        @apply p-4 rounded-lg bg-surface-container-highest overflow-x-auto my-3 border border-outline-variant/10 font-mono text-xs;
+    }
+
+    .prose-chat a {
+        @apply text-primary underline underline-offset-2 decoration-primary/30 transition-colors hover:decoration-primary;
+    }
 }

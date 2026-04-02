@@ -1,7 +1,13 @@
 import { Check, Copy, MessageSquare } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
+import { usePage } from '@inertiajs/react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useInitials } from '@/hooks/use-initials';
 import { useClipboard } from '@/hooks/use-clipboard';
 import type { Message } from '@/types/chat';
+import type { SharedData } from '@/types';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { ChatCitation } from './ChatCitation';
 import { ChatRevenueTable } from './ChatRevenueTable';
 import { ChatRiskItem } from './ChatRiskItem';
@@ -11,11 +17,10 @@ interface ChatMessageBubbleProps {
 }
 
 export function ChatMessageBubble({ message }: ChatMessageBubbleProps) {
+    const { auth } = usePage<SharedData>().props;
+    const getInitials = useInitials();
     const isAssistant = message.role === 'assistant';
     const isStreamingMessage = isAssistant && message.id === -1;
-    const formattedContent = isAssistant
-        ? message.content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        : message.content;
     const [copied, setCopied] = useState(false);
     const [, copy] = useClipboard();
 
@@ -49,10 +54,19 @@ export function ChatMessageBubble({ message }: ChatMessageBubbleProps) {
                 className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
                     isAssistant
                         ? 'bg-primary-gradient text-primary-foreground'
-                        : 'bg-secondary-container text-on-secondary-container'
+                        : ''
                 }`}
             >
-                {isAssistant ? <MessageSquare size={13} /> : 'ME'}
+                {isAssistant ? (
+                    <MessageSquare size={13} />
+                ) : (
+                    <Avatar className="h-8 w-8 overflow-hidden rounded-full border border-outline-variant/10 shadow-sm">
+                        <AvatarImage src={auth.user?.avatar} alt={auth.user?.name} />
+                        <AvatarFallback className="bg-neutral-200 text-[10px] text-black dark:bg-neutral-700 dark:text-white">
+                            {getInitials(auth.user?.name ?? '')}
+                        </AvatarFallback>
+                    </Avatar>
+                )}
             </div>
 
             <div className={`flex min-w-0 flex-col ${message.role === 'user' ? 'items-end' : 'items-start'}`}>
@@ -65,15 +79,16 @@ export function ChatMessageBubble({ message }: ChatMessageBubbleProps) {
                 >
                     {isAssistant ? (
                         <>
-                            <p
-                                className={isStreamingMessage ? 'animate-in fade-in duration-150 whitespace-pre-wrap' : 'whitespace-pre-wrap'}
-                                aria-live={isStreamingMessage ? 'polite' : undefined}
-                            >
-                                <span dangerouslySetInnerHTML={{ __html: formattedContent }} />
-                                {isStreamingMessage && (
-                                    <span className="ml-0.5 inline-block h-4 w-px animate-caret-blink bg-on-surface/70 align-middle duration-1000" />
-                                )}
-                            </p>
+                                <div className={isStreamingMessage ? 'animate-in fade-in duration-150 relative' : 'relative'}>
+                                    <div className="prose-chat">
+                                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                            {message.content}
+                                        </ReactMarkdown>
+                                    </div>
+                                    {isStreamingMessage && (
+                                        <span className="ml-0.5 inline-block h-4 w-px animate-caret-blink bg-on-surface/70 align-middle duration-1000" />
+                                    )}
+                                </div>
 
                             {message.metadata?.tableData && (
                                 <ChatRevenueTable rows={message.metadata.tableData} />
@@ -97,7 +112,11 @@ export function ChatMessageBubble({ message }: ChatMessageBubbleProps) {
                             )}
                         </>
                     ) : (
-                        <p className="whitespace-pre-wrap">{message.content}</p>
+                        <div className="prose-chat">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                {message.content}
+                            </ReactMarkdown>
+                        </div>
                     )}
                 </div>
 

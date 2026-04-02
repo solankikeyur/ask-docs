@@ -349,7 +349,8 @@ export default function UserChat({
                     chatHistory={localChatHistory}
                     assignedDocs={documents}
                     chatPrefix="/chat"
-                    showNewChatButton={false}
+                    showNewChatButton={true}
+                    onNewChat={(doc) => handleNewChatSelection(doc)}
                     onRenameChat={handleRenameChat}
                     onDeleteChat={handleDeleteChat}
                     onClearAllChats={handleClearAllChats}
@@ -362,10 +363,6 @@ export default function UserChat({
                                 {localChatId ? (localChatHistory.find((c) => c.id === localChatId)?.title || 'Untitled Chat') : 'Chat'}
                             </div>
                         </div>
-                        <Button size="sm" onClick={() => setDocModalOpen(true)}>
-                            <Plus size={14} className="mr-2" />
-                            New chat
-                        </Button>
                     </div>
 
                     {activeDoc && (

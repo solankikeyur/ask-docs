@@ -75,7 +75,18 @@ export function ChatSidebar({
     return (
         <>
             <aside className="w-64 shrink-0 flex flex-col border-r border-sidebar-border/50 bg-sidebar/50 backdrop-blur-sm overflow-hidden">
-                <SidebarHeader className="h-16 border-b border-sidebar-border/50 flex flex-row items-center justify-between px-4 py-0">
+                {showNewChatButton && (
+                    <div className="px-4 py-4 pb-0">
+                        <Button
+                            onClick={() => setIsModalOpen(true)}
+                            className="w-full justify-start gap-2 h-10 text-sm font-semibold rounded-lg bg-primary-gradient shadow-sm hover:shadow-md transition-shadow"
+                        >
+                            <Plus size={16} className="text-primary-foreground" />
+                            New Chat
+                        </Button>
+                    </div>
+                )}
+                <SidebarHeader className="h-14 border-b border-sidebar-border/50 flex flex-row items-center justify-between px-4 py-0">
                     <div className="flex items-center gap-2">
                         <History size={16} className="text-secondary" />
                         <span className="text-sm font-semibold tracking-tight">Chat History</span>
@@ -89,16 +100,6 @@ export function ChatSidebar({
                                 type="button"
                             >
                                 <Trash2 size={16} className="text-on-surface-variant" />
-                            </button>
-                        )}
-                        {showNewChatButton && (
-                            <button
-                                onClick={() => setIsModalOpen(true)}
-                                className="flex h-7 w-7 items-center justify-center rounded-md hover:bg-sidebar-accent transition-colors"
-                                title="New Chat"
-                                type="button"
-                            >
-                                <Plus size={16} className="text-on-surface-variant" />
                             </button>
                         )}
                     </div>
