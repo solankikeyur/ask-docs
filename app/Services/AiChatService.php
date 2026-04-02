@@ -34,7 +34,7 @@ class AiChatService
     /**
      * The similarity threshold for the vector search.
      */
-    protected float $similarityThreshold = 0.4;
+    protected float $similarityThreshold = 0.2;
 
     /**
      * How many candidates to fetch from vector search before reranking.
@@ -53,7 +53,8 @@ class AiChatService
 
     public function __construct(
         protected Chat $chat
-    ) {}
+    ) {
+    }
 
     /**
      * Generate a streamed answer for the given message using the document context.
@@ -63,7 +64,7 @@ class AiChatService
     public function streamAnswer(string $message)
     {
         $context = $this->getDocContext($message);
-        
+
         $prompt = sprintf("Question: %s\n\nContext:\n%s", $message, $context);
 
         return (new AskDoc($this->chat))->stream(
@@ -115,11 +116,11 @@ class AiChatService
         // Keep payload small and stable for caching.
         $documents = $chunks
             ->pluck('content')
-            ->map(fn ($content) => Str::limit((string) $content, $this->cohereMaxCharsPerChunk, ''))
+            ->map(fn($content) => Str::limit((string) $content, $this->cohereMaxCharsPerChunk, ''))
             ->values()
             ->all();
 
-        $cacheKey = 'cohere:rerank:v2:' . sha1($model . '|' . $query . '|' . implode('|', $chunks->pluck('id')->map(fn ($id) => (string) $id)->all()));
+        $cacheKey = 'cohere:rerank:v2:' . sha1($model . '|' . $query . '|' . implode('|', $chunks->pluck('id')->map(fn($id) => (string) $id)->all()));
 
         $results = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($apiKey, $model, $query, $documents) {
             try {
@@ -134,7 +135,7 @@ class AiChatService
                         'top_n' => min($this->contextChunkLimit, count($documents)),
                     ]);
 
-                if (! $response->successful()) {
+                if (!$response->successful()) {
                     return null;
                 }
                 return $response->json('results');
@@ -143,7 +144,7 @@ class AiChatService
             }
         });
 
-        if (! is_array($results) || $results === []) {
+        if (!is_array($results) || $results === []) {
             return $chunks;
         }
 
@@ -152,11 +153,11 @@ class AiChatService
 
         foreach ($results as $item) {
             $index = is_array($item) ? ($item['index'] ?? null) : null;
-            if (! is_int($index)) {
+            if (!is_int($index)) {
                 continue;
             }
 
-            if (! isset($chunks[$index])) {
+            if (!isset($chunks[$index])) {
                 continue;
             }
 
@@ -179,7 +180,7 @@ class AiChatService
             ->limit(50)
             ->get()
             ->reverse()
-            ->map(fn ($message) => new Message($message->role, $message->content))
+            ->map(fn($message) => new Message($message->role, $message->content))
             ->values()
             ->all();
     }
