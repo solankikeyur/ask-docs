@@ -3,7 +3,7 @@ import { BookOpen, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { login, register } from '@/routes';
+import { login } from '@/routes';
 import { dashboard as adminDashboard } from '@/routes/admin';
 
 const navLinks = [
@@ -15,10 +15,9 @@ const navLinks = [
 
 interface NavbarProps {
     isAuthenticated: boolean;
-    canRegister?: boolean;
 }
 
-export function Navbar({ isAuthenticated, canRegister = true }: NavbarProps) {
+export function Navbar({ isAuthenticated }: NavbarProps) {
     const [open, setOpen] = useState(false);
 
     return (
@@ -59,11 +58,6 @@ export function Navbar({ isAuthenticated, canRegister = true }: NavbarProps) {
                                 <Button asChild variant="ghost" size="sm">
                                     <Link href={login()}>Log in</Link>
                                 </Button>
-                                {canRegister && (
-                                    <Button asChild size="sm">
-                                        <Link href={register()}>Get Started Free</Link>
-                                    </Button>
-                                )}
                             </>
                         )}
                     </div>
@@ -106,11 +100,6 @@ export function Navbar({ isAuthenticated, canRegister = true }: NavbarProps) {
                                     <Button asChild variant="outline" size="sm">
                                         <Link href={login()}>Log in</Link>
                                     </Button>
-                                    {canRegister && (
-                                        <Button asChild size="sm">
-                                            <Link href={register()}>Get Started Free</Link>
-                                        </Button>
-                                    )}
                                 </>
                             )}
                         </div>

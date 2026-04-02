@@ -16,7 +16,7 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { login, register } from '@/routes';
+import { login } from '@/routes';
 import {
     dashboard as adminDashboard,
     documents as adminDocuments,
@@ -24,7 +24,7 @@ import {
 } from '@/routes/admin';
 import { chat as userChat } from '@/routes/user';
 
-export default function Welcome({ canRegister = true }: { canRegister?: boolean }) {
+export default function Welcome() {
     const { auth } = usePage().props;
 
     const user =
@@ -101,13 +101,6 @@ export default function Welcome({ canRegister = true }: { canRegister?: boolean 
                                     <Button asChild variant="ghost" size="sm">
                                         <Link href={login()}>Log in</Link>
                                     </Button>
-                                    {canRegister && (
-                                        <Button asChild size="sm">
-                                            <Link href={register()}>
-                                                Create Admin Account
-                                            </Link>
-                                        </Button>
-                                    )}
                                 </>
                             )}
                         </div>
@@ -145,17 +138,6 @@ export default function Welcome({ canRegister = true }: { canRegister?: boolean 
                                     {!isAuthenticated && (
                                         <Button asChild size="lg">
                                             <Link href={login()}>Log in</Link>
-                                        </Button>
-                                    )}
-                                    {!isAuthenticated && canRegister && (
-                                        <Button
-                                            asChild
-                                            variant="outline"
-                                            size="lg"
-                                        >
-                                            <Link href={register()}>
-                                                Create Admin Account
-                                            </Link>
                                         </Button>
                                     )}
                                     {isAuthenticated && isAdmin && (
@@ -312,17 +294,6 @@ export default function Welcome({ canRegister = true }: { canRegister?: boolean 
                                                     Log in
                                                 </Link>
                                             </Button>
-                                            {canRegister && (
-                                                <Button
-                                                    asChild
-                                                    variant="outline"
-                                                    size="sm"
-                                                >
-                                                    <Link href={register()}>
-                                                        Create admin
-                                                    </Link>
-                                                </Button>
-                                            )}
                                         </>
                                     )}
                                 </CardFooter>

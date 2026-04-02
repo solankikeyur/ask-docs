@@ -1,7 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { register } from '@/routes';
+import { login } from '@/routes';
 
 const plans = [
     {
@@ -135,7 +135,7 @@ export function PricingSection() {
                                 variant={plan.highlight ? 'secondary' : plan.ctaVariant}
                                 className="w-full"
                             >
-                                <Link href={register()}>{plan.cta}</Link>
+                                <Link href={login()}>{plan.cta}</Link>
                             </Button>
                         </div>
                     ))}

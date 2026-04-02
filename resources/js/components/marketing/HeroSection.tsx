@@ -1,7 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { ArrowRight, Sparkles, FileText, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { register } from '@/routes';
+import { login } from '@/routes';
 
 export function HeroSection() {
     return (
@@ -52,8 +52,8 @@ export function HeroSection() {
                 {/* CTA row */}
                 <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
                     <Button asChild size="lg">
-                        <Link href={register()} className="group gap-3">
-                            Start for Free
+                        <Link href={login()} className="group gap-3">
+                            Log in
                             <ArrowRight
                                 size={16}
                                 className="transition-transform duration-200 group-hover:translate-x-1"

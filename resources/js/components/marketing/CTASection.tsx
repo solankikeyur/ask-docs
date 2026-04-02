@@ -1,7 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { register } from '@/routes';
+import { login } from '@/routes';
 
 export function CTASection() {
     return (
@@ -27,8 +27,8 @@ export function CTASection() {
                     Join thousands of teams who've turned static files into dynamic knowledge. No credit card required.
                 </p>
                 <Button asChild size="lg">
-                    <Link href={register()} className="group gap-3">
-                        Start for Free Today
+                    <Link href={login()} className="group gap-3">
+                        Log in
                         <ArrowRight
                             size={16}
                             className="transition-transform duration-200 group-hover:translate-x-1"
