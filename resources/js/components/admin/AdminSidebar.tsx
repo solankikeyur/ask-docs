@@ -11,10 +11,10 @@ import {
 import { cn } from '@/lib/utils';
 
 const navItems = [
-    { label: 'Dashboard',  href: '/admin',           icon: LayoutGrid },
-    { label: 'Documents',  href: '/admin/documents',  icon: FileText },
-    { label: 'Chat',       href: '/admin/chat',       icon: MessageSquare },
-    { label: 'Users',      href: '/admin/users',      icon: Users },
+    { label: 'Dashboard', href: '/admin', icon: LayoutGrid },
+    { label: 'Documents', href: '/admin/documents', icon: FileText },
+    { label: 'Chat', href: '/admin/chat', icon: MessageSquare },
+    { label: 'Users', href: '/admin/users', icon: Users },
 ];
 
 interface AdminSidebarProps {
@@ -33,15 +33,14 @@ export function AdminSidebar({ activePath }: AdminSidebarProps) {
                 </div>
                 <div>
                     <p className="text-sm font-bold leading-tight tracking-tight text-on-surface">AskDocs</p>
-                    <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-on-surface-variant">Admin Control Unit</p>
                 </div>
             </div>
 
             {/* Nav */}
             <nav className="flex-1 space-y-0.5 px-3 py-2">
                 {navItems.map(({ label, href, icon: Icon }) => {
-                    const active = href === '/admin' 
-                        ? activePath === href 
+                    const active = href === '/admin'
+                        ? activePath === href
                         : activePath === href || activePath.startsWith(href + '/');
 
                     return (

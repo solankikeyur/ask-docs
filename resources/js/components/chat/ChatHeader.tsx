@@ -63,9 +63,6 @@ export function ChatHeader({ activeDoc, docs, onDocSelect, isExistingChat }: Cha
             ) : (
                 <DocSelector active={activeDoc} docs={docs} onSelect={onDocSelect} />
             )}
-            <span className="hidden ml-auto text-[10px] text-muted-foreground md:inline">
-                {isExistingChat ? 'Document selection is locked for this chat' : 'Only assigned documents available'}
-            </span>
         </div>
     );
 }

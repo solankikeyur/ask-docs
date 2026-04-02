@@ -76,7 +76,7 @@ export function ChatSidebar({
         <>
             <aside className="w-64 shrink-0 flex flex-col border-r border-sidebar-border/50 bg-sidebar/50 backdrop-blur-sm overflow-hidden">
                 {showNewChatButton && (
-                    <div className="px-4 py-4 pb-0">
+                    <div className="px-4 py-3.5 border-b border-sidebar-border/50">
                         <Button
                             onClick={() => setIsModalOpen(true)}
                             className="w-full justify-start gap-2 h-10 text-sm font-semibold rounded-lg bg-primary-gradient shadow-sm hover:shadow-md transition-shadow"

@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
-import { BookOpen, Menu, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
+import AppLogo from '@/components/app-logo';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -26,11 +27,8 @@ export function Navbar({ isAuthenticated }: NavbarProps) {
                 <nav className="glass border-ghost flex h-14 items-center justify-between rounded-[var(--radius-lg)] px-5 shadow-ambient">
 
                     {/* Logo */}
-                    <Link href="/" className="flex items-center gap-2.5 font-semibold text-on-surface">
-                        <span className="flex h-8 w-8 items-center justify-center rounded-[var(--radius-md)] bg-primary-gradient text-primary-foreground">
-                            <BookOpen size={16} />
-                        </span>
-                        <span className="text-sm font-bold tracking-tight">AskDocs</span>
+                    <Link href="/" className="flex items-center gap-2 font-semibold text-on-surface">
+                        <AppLogo />
                     </Link>
 
                     {/* Desktop nav */}

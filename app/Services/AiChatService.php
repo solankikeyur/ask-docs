@@ -46,13 +46,9 @@ class AiChatService
      */
     protected int $contextChunkLimit = 10;
 
-    /**
-     * Safety limit to keep rerank payloads small.
-     */
-    protected int $cohereMaxCharsPerChunk = 1000;
-
     public function __construct(
-        protected Chat $chat
+        protected Chat $chat,
+        protected CohereService $cohere
     ) {
     }
 
@@ -90,7 +86,7 @@ class AiChatService
             ->limit($this->rerankCandidateLimit)
             ->get();
 
-        $reranked = $this->rerankWithCohere($message, $similarChunks);
+        $reranked = $this->cohere->rerank($message, $similarChunks, $this->contextChunkLimit);
 
         return $reranked
             ->take($this->contextChunkLimit)
@@ -98,75 +94,6 @@ class AiChatService
             ->implode("\n\n");
     }
 
-    /**
-     * Rerank candidate chunks with Cohere (optional).
-     *
-     * If `COHERE_API_KEY` isn't set or the call fails, this returns the original ordering.
-     */
-    private function rerankWithCohere(string $query, $chunks)
-    {
-        $apiKey = (string) config('services.cohere.key');
-
-        if ($apiKey === '' || $chunks->isEmpty()) {
-            return $chunks;
-        }
-
-        $model = (string) config('services.cohere.rerank_model', 'rerank-v4.0-fast');
-
-        // Keep payload small and stable for caching.
-        $documents = $chunks
-            ->pluck('content')
-            ->map(fn($content) => Str::limit((string) $content, $this->cohereMaxCharsPerChunk, ''))
-            ->values()
-            ->all();
-
-        $cacheKey = 'cohere:rerank:v2:' . sha1($model . '|' . $query . '|' . implode('|', $chunks->pluck('id')->map(fn($id) => (string) $id)->all()));
-
-        $results = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($apiKey, $model, $query, $documents) {
-            try {
-                $response = Http::withToken($apiKey)
-                    ->acceptJson()
-                    ->timeout(8)
-                    ->retry(2, 200)
-                    ->post('https://api.cohere.com/v2/rerank', [
-                        'model' => $model,
-                        'query' => $query,
-                        'documents' => $documents,
-                        'top_n' => min($this->contextChunkLimit, count($documents)),
-                    ]);
-
-                if (!$response->successful()) {
-                    return null;
-                }
-                return $response->json('results');
-            } catch (ConnectionException) {
-                return null;
-            }
-        });
-
-        if (!is_array($results) || $results === []) {
-            return $chunks;
-        }
-
-        // Cohere returns an ordered list of { index, relevance_score }.
-        $ordered = collect();
-
-        foreach ($results as $item) {
-            $index = is_array($item) ? ($item['index'] ?? null) : null;
-            if (!is_int($index)) {
-                continue;
-            }
-
-            if (!isset($chunks[$index])) {
-                continue;
-            }
-
-            $ordered->push($chunks[$index]);
-        }
-
-        // If something went wrong with indexing, fall back safely.
-        return $ordered->isEmpty() ? $chunks : $ordered;
-    }
 
     /**
      * Get the formatted conversation messages.

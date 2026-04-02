@@ -11,6 +11,6 @@ export interface AdminUser {
 }
 
 export const ROLE_COLORS: Record<string, string> = {
-    admin:  'bg-primary-gradient text-primary-foreground',
-    viewer: 'bg-secondary-container text-secondary-foreground',
+    admin: 'bg-primary-gradient text-primary-foreground',
+    viewer: 'bg-amber-100 text-amber-900',
 };

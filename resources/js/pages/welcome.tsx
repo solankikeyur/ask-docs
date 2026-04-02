@@ -347,9 +347,6 @@ export default function Welcome() {
                 <footer className="border-t border-border/60 py-10">
                     <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
                         <p>© {new Date().getFullYear()} AskDocs</p>
-                        <p>
-                            Admin upload/assign • User chat • Role-based access
-                        </p>
                     </div>
                 </footer>
             </div>
