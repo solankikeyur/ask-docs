@@ -46,10 +46,12 @@ class AiChatService
      */
     protected int $contextChunkLimit = 10;
 
+    protected $cohere;
+
     public function __construct(
-        protected Chat $chat,
-        protected CohereService $cohere
+        protected Chat $chat
     ) {
+        $this->cohere = new CohereService();
     }
 
     /**

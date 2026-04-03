@@ -1,5 +1,4 @@
 import { Head, router } from '@inertiajs/react';
-import { useStream } from '@laravel/stream-react';
 import { MessageSquare } from 'lucide-react';
 import { useCallback, useEffect, useState, useRef } from 'react';
 import { ChatHeader } from '@/components/chat/ChatHeader';
@@ -9,6 +8,14 @@ import { ChatSidebar } from '@/components/chat/ChatSidebar';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import AdminLayout from '@/layouts/admin/AdminLayout';
 import type { Message, Doc, ChatHistory } from '@/types/chat';
+import {
+    subscribe,
+    getSnapshot,
+    sendStream,
+    clearStreamData,
+    abortStream,
+    type StreamState,
+} from '@/lib/adminChatStream';
 
 const EMPTY_MESSAGES: Message[] = [];
 const EMPTY_DOCS: Doc[] = [];
@@ -36,12 +43,26 @@ export default function AdminChat({
     const [localChatId, setLocalChatId] = useState<number | undefined>(chat?.id);
     const [localChatHistory, setLocalChatHistory] = useState<ChatHistory[]>(chatHistory);
     const pendingNewChatRef = useRef<{ title: string; docId: number } | null>(null);
+
+    // ─── Typing animation state (purely component-local) ───────────────────────
     const [streamedDisplay, setStreamedDisplay] = useState('');
-    const streamedFullRef = useRef('');
-    const streamBufferRef = useRef('');
+    const streamedFullRef = useRef('');      // how much of the stream we've "consumed" into buffer
+    const streamBufferRef = useRef('');      // chars waiting to be typed out
     const typingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const [streamEnded, setStreamEnded] = useState(false);
+    // Track the last stream state so we can detect the isStreaming→false transition
+    const wasStreamingRef = useRef(false);
+    const localChatIdRef = useRef<number | undefined>(localChatId);
 
+    // Keep ref in sync so the subscribe callback (closure) can read it
+    useEffect(() => { localChatIdRef.current = localChatId; }, [localChatId]);
+
+    const csrfToken =
+        typeof document !== 'undefined'
+            ? (document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '')
+            : '';
+
+    // ─── Typing helpers ─────────────────────────────────────────────────────────
     const stopTyping = useCallback(() => {
         if (typingIntervalRef.current) {
             clearInterval(typingIntervalRef.current);
@@ -58,77 +79,82 @@ export default function AdminChat({
     }, [stopTyping]);
 
     useEffect(() => {
-        return () => stopTyping();
+        return () => stopTyping();   // clear interval on unmount (typing is pure display)
     }, [stopTyping]);
 
-    const csrfToken =
-        typeof document !== 'undefined'
-            ? (document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '')
-            : '';
+    // ─── Subscribe to global stream singleton ───────────────────────────────────
+    // The fetch keeps running even when this component is unmounted.
+    const [streamState, setStreamState] = useState<StreamState>(getSnapshot);
 
-    const { data: streamedData, isFetching, isStreaming, send, clearData } = useStream('/admin/chat', {
-        id: 'admin-chat-stream',
-        csrfToken,
-        onResponse: (response: Response) => {
-            const newChatId = response.headers.get('X-Chat-Id');
-
-            if (newChatId && !localChatId) {
-                const chatId = Number(newChatId);
-                setLocalChatId(chatId);
-
-                if (typeof window !== 'undefined') {
-                    window.history.pushState({}, '', `/admin/chat/${newChatId}`);
-                }
-
-                const pending = pendingNewChatRef.current;
-                setLocalChatHistory((prev) => {
-                    const next = prev.map((c) => ({ ...c, active: false }));
-
-                    if (next.some((c) => c.id === chatId)) {
-                        return next.map((c) => (c.id === chatId ? { ...c, active: true } : c));
-                    }
-
-                    return [
-                        {
-                            id: chatId,
-                            title: pending?.title || 'Untitled Chat',
-                            docId: pending?.docId ?? activeDoc?.id ?? 0,
-                            active: true,
-                        },
-                        ...next,
-                    ];
-                });
-            }
-        },
-    });
-
-    const isStreamingRef = useRef(false);
     useEffect(() => {
-        if (isStreamingRef.current && !isStreaming) {
+        // Subscribe and immediately receive current snapshot
+        const unsub = subscribe((s) => setStreamState({ ...s }));
+        return unsub;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // Destructure for convenience
+    const { data: streamedData, isStreaming, isFetching, responseHeaders } = streamState;
+
+    // ─── Handle new chat-id coming back in response headers ─────────────────────
+    const handledResponseRef = useRef(false);
+    useEffect(() => {
+        if (!responseHeaders) return;
+        if (handledResponseRef.current) return;
+
+        const newChatId = responseHeaders.get('X-Chat-Id');
+        if (newChatId && !localChatIdRef.current) {
+            handledResponseRef.current = true;
+            const chatId = Number(newChatId);
+            setLocalChatId(chatId);
+
+            if (typeof window !== 'undefined') {
+                window.history.pushState({}, '', `/admin/chat/${newChatId}`);
+            }
+
+            const pending = pendingNewChatRef.current;
+            setLocalChatHistory((prev) => {
+                const next = prev.map((c) => ({ ...c, active: false }));
+                if (next.some((c) => c.id === chatId)) {
+                    return next.map((c) => (c.id === chatId ? { ...c, active: true } : c));
+                }
+                return [
+                    {
+                        id: chatId,
+                        title: pending?.title || 'Untitled Chat',
+                        docId: pending?.docId ?? activeDoc?.id ?? 0,
+                        active: true,
+                    },
+                    ...next,
+                ];
+            });
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [responseHeaders]);
+
+    // ─── Detect stream finished ──────────────────────────────────────────────────
+    useEffect(() => {
+        if (wasStreamingRef.current && !isStreaming) {
             if (streamedFullRef.current) {
                 setStreamEnded(true);
             } else {
-                clearData();
+                clearStreamData();
             }
         }
+        wasStreamingRef.current = isStreaming;
+    }, [isStreaming]);
 
-        isStreamingRef.current = isStreaming;
-    }, [isStreaming, clearData]);
-
+    // ─── Feed new data into typing buffer ───────────────────────────────────────
     useEffect(() => {
         const full = streamedData ?? '';
         const prev = streamedFullRef.current;
 
-        if (full === prev) {
-return;
-}
+        if (full === prev) return;
 
         const delta = full.startsWith(prev) ? full.slice(prev.length) : full;
         streamedFullRef.current = full;
 
-        if (!delta) {
-return;
-}
+        if (!delta) return;
 
         streamBufferRef.current += delta;
 
@@ -138,12 +164,16 @@ return;
 
                 if (!buffer) {
                     stopTyping();
-
                     return;
                 }
 
-                const charsPerTick = 2;
-                const take = Math.min(buffer.length, charsPerTick);
+                // Dynamic speed: drain the buffer in ~300ms
+                const TARGET_DRAIN_MS = 300;
+                const TICK_MS = 16;
+                const ticksToEmpty = TARGET_DRAIN_MS / TICK_MS;
+                const dynamicChars = Math.max(2, Math.ceil(buffer.length / ticksToEmpty));
+                const take = Math.min(buffer.length, dynamicChars);
+
                 const next = buffer.slice(0, take);
                 streamBufferRef.current = buffer.slice(take);
                 setStreamedDisplay((current) => current + next);
@@ -151,83 +181,72 @@ return;
                 if (streamBufferRef.current.length === 0) {
                     stopTyping();
                 }
-            }, 25);
+            }, 16);
         }
     }, [streamedData, stopTyping]);
 
+    // ─── Commit final message once typing animation drains ──────────────────────
     useEffect(() => {
-        if (!streamEnded) {
-return;
-}
-
-        if (streamBufferRef.current.length > 0) {
-return;
-}
+        if (!streamEnded) return;
+        if (streamBufferRef.current.length > 0) return;
 
         const full = streamedFullRef.current;
 
         if (!full) {
             setStreamEnded(false);
-            clearData();
+            clearStreamData();
             setStreamedDisplay('');
-
             return;
         }
 
         if (streamedDisplay.length < full.length) {
             setStreamedDisplay(full);
-
             return;
         }
 
         setLocalMessages((prev) => [...prev, { id: Date.now(), role: 'assistant', content: full }]);
-        clearData();
+        clearStreamData();
         resetTyping();
-    }, [streamEnded, streamedDisplay, clearData, resetTyping]);
+        handledResponseRef.current = false;  // allow next message to pick up new chat-id if any
+    }, [streamEnded, streamedDisplay, resetTyping]);
 
-    useEffect(() => {
-        setLocalMessages(messages);
-    }, [messages]);
-
-    useEffect(() => {
-        setLocalChatHistory(chatHistory);
-    }, [chatHistory]);
+    // ─── Sync props → local state ────────────────────────────────────────────────
+    useEffect(() => { setLocalMessages(messages); }, [messages]);
+    useEffect(() => { setLocalChatHistory(chatHistory); }, [chatHistory]);
 
     useEffect(() => {
         if (chat) {
             const doc = documents.find((d) => d.id === chat.docId);
-
-            if (doc) {
-                setActiveDoc(doc);
-            }
+            if (doc) setActiveDoc(doc);
         }
-
         setLocalChatId(chat?.id);
     }, [chat, documents]);
 
     useEffect(() => {
-        setLocalChatHistory((prev) => prev.map((c) => ({ ...c, active: !!localChatId && c.id === localChatId })));
+        setLocalChatHistory((prev) =>
+            prev.map((c) => ({ ...c, active: !!localChatId && c.id === localChatId })),
+        );
     }, [localChatId]);
 
     useEffect(() => {
-        if (localChatId) {
-            if (typeof window !== 'undefined') {
-                const url = `/admin/chat/${localChatId}`;
-
-                if (window.location.pathname !== url) {
-                    window.history.pushState({}, '', url);
-                }
+        if (localChatId && typeof window !== 'undefined') {
+            const url = `/admin/chat/${localChatId}`;
+            if (window.location.pathname !== url) {
+                window.history.pushState({}, '', url);
             }
         }
     }, [localChatId]);
 
+    // ─── Handlers ────────────────────────────────────────────────────────────────
     const handleSendMessage = useCallback(
         (content: string) => {
             const userMsg: Message = { id: Date.now(), role: 'user', content };
             setLocalMessages((prev) => [...prev, userMsg]);
 
-            clearData();
+            clearStreamData();
             resetTyping();
+            handledResponseRef.current = false;
+            wasStreamingRef.current = false;
 
             if (!localChatId) {
                 pendingNewChatRef.current = {
@@ -236,22 +255,28 @@ return;
                 };
             }
 
-            send({
-                document_id: activeDoc?.id,
-                chat_id: localChatId,
-                content: content,
-            });
+            sendStream(
+                '/admin/chat',
+                {
+                    document_id: activeDoc?.id,
+                    chat_id: localChatId,
+                    content,
+                },
+                csrfToken,
+            );
         },
-        [activeDoc, localChatId, send, clearData, resetTyping],
+        [activeDoc, localChatId, csrfToken, resetTyping],
     );
 
     const handleNewChatSelection = (doc: Doc) => {
         setActiveDoc(doc);
         setLocalChatId(undefined);
         setLocalMessages([]);
-        clearData();
+        abortStream();
         resetTyping();
         pendingNewChatRef.current = null;
+        handledResponseRef.current = false;
+        wasStreamingRef.current = false;
         setLocalChatHistory((prev) => prev.map((c) => ({ ...c, active: false })));
 
         if (typeof window !== 'undefined') {
@@ -259,19 +284,22 @@ return;
         }
     };
 
-    const handleRenameChat = useCallback((chatId: number, title: string, options?: { onFinish?: () => void; onError?: () => void }) => {
-        setLocalChatHistory((prev) => prev.map((c) => (c.id === chatId ? { ...c, title } : c)));
-        router.put(
-            `/admin/chat/${chatId}`,
-            { title },
-            {
-                preserveScroll: true,
-                preserveState: true,
-                onFinish: () => options?.onFinish?.(),
-                onError: () => options?.onError?.(),
-            },
-        );
-    }, []);
+    const handleRenameChat = useCallback(
+        (chatId: number, title: string, options?: { onFinish?: () => void; onError?: () => void }) => {
+            setLocalChatHistory((prev) => prev.map((c) => (c.id === chatId ? { ...c, title } : c)));
+            router.put(
+                `/admin/chat/${chatId}`,
+                { title },
+                {
+                    preserveScroll: true,
+                    preserveState: true,
+                    onFinish: () => options?.onFinish?.(),
+                    onError: () => options?.onError?.(),
+                },
+            );
+        },
+        [],
+    );
 
     const handleDeleteChat = useCallback(
         (chatId: number, options?: { onFinish?: () => void; onError?: () => void }) => {
@@ -280,8 +308,9 @@ return;
             if (localChatId === chatId) {
                 setLocalChatId(undefined);
                 setLocalMessages([]);
-                clearData();
+                abortStream();
                 resetTyping();
+                wasStreamingRef.current = false;
 
                 if (typeof window !== 'undefined') {
                     window.history.pushState({}, '', '/admin/chat');
@@ -295,7 +324,7 @@ return;
                 onError: () => options?.onError?.(),
             });
         },
-        [localChatId, clearData, resetTyping],
+        [localChatId, resetTyping],
     );
 
     const handleClearAllChats = useCallback(
@@ -303,8 +332,9 @@ return;
             setLocalChatHistory([]);
             setLocalChatId(undefined);
             setLocalMessages([]);
-            clearData();
+            abortStream();
             resetTyping();
+            wasStreamingRef.current = false;
 
             if (typeof window !== 'undefined') {
                 window.history.pushState({}, '', '/admin/chat');
@@ -317,9 +347,10 @@ return;
                 onError: () => options?.onError?.(),
             });
         },
-        [clearData, resetTyping],
+        [resetTyping],
     );
 
+    // ─── Derive display state ─────────────────────────────────────────────────────
     const displayMessages = [...localMessages];
     const showSkeleton = (isFetching || isStreaming || streamEnded) && streamedDisplay.length === 0;
 

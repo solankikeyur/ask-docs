@@ -38,8 +38,27 @@ class DocumentParser
 
     protected function parsePdf()
     {
-        $parser = new Parser();
         $filePath = Storage::disk("public")->path($this->document->path);
+
+        // Try extracting using pdftotext (Poppler Utils) - much more memory efficient for large files
+        try {
+            $outputFile = tempnam(sys_get_temp_dir(), 'pdf_text_');
+            $command = sprintf('pdftotext "%s" "%s"', $filePath, $outputFile);
+            
+            exec($command, $output, $returnVar);
+
+            if ($returnVar === 0 && file_exists($outputFile)) {
+                $text = file_get_contents($outputFile);
+                unlink($outputFile);
+                $text = preg_replace('/\s+/', ' ', $text);
+                return trim($text);
+            }
+        } catch (Exception $e) {
+            Log::warning("pdftotext failed, falling back to Smalot\PdfParser: " . $e->getMessage());
+        }
+
+        // Fallback to Smalot\PdfParser if pdftotext fails
+        $parser = new Parser();
         $pdf = $parser->parseFile($filePath);
         $text = $pdf->getText();
         $text = preg_replace('/\s+/', ' ', $text);

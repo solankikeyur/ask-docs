@@ -1,5 +1,5 @@
 import { MessageSquare } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import type { Message } from '@/types/chat';
 import { ChatMessageBubble } from './ChatMessageBubble';
 
@@ -8,18 +8,48 @@ interface ChatMessageListProps {
     isLoading?: boolean;
 }
 
+// How many pixels from the bottom counts as "at bottom"
+const SCROLL_THRESHOLD = 80;
+
 export function ChatMessageList({ messages, isLoading }: ChatMessageListProps) {
     const containerRef = useRef<HTMLDivElement | null>(null);
-    const lastMessageIdRef = useRef<number | undefined>(undefined);
     const lastMessageCountRef = useRef<number>(0);
+    const lastMessageIdRef = useRef<number | undefined>(undefined);
     const lastStreamingLenRef = useRef<number>(0);
+    // Whether the user is considered "at the bottom" (auto-follow enabled)
+    const isAtBottomRef = useRef<boolean>(true);
+    const userScrolledRef = useRef<boolean>(false);
+    const scrollListenerRef = useRef<(() => void) | null>(null);
+
+    const isNearBottom = useCallback((container: HTMLDivElement) => {
+        return container.scrollHeight - container.scrollTop - container.clientHeight <= SCROLL_THRESHOLD;
+    }, []);
+
+    // Attach scroll listener to detect manual scrolling
+    useEffect(() => {
+        const container = containerRef.current;
+        if (!container) return;
+
+        const onScroll = () => {
+            const atBottom = isNearBottom(container);
+            isAtBottomRef.current = atBottom;
+            // Mark that user manually scrolled up
+            if (!atBottom) {
+                userScrolledRef.current = true;
+            } else {
+                userScrolledRef.current = false;
+            }
+        };
+
+        scrollListenerRef.current = onScroll;
+        container.addEventListener('scroll', onScroll, { passive: true });
+        return () => container.removeEventListener('scroll', onScroll);
+    }, [isNearBottom]);
 
     useEffect(() => {
         const container = containerRef.current;
 
-        if (!container) {
-return;
-}
+        if (!container) return;
 
         const last = messages[messages.length - 1];
         const lastId = last?.id;
@@ -34,19 +64,31 @@ return;
         lastMessageIdRef.current = lastId;
         lastStreamingLenRef.current = streamingLen;
 
-        const behavior: ScrollBehavior = messageCountChanged || lastMessageChanged ? 'smooth' : 'auto';
-
-        if (streamingAdvanced) {
-            // Avoid jitter during rapid typing updates.
-            container.scrollTop = container.scrollHeight;
-
+        // A genuinely new message was added (user or assistant finished)
+        // → always scroll to bottom and reset user-scrolled state
+        if (messageCountChanged || (lastMessageChanged && !isStreaming)) {
+            userScrolledRef.current = false;
+            isAtBottomRef.current = true;
+            requestAnimationFrame(() => {
+                container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+            });
             return;
         }
 
-        // Ensure DOM has rendered before measuring scrollHeight.
-        requestAnimationFrame(() => {
-            container.scrollTo({ top: container.scrollHeight, behavior });
-        });
+        // During streaming, only auto-scroll if user hasn't scrolled away
+        if (streamingAdvanced) {
+            if (!userScrolledRef.current) {
+                container.scrollTop = container.scrollHeight;
+            }
+            return;
+        }
+
+        // Default: scroll if at bottom
+        if (isAtBottomRef.current) {
+            requestAnimationFrame(() => {
+                container.scrollTo({ top: container.scrollHeight, behavior: 'auto' });
+            });
+        }
     }, [messages, isLoading]);
 
     return (

@@ -30,18 +30,24 @@ class ProcessDocument implements ShouldQueue
      */
     public function handle(TextChunker $textChunker): void
     {
+        ini_set('memory_limit', '1024M');
+
         $documentParser = new DocumentParser($this->document);
         $documentContent = $documentParser->extractText();
 
         $chunks = $textChunker->chunk($documentContent);
 
-        foreach ($chunks as $index => $chunk) {
-            $response = Embeddings::for([$chunk])->dimensions(1536)->generate(Lab::OpenAI, 'text-embedding-3-small');
-            $this->document->chunks()->create([
-                'content' => $chunk,
-                'embedding' => $response->embeddings[0],
-                'chunk_index' => $index,
-            ]);
+        $batchSize = 100;
+        foreach (array_chunk($chunks, $batchSize) as $batchIndex => $batch) {
+            $response = Embeddings::for($batch)->dimensions(1536)->generate(Lab::OpenAI, 'text-embedding-3-small');
+
+            foreach ($batch as $indexInBatch => $chunk) {
+                $this->document->chunks()->create([
+                    'content' => $chunk,
+                    'embedding' => $response->embeddings[$indexInBatch],
+                    'chunk_index' => ($batchIndex * $batchSize) + $indexInBatch,
+                ]);
+            }
         }
 
         $this->document->update([
