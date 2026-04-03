@@ -61,9 +61,9 @@ class DocumentController extends Controller
 
     public function destroy(Document $document)
     {
-        // Delete from storage
-        if (Storage::disk('public')->exists($document->path)) {
-            Storage::disk('public')->delete($document->path);
+        // Delete from storage (disk is config-driven; works for local, S3, R2, etc.)
+        if (Storage::disk(Document::storageDisk())->exists($document->path)) {
+            Storage::disk(Document::storageDisk())->delete($document->path);
         }
 
         // Delete from database
@@ -79,7 +79,16 @@ class DocumentController extends Controller
         ]);
 
         $file = $request->file('document');
-        $path = $file->store('documents', 'public');
+        $path = $file->store(Document::STORAGE_FOLDER, Document::storageDisk());
+
+        // store() returns false if the upload silently failed (e.g. wrong credentials,
+        // missing bucket, disk misconfigured with throw=false). Abort here so we never
+        // persist a broken "0" path into the database.
+        if ($path === false) {
+            return back()->withErrors([
+                'document' => 'Failed to upload the file to storage. Please check your storage configuration and try again.',
+            ]);
+        }
 
         $document = Document::create([
             'name' => $file->getClientOriginalName(),

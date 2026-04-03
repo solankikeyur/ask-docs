@@ -17,6 +17,22 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Document Storage Disk
+    |--------------------------------------------------------------------------
+    |
+    | The disk used for storing uploaded PDF documents.
+    | Set DOCUMENT_STORAGE_DISK=s3 (or r2, do-spaces, etc.) in production /
+    | Laravel Cloud to use object storage instead of the local filesystem.
+    |
+    | Local default: 'public'  →  storage/app/public/documents/
+    | Production:    's3'      →  S3-compatible bucket (AWS, R2, DigitalOcean)
+    |
+    */
+
+    'document_disk' => env('DOCUMENT_STORAGE_DISK', 'public'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Filesystem Disks
     |--------------------------------------------------------------------------
     |
@@ -56,8 +72,9 @@ return [
             'url' => env('AWS_URL'),
             'endpoint' => env('AWS_ENDPOINT'),
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
-            'throw' => false,
-            'report' => false,
+            // throw=true is critical: without it, failed uploads silently return false
+            // instead of throwing, which causes false to be stored as "0" in the DB.
+            'throw' => true,
         ],
 
     ],
