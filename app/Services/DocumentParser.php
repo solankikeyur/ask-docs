@@ -4,65 +4,79 @@ namespace App\Services;
 
 use App\Models\Document;
 use Exception;
-use Log;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Smalot\PdfParser\Parser;
-use Storage;
 
 class DocumentParser
 {
-    protected $document;
+    protected Document $document;
 
     public function __construct(Document $document)
     {
         $this->document = $document;
     }
 
-    public function extractText()
+    public function extractText(): string
     {
         try {
-
-            $documentType = $this->document->type;
-
-            switch ($documentType) {
-                case "PDF":
-                    return $this->parsePdf();
-                default:
-                    throw new Exception("Unsupported document provided");
-            }
-
+            return match ($this->document->type) {
+                'PDF'   => $this->parsePdf(),
+                default => throw new Exception("Unsupported document type: {$this->document->type}"),
+            };
         } catch (Exception $e) {
-            Log::error("Error while parsing document: ", ["error" => $e->getMessage(), "id" => $this->document->id, "path" => $this->document->path]);
-            throw new Exception($e->getMessage());
+            Log::error('DocumentParser: extraction failed', [
+                'document_id' => $this->document->id,
+                'path'        => $this->document->path,
+                'error'       => $e->getMessage(),
+            ]);
+            throw $e;
         }
     }
 
-    protected function parsePdf()
+    protected function parsePdf(): string
     {
-        $filePath = Storage::disk("public")->path($this->document->path);
+        $filePath   = Storage::disk('public')->path($this->document->path);
+        $outputFile = tempnam(sys_get_temp_dir(), 'pdf_text_');
 
-        // Try extracting using pdftotext (Poppler Utils) - much more memory efficient for large files
+        // Try pdftotext (Poppler) — far more memory-efficient for large files.
         try {
-            $outputFile = tempnam(sys_get_temp_dir(), 'pdf_text_');
-            $command = sprintf('pdftotext "%s" "%s"', $filePath, $outputFile);
-            
-            exec($command, $output, $returnVar);
+            $command = sprintf(
+                'pdftotext %s %s',
+                escapeshellarg($filePath),
+                escapeshellarg($outputFile)
+            );
 
-            if ($returnVar === 0 && file_exists($outputFile)) {
-                $text = file_get_contents($outputFile);
+            exec($command, $output, $returnCode);
+
+            if ($returnCode === 0 && file_exists($outputFile)) {
+                try {
+                    $text = file_get_contents($outputFile);
+                } finally {
+                    // Always remove the temp file, even if reading failed.
+                    if (file_exists($outputFile)) {
+                        unlink($outputFile);
+                    }
+                }
+
+                return trim((string) preg_replace('/\s+/', ' ', $text));
+            }
+        } catch (Exception $e) {
+            Log::warning('DocumentParser: pdftotext failed, falling back to Smalot\PdfParser', [
+                'error' => $e->getMessage(),
+            ]);
+        } finally {
+            // Safety net: remove temp file if pdftotext didn't produce valid output.
+            if (file_exists($outputFile)) {
                 unlink($outputFile);
-                $text = preg_replace('/\s+/', ' ', $text);
-                return trim($text);
             }
-        } catch (Exception $e) {
-            Log::warning("pdftotext failed, falling back to Smalot\PdfParser: " . $e->getMessage());
         }
 
-        // Fallback to Smalot\PdfParser if pdftotext fails
+        // Fallback: Smalot\PdfParser (PHP-native, fine for smaller files).
         $parser = new Parser();
-        $pdf = $parser->parseFile($filePath);
-        $text = $pdf->getText();
-        $text = preg_replace('/\s+/', ' ', $text);
-        return trim($text);
-    }
+        $pdf    = $parser->parseFile($filePath);
+        $text   = $pdf->getText();
 
+        return trim((string) preg_replace('/\s+/', ' ', $text));
+    }
 }

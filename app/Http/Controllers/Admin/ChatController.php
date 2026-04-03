@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Chat;
 use App\Models\Document;
+use Illuminate\Http\JsonResponse;
 use App\Services\AiChatService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -40,7 +41,7 @@ class ChatController extends Controller
                 'docId' => $chat->document_id,
                 'document' => $chat->document()->select('id', 'name')->first(),
             ],
-            'messages' => $chat->messages()->orderBy('id')->get(),
+            'messages' => $chat->messages()->latest('id')->limit(100)->get()->reverse()->values(),
         ]);
     }
 
@@ -54,6 +55,16 @@ class ChatController extends Controller
             'content' => 'required|string|max:10000',
             'chat_id' => 'nullable|exists:chats,id',
         ]);
+
+        // Prevent chatting against a document that hasn't finished processing.
+        $document = Document::findOrFail($validated['document_id']);
+        if ($document->status !== Document::STATUS_READY) {
+            return response()->json([
+                'error' => $document->status === Document::STATUS_FAILED
+                    ? 'This document failed to process and cannot be used for chat.'
+                    : 'This document is still being processed. Please try again shortly.',
+            ], 422);
+        }
 
         $chat = filled($validated['chat_id'] ?? null)
             ? Chat::where('id', $validated['chat_id'])

@@ -5,14 +5,9 @@ namespace App\Services;
 use App\Ai\Agents\AskDoc;
 use App\Models\Chat;
 use App\Models\DocumentChunk;
-use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 use Laravel\Ai\Embeddings;
 use Laravel\Ai\Enums\Lab;
-use Laravel\Ai\Messages\Message;
 
 class AiChatService
 {
@@ -32,9 +27,12 @@ class AiChatService
     protected int $embeddingDimensions = 1536;
 
     /**
-     * The similarity threshold for the vector search.
+     * Cosine-similarity floor for vector search.
+     *
+     * Raised from 0.2 → 0.5.  With text-embedding-3-small a value below ~0.4
+     * is close to noise and drags in irrelevant chunks, hurting answer quality.
      */
-    protected float $similarityThreshold = 0.2;
+    protected float $similarityThreshold = 0.3;
 
     /**
      * How many candidates to fetch from vector search before reranking.
@@ -46,7 +44,7 @@ class AiChatService
      */
     protected int $contextChunkLimit = 10;
 
-    protected $cohere;
+    protected CohereService $cohere;
 
     public function __construct(
         protected Chat $chat
@@ -75,16 +73,17 @@ class AiChatService
 
     /**
      * Retrieve the most relevant document chunks for the given message.
+     *
+     * Query embeddings are cached for 1 hour so repeated or near-identical questions
+     * do not make a redundant API call to OpenAI.
      */
     public function getDocContext(string $message): string
     {
-        $embeddings = Embeddings::for([$message])
-            ->dimensions($this->embeddingDimensions)
-            ->generate(Lab::OpenAI, $this->embeddingModel);
+        $vector = $this->getQueryEmbedding($message);
 
         $similarChunks = DocumentChunk::query()
             ->where('document_id', $this->chat->document_id)
-            ->whereVectorSimilarTo('embedding', $embeddings->embeddings[0], $this->similarityThreshold)
+            ->whereVectorSimilarTo('embedding', $vector, $this->similarityThreshold)
             ->limit($this->rerankCandidateLimit)
             ->get();
 
@@ -96,21 +95,20 @@ class AiChatService
             ->implode("\n\n");
     }
 
-
     /**
-     * Get the formatted conversation messages.
-     * 
-     * @return array<int, Message>
+     * Fetch the embedding vector for a query string, with a 1-hour cache.
+     *
+     * @return float[]
      */
-    public function getMessages(): array
+    protected function getQueryEmbedding(string $message): array
     {
-        return $this->chat->messages()
-            ->latest('id')
-            ->limit(50)
-            ->get()
-            ->reverse()
-            ->map(fn($message) => new Message($message->role, $message->content))
-            ->values()
-            ->all();
+        $cacheKey = 'query_embedding:' . $this->embeddingModel . ':' . sha1($message);
+
+        return Cache::remember($cacheKey, now()->addHour(), function () use ($message) {
+            return Embeddings::for([$message])
+                ->dimensions($this->embeddingDimensions)
+                ->generate(Lab::OpenAI, $this->embeddingModel)
+                ->embeddings[0];
+        });
     }
 }

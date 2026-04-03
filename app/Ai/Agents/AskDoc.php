@@ -5,13 +5,11 @@ namespace App\Ai\Agents;
 use App\Models\Chat;
 use Laravel\Ai\Contracts\Agent;
 use Laravel\Ai\Contracts\Conversational;
-use Laravel\Ai\Contracts\HasTools;
-use Laravel\Ai\Contracts\Tool;
 use Laravel\Ai\Messages\Message;
 use Laravel\Ai\Promptable;
 use Stringable;
 
-class AskDoc implements Agent, Conversational, HasTools
+class AskDoc implements Agent, Conversational
 {
     use Promptable;
 
@@ -135,15 +133,5 @@ EOT;
             ->map(fn ($message) => new Message($message->role, $message->content))
             ->values()
             ->all();
-    }
-
-    /**
-     * Get the tools available to the agent.
-     *
-     * @return Tool[]
-     */
-    public function tools(): iterable
-    {
-        return [];
     }
 }

@@ -16,6 +16,8 @@ export interface StreamState {
     isStreaming: boolean;
     /** True while waiting for the initial HTTP response */
     isFetching: boolean;
+    /** Set when the server returns a non-2xx response (e.g. document not ready) */
+    error: string | null;
 }
 
 type Listener = (state: StreamState) => void;
@@ -25,6 +27,7 @@ const state: StreamState = {
     responseHeaders: null,
     isStreaming: false,
     isFetching: false,
+    error: null,
 };
 
 const listeners = new Set<Listener>();
@@ -63,6 +66,7 @@ export function abortStream() {
     state.responseHeaders = null;
     state.isStreaming = false;
     state.isFetching = false;
+    state.error = null;
     notify();
 }
 
@@ -83,6 +87,7 @@ export async function sendStream(
     state.responseHeaders = null;
     state.isStreaming = false;
     state.isFetching = true;
+    state.error = null;
     notify();
 
     try {
@@ -100,6 +105,16 @@ export async function sendStream(
 
         state.responseHeaders = response.headers;
         state.isFetching = false;
+
+        // Handle server-side errors (e.g. document not ready → 422)
+        if (!response.ok) {
+            const json = await response.json().catch(() => ({}));
+            state.error = (json as { error?: string }).error ?? `Request failed (HTTP ${response.status})`;
+            state.isStreaming = false;
+            notify();
+            return;
+        }
+
         state.isStreaming = true;
         notify();
 

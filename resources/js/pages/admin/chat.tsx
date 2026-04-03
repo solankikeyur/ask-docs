@@ -94,7 +94,7 @@ export default function AdminChat({
     }, []);
 
     // Destructure for convenience
-    const { data: streamedData, isStreaming, isFetching, responseHeaders } = streamState;
+    const { data: streamedData, isStreaming, isFetching, responseHeaders, error: streamError } = streamState;
 
     // ─── Handle new chat-id coming back in response headers ─────────────────────
     const handledResponseRef = useRef(false);
@@ -399,6 +399,12 @@ export default function AdminChat({
                                             Analyzing <strong>{activeDoc?.name}</strong> with full system access.
                                         </p>
                                     </div>
+                                </div>
+                            )}
+                            {streamError && (
+                                <div className="mx-4 mb-2 flex items-start gap-2 rounded-lg border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+                                    <span className="mt-0.5 shrink-0">⚠</span>
+                                    <span>{streamError}</span>
                                 </div>
                             )}
                             <ChatInput activeDocName={activeDoc?.name || ''} onSend={handleSendMessage} disabled={isFetching || isStreaming} />
