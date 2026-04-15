@@ -62,6 +62,8 @@ Route::get('/chatbot/{publicId}/widget.js', function (string $publicId) {
 
     return response($script, 200, [
         'Content-Type' => 'application/javascript',
-        'Cache-Control' => 'public, max-age=3600'
+        'Cache-Control' => 'no-cache, no-store, must-revalidate',
+        'Pragma' => 'no-cache',
+        'Expires' => '0'
     ]);
 })->name('chatbot.widget');

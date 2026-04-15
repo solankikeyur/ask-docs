@@ -189,7 +189,11 @@
 
             const reader = response.body.getReader();
             const decoder = new TextDecoder('utf-8');
-            let assistantText = '';
+            let networkText = '';
+            let displayedText = '';
+            let typingIndex = 0;
+            let isTypingAnimRunning = false;
+            let isStreamDone = false;
 
             const responseSessionId = response.headers.get('X-Session-Id');
             if (responseSessionId) {
@@ -197,22 +201,51 @@
                 localStorage.setItem('chatbot-session-' + chatbotId, sessionId);
             }
 
+            function processQueue() {
+                if (typingIndex < networkText.length) {
+                    isTypingAnimRunning = true;
+                    let charsToAdd = Math.max(1, Math.ceil((networkText.length - typingIndex) / 3));
+                    displayedText += networkText.substring(typingIndex, typingIndex + charsToAdd);
+                    typingIndex += charsToAdd;
+                    
+                    typingMsgDiv.innerHTML = renderMarkdown(displayedText);
+                    typingMsgDiv.dataset.raw = displayedText;
+                    scrollToBottom();
+                    
+                    setTimeout(processQueue, 30);
+                } else {
+                    isTypingAnimRunning = false;
+                    if (isStreamDone) {
+                        if (!networkText) {
+                            typingMsgDiv.innerHTML = 'No answer received.';
+                        } else if (displayedText !== networkText) {
+                            typingMsgDiv.innerHTML = renderMarkdown(networkText);
+                            typingMsgDiv.dataset.raw = networkText;
+                        }
+                        scrollToBottom();
+                    }
+                }
+            }
+
             function read() {
                 reader.read().then(({ done, value }) => {
                     if (done) {
-                        if (!assistantText) {
-                            typingMsgDiv.innerHTML = 'No answer received.';
-                        } else {
-                            typingMsgDiv.innerHTML = renderMarkdown(assistantText);
-                            typingMsgDiv.dataset.raw = assistantText;
+                        isStreamDone = true;
+                        networkText += decoder.decode();
+                        if (!isTypingAnimRunning && typingIndex < networkText.length) {
+                            processQueue();
+                        } else if (!isTypingAnimRunning && typingIndex === networkText.length) {
+                            if (!networkText) {
+                                typingMsgDiv.innerHTML = 'No answer received.';
+                            }
+                            scrollToBottom();
                         }
-                        scrollToBottom();
                         return;
                     }
-                    assistantText += decoder.decode(value, { stream: true });
-                    typingMsgDiv.innerHTML = renderMarkdown(assistantText);
-                    typingMsgDiv.dataset.raw = assistantText;
-                    scrollToBottom();
+                    networkText += decoder.decode(value, { stream: true });
+                    if (!isTypingAnimRunning) {
+                        processQueue();
+                    }
                     read();
                 }).catch(() => {
                     typingMsgDiv.innerHTML = 'Sorry, something went wrong.';
