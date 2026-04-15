@@ -69,20 +69,20 @@ export default function AdminUsers({ users, allDocuments }: Props) {
 
             <div className="space-y-6">
                 {/* Header */}
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                         <h1 className="text-2xl font-bold text-on-surface">Users</h1>
                         <p className="mt-0.5 text-sm text-on-surface-variant">
                             Create users and manage which documents they can chat with.
                         </p>
                     </div>
-                    <Button size="sm" className="gap-2 w-fit" onClick={() => setShowCreate(true)}>
+                    <Button size="sm" className="gap-2 w-full sm:w-fit" onClick={() => setShowCreate(true)}>
                         <UserPlus size={14} /> Create User
                     </Button>
                 </div>
 
                 {/* Search */}
-                <div className="relative max-w-xs">
+                <div className="relative w-full sm:max-w-xs">
                     <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" />
                     <Input className="pl-9" placeholder="Search users…" />
                 </div>

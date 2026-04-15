@@ -27,7 +27,7 @@ export function AdminSidebar({ activePath }: AdminSidebarProps) {
     const { auth } = usePage().props as any;
 
     return (
-        <aside className="flex h-screen w-56 shrink-0 flex-col border-r border-outline-variant/15 bg-surface-container-low">
+        <aside className="flex h-full w-56 shrink-0 flex-col border-r border-outline-variant/15 bg-surface-container-low">
             {/* Brand */}
             <div className="flex items-center gap-2.5 px-5 py-4">
                 <div className="flex h-8 w-8 items-center justify-center rounded-[var(--radius-md)] bg-primary-gradient text-primary-foreground">

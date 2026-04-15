@@ -43,6 +43,8 @@ function DocSelector({ active, docs, onSelect }: DocSelectorProps) {
     );
 }
 
+import { SidebarTrigger } from '@/components/ui/sidebar';
+
 interface ChatHeaderProps {
     activeDoc: Doc;
     docs: Doc[];
@@ -52,13 +54,15 @@ interface ChatHeaderProps {
 
 export function ChatHeader({ activeDoc, docs, onDocSelect, isExistingChat }: ChatHeaderProps) {
     return (
-        <div className="flex items-center gap-3 py-1">
+        <div className="flex items-center gap-3 py-2">
+            <SidebarTrigger className="md:hidden" />
+            <div className="h-4 w-[1px] bg-outline-variant/30 hidden md:block" />
             <BookOpen size={14} className="shrink-0 text-muted-foreground" />
             <span className="text-xs font-medium">Chatting with:</span>
             {isExistingChat ? (
                 <div className="flex items-center gap-1.5 rounded-full bg-sidebar-accent/50 px-2.5 py-1 text-[11px] text-on-surface">
                     <FileText size={10} className="text-secondary" />
-                    <span className="truncate max-w-full">{activeDoc.name}</span>
+                    <span className="truncate max-w-[120px] sm:max-w-full">{activeDoc.name}</span>
                 </div>
             ) : (
                 <DocSelector active={activeDoc} docs={docs} onSelect={onDocSelect} />

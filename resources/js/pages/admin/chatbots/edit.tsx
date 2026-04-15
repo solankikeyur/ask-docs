@@ -88,7 +88,7 @@ export default function Edit({ chatbot, documents }: Props) {
                 <form onSubmit={handleSubmit} className="space-y-8">
                     {/* Basic Info */}
                     <Card className="border-0 shadow-[0_4px_24px_rgba(17,48,105,0.04)] rounded-[16px] bg-surface-container-lowest">
-                        <CardHeader className="bg-surface pb-6 border-b border-outline-variant/30 rounded-t-[16px] px-8 pt-8">
+                        <CardHeader className="bg-surface pb-4 sm:pb-6 border-b border-outline-variant/30 rounded-t-[16px] px-6 sm:px-8 pt-6 sm:pt-8">
                             <CardTitle className="flex items-center gap-3 text-xl text-on-surface font-semibold">
                                 <div className="p-2 bg-primary-container text-on-primary-container rounded-[10px]">
                                     <Bot size={20} />
@@ -96,7 +96,7 @@ export default function Edit({ chatbot, documents }: Props) {
                                 Core Identity
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-6 px-8 py-8">
+                        <CardContent className="space-y-6 px-4 sm:px-8 py-4 sm:py-8">
                             <div className="space-y-2">
                                 <Label htmlFor="name" className="text-sm font-semibold text-on-surface">Name <span className="text-error">*</span></Label>
                                 <Input
@@ -127,7 +127,7 @@ export default function Edit({ chatbot, documents }: Props) {
 
                     {/* Appearance / Branding */}
                     <Card className="border-0 shadow-[0_4px_24px_rgba(17,48,105,0.04)] rounded-[16px] bg-surface-container-lowest">
-                        <CardHeader className="bg-surface pb-6 border-b border-outline-variant/30 rounded-t-[16px] px-8 pt-8">
+                        <CardHeader className="bg-surface pb-4 sm:pb-6 border-b border-outline-variant/30 rounded-t-[16px] px-6 sm:px-8 pt-6 sm:pt-8">
                             <CardTitle className="flex items-center gap-3 text-xl text-on-surface font-semibold">
                                 <div className="p-2 bg-tertiary-container text-on-tertiary-container rounded-[10px]">
                                     <Palette size={20} />
@@ -135,7 +135,7 @@ export default function Edit({ chatbot, documents }: Props) {
                                 Interface & Branding
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-6 px-8 py-8">
+                        <CardContent className="space-y-6 px-4 sm:px-8 py-4 sm:py-8">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
                                     <Label htmlFor="primary_color" className="text-sm font-semibold text-on-surface">Primary Color</Label>
@@ -184,7 +184,7 @@ export default function Edit({ chatbot, documents }: Props) {
 
                     {/* Document Assignment */}
                     <Card className="border-0 shadow-[0_4px_24px_rgba(17,48,105,0.04)] rounded-[16px] bg-surface-container-lowest overflow-hidden">
-                        <CardHeader className="bg-surface pb-6 border-b border-outline-variant/30 rounded-t-[16px] px-8 pt-8">
+                        <CardHeader className="bg-surface pb-4 sm:pb-6 border-b border-outline-variant/30 rounded-t-[16px] px-6 sm:px-8 pt-6 sm:pt-8">
                             <div className="flex flex-col gap-2">
                                 <CardTitle className="flex items-center gap-3 text-xl text-on-surface font-semibold">
                                     <div className="p-2 bg-secondary-container text-on-secondary-container rounded-[10px]">
@@ -197,7 +197,7 @@ export default function Edit({ chatbot, documents }: Props) {
                                 </p>
                             </div>
                         </CardHeader>
-                        <CardContent className="px-8 py-6">
+                        <CardContent className="px-4 sm:px-8 py-4 sm:py-6">
                             {documents.length > 0 ? (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {documents.map((document) => (
@@ -234,11 +234,11 @@ export default function Edit({ chatbot, documents }: Props) {
                     </Card>
 
                     {/* Actions */}
-                    <div className="flex gap-4 pt-4 pb-12">
-                        <Button type="submit" disabled={processing} className="bg-primary hover:bg-primary-dim text-primary-foreground h-12 px-8 rounded-[12px] shadow-[0_4px_14px_rgba(0,90,194,0.25)] border-0 text-base font-semibold transition-all hover:-translate-y-0.5">
+                    <div className="flex flex-col-reverse sm:flex-row gap-4 pt-4 pb-12">
+                        <Button type="submit" disabled={processing} className="w-full sm:w-auto bg-primary hover:bg-primary-dim text-primary-foreground h-12 px-8 rounded-[12px] shadow-[0_4px_14px_rgba(0,90,194,0.25)] border-0 text-base font-semibold transition-all hover:-translate-y-0.5">
                             {processing ? 'Saving...' : 'Apply Changes'}
                         </Button>
-                        <Button variant="outline" asChild className="h-12 px-8 rounded-[12px] border-outline-variant/60 text-on-surface hover:bg-surface-container font-medium">
+                        <Button variant="outline" asChild className="w-full sm:w-auto h-12 px-8 rounded-[12px] border-outline-variant/60 text-on-surface hover:bg-surface-container font-medium text-center">
                             <Link href="/admin/chatbots">Cancel</Link>
                         </Button>
                     </div>

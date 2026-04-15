@@ -17,11 +17,11 @@ export function DocumentTable({ documents, onAssign, onDelete }: DocumentTablePr
                 <table className="w-full text-sm">
                     <thead>
                         <tr className="border-b border-outline-variant/10 bg-surface-container/30 text-[10px] sm:text-[11px] uppercase tracking-widest text-on-surface-variant/70">
-                            <th className="px-5 py-4 text-left font-semibold">Document</th>
-                            <th className="hidden px-5 py-4 text-left font-semibold sm:table-cell">Type / Size</th>
-                            <th className="px-5 py-4 text-left font-semibold">Status</th>
-                            <th className="hidden px-5 py-4 text-left font-semibold md:table-cell border-0">Assigned To</th>
-                            <th className="px-5 py-4 text-left font-semibold">Actions</th>
+                            <th className="px-4 py-3 sm:px-5 sm:py-4 text-left font-semibold">Document</th>
+                            <th className="hidden px-4 py-3 sm:px-5 sm:py-4 text-left font-semibold sm:table-cell">Type / Size</th>
+                            <th className="px-4 py-3 sm:px-5 sm:py-4 text-left font-semibold">Status</th>
+                            <th className="hidden px-4 py-3 sm:px-5 sm:py-4 text-left font-semibold md:table-cell border-0">Assigned To</th>
+                            <th className="px-4 py-3 sm:px-5 sm:py-4 text-left font-semibold">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -43,7 +43,7 @@ export function DocumentTable({ documents, onAssign, onDelete }: DocumentTablePr
                                     className="group border-b border-outline-variant/5 transition-all hover:bg-surface-container"
                                     style={{ animationDelay: `${idx * 50}ms` }}
                                 >
-                                    <td className="px-5 py-4">
+                                    <td className="px-4 py-3 sm:px-5 sm:py-4">
                                         <div className="flex items-center gap-3">
                                             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-container/30 text-primary transition-transform group-hover:scale-105">
                                                 <FileText size={18} />
@@ -61,7 +61,7 @@ export function DocumentTable({ documents, onAssign, onDelete }: DocumentTablePr
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="hidden px-5 py-4 sm:table-cell">
+                                    <td className="hidden px-4 py-3 sm:px-5 sm:py-4 sm:table-cell">
                                         <div className="flex flex-col gap-1">
                                             <span className="text-[11px] font-bold text-on-surface uppercase tracking-wider">
                                                 {doc.type}
@@ -71,7 +71,7 @@ export function DocumentTable({ documents, onAssign, onDelete }: DocumentTablePr
                                             </span>
                                         </div>
                                     </td>
-                                    <td className="px-5 py-4">
+                                    <td className="px-4 py-3 sm:px-5 sm:py-4">
                                         <Badge
                                             variant={doc.status}
                                             className="px-2.5 py-0.5 rounded-full capitalize text-[10px] font-bold tracking-tight shadow-sm"
@@ -79,7 +79,7 @@ export function DocumentTable({ documents, onAssign, onDelete }: DocumentTablePr
                                             {doc.status}
                                         </Badge>
                                     </td>
-                                    <td className="hidden px-5 py-4 md:table-cell">
+                                    <td className="hidden px-4 py-3 sm:px-5 sm:py-4 md:table-cell">
                                         <div className="flex items-center -space-x-1.5 overflow-hidden">
                                             {doc.assignedTo && doc.assignedTo.length > 0 ? (
                                                 doc.assignedTo.map((name, i) => (
@@ -98,7 +98,7 @@ export function DocumentTable({ documents, onAssign, onDelete }: DocumentTablePr
                                             )}
                                         </div>
                                     </td>
-                                    <td className="px-5 py-4">
+                                    <td className="px-4 py-3 sm:px-5 sm:py-4">
                                         <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity translate-x-2 group-hover:translate-x-0">
                                             <Button
                                                 variant="ghost"

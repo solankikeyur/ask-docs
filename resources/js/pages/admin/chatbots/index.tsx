@@ -107,7 +107,7 @@ export default function Index({ chatbots }: Props) {
                                 </div>
                                 
                                 {/* Right Section: Actions */}
-                                <div className="border-t md:border-t-0 md:border-l border-outline-variant/20 p-5 md:p-6 bg-surface-bright group-hover:bg-surface transition-colors shrink-0 flex flex-row md:flex-col items-center justify-center gap-3 w-full md:w-[220px]">
+                                <div className="border-t md:border-t-0 md:border-l border-outline-variant/20 p-5 md:p-6 bg-surface-bright group-hover:bg-surface transition-colors shrink-0 flex flex-col items-center justify-center gap-3 w-full md:w-[220px]">
                                     <Link href={`/admin/chatbots/${chatbot.id}`} className="flex-1 md:w-full md:flex-none">
                                         <Button className="w-full bg-surface-container hover:bg-surface-container-high text-on-surface hover:text-primary shadow-none transition-colors border-0 h-10 px-5 font-medium rounded-[10px]">
                                             Open Canvas <ArrowRight size={16} className="ml-2" />

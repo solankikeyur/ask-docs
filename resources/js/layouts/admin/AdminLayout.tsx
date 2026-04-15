@@ -1,7 +1,10 @@
 import { usePage } from '@inertiajs/react';
-import { type ReactNode, useEffect } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
+import { Menu } from 'lucide-react';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
+import { Button } from '@/components/ui/button';
 
 interface AdminLayoutProps {
     children: ReactNode;
@@ -12,6 +15,7 @@ interface AdminLayoutProps {
 export default function AdminLayout({ children, activePath, fullWidth = false }: AdminLayoutProps) {
     const { url } = usePage();
     const pathname = activePath ?? url;
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     // Isolate AdminLayout perfectly from any layout shifts on the document root
     useEffect(() => {
@@ -21,20 +25,40 @@ export default function AdminLayout({ children, activePath, fullWidth = false }:
         };
     }, []);
 
+    // Close mobile menu on navigate
+    useEffect(() => {
+        setIsMobileMenuOpen(false);
+    }, [pathname]);
+
     return (
         <div className="flex h-screen overflow-hidden bg-background">
-            <AdminSidebar activePath={pathname} />
+            <div className="hidden md:flex h-full">
+                <AdminSidebar activePath={pathname} />
+            </div>
 
             {/* Main */}
             <div className="flex flex-1 flex-col overflow-hidden min-h-0 w-full">
                 {/* Top header */}
-                <header className="flex h-12 shrink-0 items-center justify-between border-b border-outline-variant/15 px-6">
-                    <div />
+                <header className="flex h-14 shrink-0 items-center justify-between border-b border-outline-variant/15 px-4 md:px-6 bg-surface/50 backdrop-blur-sm z-10 w-full">
+                    <div className="flex items-center">
+                        <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+                            <SheetTrigger asChild>
+                                <Button variant="ghost" size="icon" className="md:hidden mr-2 -ml-2 text-on-surface hover:bg-surface-container">
+                                    <Menu size={20} />
+                                    <span className="sr-only">Toggle Sidebar</span>
+                                </Button>
+                            </SheetTrigger>
+                            <SheetContent side="left" className="p-0 w-64 border-r-0 bg-transparent shadow-none" closeClassName="text-on-surface-variant hover:bg-surface-container hover:text-on-surface top-4 right-4 focus:ring-primary z-50">
+                                <SheetTitle className="sr-only">Admin Navigation</SheetTitle>
+                                <AdminSidebar activePath={pathname} />
+                            </SheetContent>
+                        </Sheet>
+                    </div>
                     <ThemeToggle />
                 </header>
 
                 {/* Page content */}
-                <main className={`flex-1 ${fullWidth ? 'flex flex-col min-h-0' : 'overflow-y-auto scrollbar-thin p-6 min-h-0 w-full'}`}>
+                <main className={`flex-1 ${fullWidth ? 'flex flex-col min-h-0' : 'overflow-y-auto scrollbar-thin p-4 sm:p-6 lg:p-8 min-h-0 w-full'}`}>
                     {children}
                 </main>
             </div>
