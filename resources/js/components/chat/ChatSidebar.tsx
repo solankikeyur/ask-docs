@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import {
+    Sidebar,
     SidebarContent,
     SidebarGroup,
     SidebarGroupContent,
@@ -74,7 +75,7 @@ export function ChatSidebar({
 
     return (
         <>
-            <aside className="w-64 shrink-0 flex flex-col border-r border-sidebar-border/50 bg-sidebar/50 backdrop-blur-sm overflow-hidden">
+            <Sidebar className="border-r border-sidebar-border/50 bg-sidebar/50 backdrop-blur-sm overflow-hidden">
                 {showNewChatButton && (
                     <div className="px-4 py-3.5 border-b border-sidebar-border/50">
                         <Button
@@ -189,7 +190,7 @@ export function ChatSidebar({
                     </SidebarGroup>
 
                 </SidebarContent>
-            </aside>
+            </Sidebar>
 
             <DocSelectionModal
                 open={isModalOpen}

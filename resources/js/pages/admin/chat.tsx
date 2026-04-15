@@ -5,7 +5,7 @@ import { ChatHeader } from '@/components/chat/ChatHeader';
 import { ChatInput } from '@/components/chat/ChatInput';
 import { ChatMessageList } from '@/components/chat/ChatMessageList';
 import { ChatSidebar } from '@/components/chat/ChatSidebar';
-import { SidebarProvider } from '@/components/ui/sidebar';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import AdminLayout from '@/layouts/admin/AdminLayout';
 import type { Message, Doc, ChatHistory } from '@/types/chat';
 import {
@@ -410,16 +410,21 @@ export default function AdminChat({
                             <ChatInput activeDocName={activeDoc?.name || ''} onSend={handleSendMessage} disabled={isFetching || isStreaming} />
                         </div>
                     ) : (
-                        <div className="flex flex-1 items-center justify-center p-10 text-center bg-sidebar/30">
-                            <div className="max-w-sm space-y-4">
-                                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-                                    <MessageSquare size={32} className="text-primary opacity-40" />
-                                </div>
-                                <div>
-                                    <h2 className="text-xl font-bold tracking-tight text-on-surface">AskDocs Intelligence Unit</h2>
-                                    <p className="mt-2 text-sm leading-relaxed text-on-surface-variant">
-                                        Select a document or existing conversation to begin your analysis.
-                                    </p>
+                        <div className="flex flex-1 flex-col bg-sidebar/30">
+                            <div className="p-4 md:hidden border-b border-outline-variant/10 bg-surface/50 backdrop-blur-sm flex items-center">
+                                <SidebarTrigger />
+                            </div>
+                            <div className="flex flex-1 items-center justify-center p-10 text-center">
+                                <div className="max-w-sm space-y-4">
+                                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+                                        <MessageSquare size={32} className="text-primary opacity-40" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-xl font-bold tracking-tight text-on-surface">AskDocs Intelligence Unit</h2>
+                                        <p className="mt-2 text-sm leading-relaxed text-on-surface-variant">
+                                            Select a document or existing conversation to begin your analysis.
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>

@@ -55,22 +55,22 @@ export default function AdminDashboard({ stats }: { stats: DashboardStats }) {
                 </div>
 
                 {/* Stats */}
-                <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <StatCard label="Documents Uploaded" value={format(stats.documentsUploaded)} icon={FileText} />
                     <StatCard label="Users Created" value={format(stats.usersCreated)} icon={Users} />
                     <StatCard label="Active Chats Today" value={format(stats.activeChatsToday)} icon={MessageSquare} accent />
                 </div>
 
                 {/* Workflow Steps */}
-                <div className="rounded-[var(--radius-lg)] bg-surface-container-low p-5">
+                <div className="rounded-[var(--radius-lg)] bg-surface-container-low p-4 sm:p-5">
                     <h2 className="mb-4 font-semibold text-on-surface">How It Works</h2>
-                    <div className="grid gap-3 md:grid-cols-3">
+                    <div className="flex flex-col md:flex-row gap-3">
                         {[
                             { step: '01', title: 'Upload Documents', desc: 'Add PDFs, DOCX, and CSVs to the knowledge base. The AI indexes them automatically.', icon: FileText },
                             { step: '02', title: 'Create Users & Assign', desc: 'Create user accounts, then assign specific documents each user can access.', icon: Users },
                             { step: '03', title: 'Users Chat with Docs', desc: 'Users log in and can only chat with the documents you have assigned to them.', icon: MessageSquare },
                         ].map(({ step, title, desc, icon: Icon }) => (
-                            <div key={step} className="relative rounded-[var(--radius-md)] bg-surface-container p-4">
+                            <div key={step} className="relative rounded-[var(--radius-md)] bg-surface-container p-4 flex-1">
                                 <div className="mb-3 flex items-center gap-3">
                                     <span className="text-2xl font-black text-outline-variant/40 leading-none">{step}</span>
                                     <div className="flex h-8 w-8 items-center justify-center rounded-[var(--radius-md)] bg-primary-container">
