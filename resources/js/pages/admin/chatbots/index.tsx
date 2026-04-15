@@ -1,9 +1,9 @@
 import { Head, Link, router } from '@inertiajs/react';
 import AdminLayout from '@/layouts/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Bot, FileText, ExternalLink, Trash2 } from 'lucide-react';
+import { Plus, Bot, FileText, Pencil, Trash2, ArrowRight } from 'lucide-react';
 
 interface Chatbot {
     id: number;
@@ -28,68 +28,85 @@ export default function Index({ chatbots }: Props) {
         <AdminLayout>
             <Head title="Chatbots" />
 
-            <div className="space-y-6">
+            <div className="max-w-6xl mx-auto space-y-8 py-6">
                 {/* Header */}
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl font-bold text-on-surface">Chatbots</h1>
-                        <p className="text-on-surface-variant">Create and manage embeddable chatbots</p>
+                        <h1 className="text-3xl font-bold tracking-tight text-on-surface">Chatbots</h1>
+                        <p className="text-on-surface-variant mt-1 text-[15px]">Create and manage your embeddable AI chatbots.</p>
                     </div>
-                    <Button asChild>
+                    <Button asChild className="gap-2 shrink-0 bg-primary hover:bg-primary-dim text-primary-foreground h-11 px-6 rounded-[12px] shadow-[0_4px_24px_rgba(17,48,105,0.06)] border-0">
                         <Link href="/admin/chatbots/create">
-                            <Plus size={16} className="mr-2" />
+                            <Plus size={18} />
                             Create Chatbot
                         </Link>
                     </Button>
                 </div>
 
                 {/* Chatbots Grid */}
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                     {chatbots.map((chatbot) => (
-                        <Card key={chatbot.id} className="hover:shadow-md transition-shadow">
-                            <CardHeader className="pb-3">
+                        <Card key={chatbot.id} className="group overflow-hidden border border-outline-variant/40 shadow-[0_4px_24px_rgba(17,48,105,0.02)] hover:shadow-[0_8px_32px_rgba(17,48,105,0.08)] hover:border-outline-variant/80 transition-all duration-300 rounded-[16px] flex flex-col bg-surface-container-lowest">
+                            <CardHeader className="pb-4 bg-surface-bright group-hover:bg-surface-container transition-colors">
                                 <div className="flex items-start justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <Bot size={20} className="text-primary" />
-                                        <CardTitle className="text-lg">{chatbot.name}</CardTitle>
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-[12px] bg-primary-container flex items-center justify-center text-on-primary-container group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                                            <Bot size={20} className="fill-current opacity-20 absolute" />
+                                            <Bot size={20} className="relative z-10" />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-semibold text-on-surface line-clamp-1 text-[16px]">{chatbot.name}</h3>
+                                            <p className="text-xs text-on-surface-variant font-medium mt-0.5 tracking-wide">ID: {chatbot.public_id.substring(0, 8)}...</p>
+                                        </div>
                                     </div>
-                                    <Button variant="ghost" size="sm" asChild>
-                                        <Link href={`/chatbot/${chatbot.public_id}/widget.js`} target="_blank">
-                                            <ExternalLink size={14} />
-                                        </Link>
-                                    </Button>
                                 </div>
-                                {chatbot.description && (
-                                    <p className="text-sm text-on-surface-variant">{chatbot.description}</p>
-                                )}
+                                <p className="text-[14px] text-on-surface-variant mt-4 line-clamp-2 h-10 leading-relaxed">
+                                    {chatbot.description || 'No description provided.'}
+                                </p>
                             </CardHeader>
-                            <CardContent className="space-y-3">
-                                <div>
-                                    <p className="text-xs font-medium text-on-surface-variant mb-1">Assigned Documents</p>
-                                    <div className="flex flex-wrap gap-1">
+                            
+                            <CardContent className="p-0 flex-1 flex flex-col border-t border-outline-variant/20">
+                                <div className="px-6 py-4 flex-1">
+                                    <div className="flex items-center justify-between mb-3 text-sm font-medium text-on-surface">
+                                        <span className="flex items-center gap-1.5"><FileText size={15} className="text-outline"/> Documents Focus</span>
+                                        <Badge className="bg-surface-container text-on-surface-variant hover:bg-surface-container-high shadow-none border-0 px-2 py-0.5 text-xs">{chatbot.documents.length}</Badge>
+                                    </div>
+                                    
+                                    <div className="flex flex-wrap gap-1.5">
                                         {chatbot.documents.length > 0 ? (
-                                            chatbot.documents.map((doc) => (
-                                                <Badge key={doc.id} variant="secondary" className="text-xs">
-                                                    <FileText size={10} className="mr-1" />
-                                                    {doc.name}
+                                            chatbot.documents.slice(0, 3).map((doc) => (
+                                                <Badge key={doc.id} variant="outline" className="text-[11px] font-normal border-outline-variant/40 bg-surface-container-lowest text-on-surface-variant">
+                                                    {doc.name.length > 20 ? doc.name.substring(0, 20) + '...' : doc.name}
                                                 </Badge>
                                             ))
                                         ) : (
-                                            <Badge variant="outline" className="text-xs">No documents</Badge>
+                                            <span className="text-sm text-outline italic">No sources assigned</span>
+                                        )}
+                                        {chatbot.documents.length > 3 && (
+                                            <Badge variant="outline" className="text-[11px] font-normal border-outline-variant/40 bg-surface-container text-on-surface-variant">
+                                                +{chatbot.documents.length - 3} more
+                                            </Badge>
                                         )}
                                     </div>
                                 </div>
-                                <div className="flex gap-2 pt-2">
-                                    <Button variant="outline" size="sm" asChild className="flex-1">
-                                        <Link href={`/admin/chatbots/${chatbot.id}`}>View</Link>
-                                    </Button>
-                                    <Button variant="outline" size="sm" asChild className="flex-1">
-                                        <Link href={`/admin/chatbots/${chatbot.id}/edit`}>Edit</Link>
+
+                                <div className="p-4 border-t border-outline-variant/20 bg-surface flex items-center gap-2">
+                                    <Link href={`/admin/chatbots/${chatbot.id}`} className="flex-1">
+                                        <Button variant="secondary" className="w-full bg-surface-container hover:bg-surface-container-high text-on-surface shadow-none transition-colors border-0 h-9">
+                                            Open Canvas <ArrowRight size={14} className="ml-1.5 opacity-70" />
+                                        </Button>
+                                    </Link>
+                                    <Button variant="outline" size="icon" asChild className="shrink-0 text-on-surface-variant hover:text-primary hover:bg-primary-container border-outline-variant/50 hover:border-primary-container shadow-none h-9 w-9">
+                                        <Link href={`/admin/chatbots/${chatbot.id}/edit`}>
+                                            <Pencil size={14} />
+                                        </Link>
                                     </Button>
                                     <Button 
-                                        variant="destructive" 
-                                        size="sm" 
+                                        variant="outline" 
+                                        size="icon" 
                                         onClick={() => handleDelete(chatbot.id)}
+                                        className="shrink-0 text-on-surface-variant hover:text-error hover:bg-error-container border-outline-variant/50 hover:border-error-container shadow-none h-9 w-9"
+                                        title="Delete Chatbot"
                                     >
                                         <Trash2 size={14} />
                                     </Button>
@@ -100,19 +117,19 @@ export default function Index({ chatbots }: Props) {
                 </div>
 
                 {chatbots.length === 0 && (
-                    <Card>
-                        <CardContent className="py-12 text-center">
-                            <Bot size={48} className="mx-auto text-on-surface-variant/50 mb-4" />
-                            <h3 className="text-lg font-semibold text-on-surface mb-2">No chatbots yet</h3>
-                            <p className="text-on-surface-variant mb-4">Create your first chatbot to get started</p>
-                            <Button asChild>
-                                <Link href="/admin/chatbots/create">
-                                    <Plus size={16} className="mr-2" />
-                                    Create Chatbot
-                                </Link>
-                            </Button>
-                        </CardContent>
-                    </Card>
+                    <div className="flex flex-col items-center justify-center p-12 mt-8 rounded-[24px] border border-outline-variant/50 bg-surface-container-lowest/50 shadow-sm">
+                        <div className="w-16 h-16 rounded-[16px] bg-primary-container text-on-primary-container flex items-center justify-center mb-4 shadow-sm">
+                            <Bot size={32} />
+                        </div>
+                        <h3 className="text-xl font-bold text-on-surface mb-2">Workspace Zero</h3>
+                        <p className="text-on-surface-variant mb-6 text-center max-w-sm leading-relaxed text-[15px]">The canvas is empty. Start by creating an intelligent chatbot to curate responses from your documents.</p>
+                        <Button asChild className="bg-primary hover:bg-primary-dim text-primary-foreground px-6 h-11 rounded-[12px] shadow-sm border-0">
+                            <Link href="/admin/chatbots/create">
+                                <Plus size={18} className="mr-2" />
+                                Create Chatbot
+                            </Link>
+                        </Button>
+                    </div>
                 )}
             </div>
         </AdminLayout>

@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, Bot } from 'lucide-react';
+import { ArrowLeft, Bot, Layers } from 'lucide-react';
 
 interface Document {
     id: number;
@@ -40,77 +40,91 @@ export default function Create({ documents }: Props) {
         <AdminLayout>
             <Head title="Create Chatbot" />
 
-            <div className="space-y-6">
+            <div className="max-w-4xl mx-auto space-y-8 py-6">
                 {/* Header */}
-                <div className="flex items-center gap-4">
-                    <Button variant="ghost" size="sm" asChild>
+                <div className="flex items-center gap-4 border-b border-outline-variant/30 pb-6">
+                    <Button variant="ghost" size="icon" asChild className="text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-[12px]">
                         <Link href="/admin/chatbots">
-                            <ArrowLeft size={16} />
+                            <ArrowLeft size={18} />
                         </Link>
                     </Button>
                     <div>
-                        <h1 className="text-2xl font-bold text-on-surface">Create Chatbot</h1>
-                        <p className="text-on-surface-variant">Set up a new embeddable chatbot</p>
+                        <h1 className="text-3xl font-bold text-on-surface tracking-tight">Create Chatbot</h1>
+                        <p className="text-on-surface-variant mt-1 text-[15px]">Define a new AI curator for your workspace.</p>
                     </div>
                 </div>
 
-                <form onSubmit={handleSubmit} className="max-w-2xl space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-8">
                     {/* Basic Info */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Bot size={20} />
-                                Basic Information
+                    <Card className="border-0 shadow-[0_4px_24px_rgba(17,48,105,0.04)] rounded-[16px] bg-surface-container-lowest">
+                        <CardHeader className="bg-surface pb-6 border-b border-outline-variant/30 rounded-t-[16px] px-8 pt-8">
+                            <CardTitle className="flex items-center gap-3 text-xl text-on-surface font-semibold">
+                                <div className="p-2 bg-primary-container text-on-primary-container rounded-[10px]">
+                                    <Bot size={20} />
+                                </div>
+                                Core Identity
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div>
-                                <Label htmlFor="name">Name *</Label>
+                        <CardContent className="space-y-6 px-8 py-8">
+                            <div className="space-y-2">
+                                <Label htmlFor="name" className="text-sm font-semibold text-on-surface">Name <span className="text-error">*</span></Label>
                                 <Input
                                     id="name"
                                     value={data.name}
                                     onChange={(e) => setData('name', e.target.value)}
-                                    placeholder="My Chatbot"
+                                    placeholder="e.g. Employee Handbook Assistant"
                                     required
+                                    className="h-12 rounded-[12px] border border-outline/30 bg-surface-container-lowest focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-primary shadow-[0_2px_12px_rgba(17,48,105,0.02)]"
                                 />
-                                {errors.name && <p className="text-sm text-error">{errors.name}</p>}
+                                {errors.name && <p className="text-sm text-error font-medium">{errors.name}</p>}
                             </div>
 
-                            <div>
-                                <Label htmlFor="description">Description</Label>
+                            <div className="space-y-2">
+                                <Label htmlFor="description" className="text-sm font-semibold text-on-surface">Mission / Description</Label>
                                 <Textarea
                                     id="description"
                                     value={data.description}
                                     onChange={(e) => setData('description', e.target.value)}
-                                    placeholder="Brief description of what this chatbot does"
+                                    placeholder="Briefly describe the focus of this curator..."
                                     rows={3}
+                                    className="p-3 rounded-[12px] border border-outline/30 bg-surface-container-lowest focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-primary shadow-[0_2px_12px_rgba(17,48,105,0.02)] resize-y"
                                 />
-                                {errors.description && <p className="text-sm text-error">{errors.description}</p>}
+                                {errors.description && <p className="text-sm text-error font-medium">{errors.description}</p>}
                             </div>
                         </CardContent>
                     </Card>
 
                     {/* Document Assignment */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Assign Documents</CardTitle>
-                            <p className="text-sm text-on-surface-variant">
-                                Select documents this chatbot can use for answering questions
-                            </p>
+                    <Card className="border-0 shadow-[0_4px_24px_rgba(17,48,105,0.04)] rounded-[16px] bg-surface-container-lowest overflow-hidden">
+                        <CardHeader className="bg-surface pb-6 border-b border-outline-variant/30 rounded-t-[16px] px-8 pt-8">
+                            <div className="flex flex-col gap-2">
+                                <CardTitle className="flex items-center gap-3 text-xl text-on-surface font-semibold">
+                                    <div className="p-2 bg-secondary-container text-on-secondary-container rounded-[10px]">
+                                        <Layers size={20} />
+                                    </div>
+                                    Context Grounding
+                                </CardTitle>
+                                <p className="text-[14px] text-on-surface-variant font-medium pl-[46px]">
+                                    Select the documents to embed as the source of truth for this AI.
+                                </p>
+                            </div>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="px-8 py-6">
                             {documents.length > 0 ? (
-                                <div className="space-y-3">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {documents.map((document) => (
-                                        <div key={document.id} className="flex items-center space-x-2">
+                                        <div key={document.id} className="flex items-center space-x-3 p-4 rounded-[12px] border border-outline/30 hover:bg-surface-container-low hover:border-outline/50 transition-colors group cursor-pointer" onClick={() => toggleDocument(document.id)}>
                                             <Checkbox
                                                 id={`doc-${document.id}`}
                                                 checked={data.document_ids.includes(document.id)}
                                                 onCheckedChange={() => toggleDocument(document.id)}
+                                                className="mt-0.5 rounded-[4px] data-[state=checked]:bg-primary data-[state=checked]:border-primary border-outline"
+                                                onClick={(e) => e.stopPropagation()} 
                                             />
                                             <Label
                                                 htmlFor={`doc-${document.id}`}
-                                                className="text-sm font-normal cursor-pointer"
+                                                className="text-sm font-medium leading-relaxed cursor-pointer group-hover:text-primary transition-colors flex-1"
+                                                onClick={(e) => e.stopPropagation()}
                                             >
                                                 {document.name}
                                             </Label>
@@ -118,23 +132,25 @@ export default function Create({ documents }: Props) {
                                     ))}
                                 </div>
                             ) : (
-                                <p className="text-sm text-on-surface-variant">
-                                    No documents available.{' '}
-                                    <Link href="/admin/documents" className="text-primary hover:underline">
-                                        Upload some documents first
-                                    </Link>
-                                </p>
+                                <div className="text-center py-10 bg-surface-container rounded-[12px] border border-dashed border-outline-variant/80">
+                                    <p className="text-[15px] text-on-surface-variant">
+                                        The library is empty.{' '}
+                                        <Link href="/admin/documents" className="text-primary hover:text-primary-dim hover:underline font-semibold ml-1">
+                                            Curate documents first
+                                        </Link>
+                                    </p>
+                                </div>
                             )}
-                            {errors.document_ids && <p className="text-sm text-error">{errors.document_ids}</p>}
+                            {errors.document_ids && <p className="text-sm text-error font-medium mt-4">{errors.document_ids}</p>}
                         </CardContent>
                     </Card>
 
                     {/* Actions */}
-                    <div className="flex gap-3">
-                        <Button type="submit" disabled={processing}>
-                            {processing ? 'Creating...' : 'Create Chatbot'}
+                    <div className="flex gap-4 pt-4 pb-12">
+                        <Button type="submit" disabled={processing} className="bg-primary hover:bg-primary-dim text-primary-foreground h-12 px-8 rounded-[12px] shadow-[0_4px_14px_rgba(0,90,194,0.25)] border-0 text-base font-semibold transition-all hover:-translate-y-0.5">
+                            {processing ? 'Synthesizing...' : 'Launch Chatbot'}
                         </Button>
-                        <Button variant="outline" asChild>
+                        <Button variant="outline" asChild className="h-12 px-8 rounded-[12px] border-outline-variant/60 text-on-surface hover:bg-surface-container font-medium">
                             <Link href="/admin/chatbots">Cancel</Link>
                         </Button>
                     </div>
