@@ -5,6 +5,7 @@ use Laravel\Fortify\Features;
 use App\Http\Controllers\Admin\DocumentController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\ChatController;
+use App\Http\Controllers\Admin\ChatbotController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\User\ChatController as UserChatController;
 
@@ -44,7 +45,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/chat', [ChatController::class, 'destroyAll'])->name('chat.destroyAll');
         Route::put('/chat/{chat}', [ChatController::class, 'update'])->name('chat.update');
         Route::delete('/chat/{chat}', [ChatController::class, 'destroy'])->name('chat.destroy');
+
+        // Chatbot management
+        Route::resource('chatbots', ChatbotController::class);
     });
 });
 
 require __DIR__.'/settings.php';
+
+// Public chatbot widget
+Route::get('/chatbot/{publicId}/widget.js', function (string $publicId) {
+    $chatbot = \App\Models\Chatbot::where('public_id', $publicId)->firstOrFail();
+
+    $widgetService = app(\App\Services\ChatbotWidgetService::class);
+    $script = $widgetService->generateWidgetScript($chatbot);
+
+    return response($script, 200, [
+        'Content-Type' => 'application/javascript',
+        'Cache-Control' => 'no-cache, no-store, must-revalidate',
+        'Pragma' => 'no-cache',
+        'Expires' => '0'
+    ]);
+})->name('chatbot.widget');
