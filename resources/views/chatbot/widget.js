@@ -144,12 +144,28 @@
         return msgDiv;
     }
 
+    function disableInput() {
+        if (input) input.disabled = true;
+        if (sendBtn) sendBtn.disabled = true;
+    }
+
+    function enableInput() {
+        if (input) {
+            input.disabled = false;
+            if (panel && panel.classList.contains('open')) {
+                input.focus();
+            }
+        }
+        if (sendBtn) sendBtn.disabled = false;
+    }
+
     function sendMessage() {
         if (!input || !messagesDiv) return;
         const message = input.value.trim();
         if (!message) return;
         
         input.value = '';
+        disableInput();
         addMessage('user', message);
 
         const typingMsgDiv = addMessage('assistant', getTypingIndicatorHtml(), true);
@@ -167,6 +183,7 @@
         }).then(response => {
             if (!response.ok) {
                 typingMsgDiv.innerHTML = 'Sorry, something went wrong.';
+                enableInput();
                 return;
             }
 
@@ -206,6 +223,7 @@
                             typingMsgDiv.dataset.raw = networkText;
                         }
                         scrollToBottom();
+                        enableInput();
                     }
                 }
             }
@@ -222,6 +240,7 @@
                                 typingMsgDiv.innerHTML = 'No answer received.';
                             }
                             scrollToBottom();
+                            enableInput();
                         }
                         return;
                     }
@@ -232,21 +251,16 @@
                     read();
                 }).catch(() => {
                     typingMsgDiv.innerHTML = 'Sorry, something went wrong.';
+                    enableInput();
                 });
             }
             read();
         }).catch(() => {
             typingMsgDiv.innerHTML = 'Sorry, something went wrong.';
+            enableInput();
         });
     }
 
-    openButton.addEventListener('click', function() {
-        if (panel && panel.classList.contains('open')) {
-            closePanel();
-        } else {
-            openPanel();
-        }
-    });
     closeBtn.addEventListener('click', closePanel);
     sendBtn.addEventListener('click', sendMessage);
     input.addEventListener('keypress', function (e) {
@@ -256,6 +270,112 @@
         }
     });
 
-    // Close on outside click is optional but good UX
-    // But since it's a floating widget, user might want to keep it open while clicking around.
+    // Dragging Logic for Open Button
+    let isDragging = false;
+    let didDrag = false;
+    let dragStartX = 0;
+    let dragStartY = 0;
+    let initialLeft = 0;
+    let initialTop = 0;
+
+    function onDragStart(e) {
+        // only left click if mouse
+        if (e.type === 'mousedown' && e.button !== 0) return;
+        isDragging = true;
+        didDrag = false;
+        
+        const rect = openButton.getBoundingClientRect();
+        
+        openButton.style.transition = 'none';
+
+        // Convert bottom/right positioning to top/left explicitly for dragging
+        openButton.style.top = rect.top + 'px';
+        openButton.style.left = rect.left + 'px';
+        openButton.style.bottom = 'auto';
+        openButton.style.right = 'auto';
+
+        if (e.type === 'touchstart') {
+            dragStartX = e.touches[0].clientX;
+            dragStartY = e.touches[0].clientY;
+        } else {
+            dragStartX = e.clientX;
+            dragStartY = e.clientY;
+        }
+        
+        initialLeft = rect.left;
+        initialTop = rect.top;
+        
+        document.addEventListener('mousemove', onDragMove, { passive: false });
+        document.addEventListener('mouseup', onDragEnd);
+        document.addEventListener('touchmove', onDragMove, { passive: false });
+        document.addEventListener('touchend', onDragEnd);
+    }
+
+    function onDragMove(e) {
+        if (!isDragging) return;
+        
+        let currentX, currentY;
+        if (e.type === 'touchmove') {
+            currentX = e.touches[0].clientX;
+            currentY = e.touches[0].clientY;
+        } else {
+            currentX = e.clientX;
+            currentY = e.clientY;
+        }
+
+        const dx = currentX - dragStartX;
+        const dy = currentY - dragStartY;
+        
+        if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+            didDrag = true;
+            e.preventDefault(); // Prevent scrolling while dragging
+        }
+
+        let newLeft = initialLeft + dx;
+        let newTop = initialTop + dy;
+        
+        // Boundary restrictions
+        const maxLeft = window.innerWidth - openButton.offsetWidth;
+        const maxTop = window.innerHeight - openButton.offsetHeight;
+        
+        if (newLeft < 0) newLeft = 0;
+        if (newTop < 0) newTop = 0;
+        if (newLeft > maxLeft) newLeft = maxLeft;
+        if (newTop > maxTop) newTop = maxTop;
+
+        openButton.style.left = newLeft + 'px';
+        openButton.style.top = newTop + 'px';
+    }
+
+    function onDragEnd() {
+        if (!isDragging) return;
+        isDragging = false;
+        
+        // Restore transition for hover effects
+        openButton.style.transition = '';
+        
+        document.removeEventListener('mousemove', onDragMove);
+        document.removeEventListener('mouseup', onDragEnd);
+        document.removeEventListener('touchmove', onDragMove);
+        document.removeEventListener('touchend', onDragEnd);
+    }
+
+    if (openButton) {
+        openButton.addEventListener('mousedown', onDragStart);
+        openButton.addEventListener('touchstart', onDragStart, { passive: false });
+        
+        openButton.addEventListener('click', function(e) {
+            if (didDrag) {
+                e.preventDefault();
+                e.stopPropagation();
+                didDrag = false;
+                return;
+            }
+            if (panel && panel.classList.contains('open')) {
+                closePanel();
+            } else {
+                openPanel();
+            }
+        });
+    }
 })();

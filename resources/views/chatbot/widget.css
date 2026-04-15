@@ -76,6 +76,11 @@
             align-items: center;
             justify-content: space-between;
             position: relative;
+            cursor: grab;
+            user-select: none;
+        }
+        #ask-docs-chatbot-panel .header:active {
+            cursor: grabbing;
         }
         
         #ask-docs-chatbot-panel .header .title-area {
