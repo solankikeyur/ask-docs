@@ -49,7 +49,7 @@ class ChatController extends Controller
                 'docId' => $chat->document_id,
                 'document' => $chat->document()->select('id', 'name')->first(),
             ],
-            'messages' => $chat->messages()->orderBy('id')->get(),
+            'messages' => $chat->messageRecords()->orderBy('id')->get(),
         ]);
     }
 
@@ -84,7 +84,7 @@ class ChatController extends Controller
             abort(422, 'Document mismatch for this chat.');
         }
 
-        $chat->messages()->create([
+        $chat->messageRecords()->create([
             'role' => 'user',
             'content' => $validated['content'],
         ]);
@@ -93,7 +93,7 @@ class ChatController extends Controller
 
         $stream = $aiChatService->streamAnswer($validated['content'])
             ->then(function (StreamedAgentResponse $response) use ($chat) {
-                $chat->messages()->create([
+                $chat->messageRecords()->create([
                     'role' => 'assistant',
                     'content' => $response->text,
                 ]);

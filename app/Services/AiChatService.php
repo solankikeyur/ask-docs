@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Ai\Agents\AskDoc;
-use App\Models\Chat;
+use App\Contracts\DocumentContextSource;
 use App\Models\DocumentChunk;
 use Illuminate\Support\Facades\Cache;
 use Laravel\Ai\Embeddings;
@@ -47,7 +47,7 @@ class AiChatService
     protected CohereService $cohere;
 
     public function __construct(
-        protected Chat $chat
+        protected DocumentContextSource $source
     ) {
         $this->cohere = new CohereService();
     }
@@ -63,7 +63,7 @@ class AiChatService
 
         $prompt = sprintf("Question: %s\n\nContext:\n%s", $message, $context);
 
-        return (new AskDoc($this->chat))->stream(
+        return (new AskDoc($this->source))->stream(
             $prompt,
             model: $this->completionModel,
             provider: Lab::OpenAI,
@@ -81,8 +81,14 @@ class AiChatService
     {
         $vector = $this->getQueryEmbedding($message);
 
+        $documentIds = $this->source->getAssignedDocumentIds();
+
+        if (empty($documentIds)) {
+            return '(No documents assigned to this context source)';
+        }
+
         $similarChunks = DocumentChunk::query()
-            ->where('document_id', $this->chat->document_id)
+            ->whereIn('document_id', $documentIds)
             ->whereVectorSimilarTo('embedding', $vector, $this->similarityThreshold)
             ->limit($this->rerankCandidateLimit)
             ->get();

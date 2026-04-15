@@ -2,7 +2,7 @@
 
 namespace App\Ai\Agents;
 
-use App\Models\Chat;
+use App\Contracts\DocumentContextSource;
 use Laravel\Ai\Contracts\Agent;
 use Laravel\Ai\Contracts\Conversational;
 use Laravel\Ai\Messages\Message;
@@ -14,7 +14,7 @@ class AskDoc implements Agent, Conversational
     use Promptable;
 
     public function __construct(
-        protected Chat $chat
+        protected DocumentContextSource $source
     ) {}
 
     /**
@@ -125,11 +125,7 @@ EOT;
      */
     public function messages(): iterable
     {
-        return $this->chat->messages()
-            ->latest('id')
-            ->limit(50)
-            ->get()
-            ->reverse()
+        return $this->source->messages()
             ->map(fn ($message) => new Message($message->role, $message->content))
             ->values()
             ->all();

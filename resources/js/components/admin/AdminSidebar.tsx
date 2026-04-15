@@ -7,6 +7,7 @@ import {
     LogOut,
     BookOpen,
     ChevronRight,
+    Bot,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -14,6 +15,7 @@ const navItems = [
     { label: 'Dashboard', href: '/admin', icon: LayoutGrid },
     { label: 'Documents', href: '/admin/documents', icon: FileText },
     { label: 'Chat', href: '/admin/chat', icon: MessageSquare },
+    { label: 'Chatbots', href: '/admin/chatbots', icon: Bot },
     { label: 'Users', href: '/admin/users', icon: Users },
 ];
 

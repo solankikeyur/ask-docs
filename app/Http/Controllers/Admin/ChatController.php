@@ -41,7 +41,7 @@ class ChatController extends Controller
                 'docId' => $chat->document_id,
                 'document' => $chat->document()->select('id', 'name')->first(),
             ],
-            'messages' => $chat->messages()->latest('id')->limit(100)->get()->reverse()->values(),
+            'messages' => $chat->messageRecords()->latest('id')->limit(100)->get()->reverse()->values(),
         ]);
     }
 
@@ -76,7 +76,7 @@ class ChatController extends Controller
                 'title' => str($validated['content'])->limit(50)->toString(),
             ]);
 
-        $chat->messages()->create([
+        $chat->messageRecords()->create([
             'role' => 'user',
             'content' => $validated['content'],
         ]);
@@ -85,7 +85,7 @@ class ChatController extends Controller
 
         $stream = $aiChatService->streamAnswer($validated['content'])
             ->then(function (StreamedAgentResponse $response) use ($chat) {
-                $chat->messages()->create([
+                $chat->messageRecords()->create([
                     'role' => 'assistant',
                     'content' => $response->text,
                 ]);
