@@ -69,9 +69,9 @@ export function ChatMessageBubble({ message }: ChatMessageBubbleProps) {
                 )}
             </div>
 
-            <div className={`flex min-w-0 flex-col ${message.role === 'user' ? 'items-end' : 'items-start'}`}>
+            <div className={`flex min-w-0 flex-col ${message.role === 'user' ? 'items-end' : 'items-start'} max-w-[85%] md:max-w-2xl`}>
                 <div
-                    className={`max-w-2xl rounded-[var(--radius-lg)] p-4 text-sm leading-relaxed ${
+                    className={`w-full overflow-hidden break-words rounded-[var(--radius-lg)] p-3 md:p-4 text-sm leading-relaxed ${
                         message.role === 'user'
                             ? 'bg-primary text-primary-foreground'
                             : 'bg-surface-container text-on-surface'

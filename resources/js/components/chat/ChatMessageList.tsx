@@ -92,7 +92,7 @@ export function ChatMessageList({ messages, isLoading }: ChatMessageListProps) {
     }, [messages, isLoading]);
 
     return (
-        <div ref={containerRef} className="flex-1 space-y-5 overflow-y-auto p-5">
+        <div ref={containerRef} className="flex-1 space-y-5 overflow-y-auto overflow-x-hidden p-4 sm:p-5 w-full max-w-full">
             {messages.map((msg, i) => (
                 <ChatMessageBubble key={msg.id || i} message={msg} />
             ))}

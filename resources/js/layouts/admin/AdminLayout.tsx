@@ -48,7 +48,7 @@ export default function AdminLayout({ children, activePath, fullWidth = false }:
                                     <span className="sr-only">Toggle Sidebar</span>
                                 </Button>
                             </SheetTrigger>
-                            <SheetContent side="left" className="p-0 w-64 border-r-0 bg-transparent shadow-none" closeClassName="text-on-surface-variant hover:bg-surface-container hover:text-on-surface top-4 right-4 focus:ring-primary z-50">
+                            <SheetContent side="left" className="p-0 w-64 border-r-0 bg-transparent shadow-none">
                                 <SheetTitle className="sr-only">Admin Navigation</SheetTitle>
                                 <AdminSidebar activePath={pathname} />
                             </SheetContent>
@@ -57,8 +57,7 @@ export default function AdminLayout({ children, activePath, fullWidth = false }:
                     <ThemeToggle />
                 </header>
 
-                {/* Page content */}
-                <main className={`flex-1 ${fullWidth ? 'flex flex-col min-h-0' : 'overflow-y-auto scrollbar-thin p-4 sm:p-6 lg:p-8 min-h-0 w-full'}`}>
+                <main className={`flex-1 ${fullWidth ? 'flex flex-col min-h-0 min-w-0 w-full overflow-hidden' : 'overflow-y-auto scrollbar-thin p-4 sm:p-6 lg:p-8 min-h-0 w-full'}`}>
                     {children}
                 </main>
             </div>
