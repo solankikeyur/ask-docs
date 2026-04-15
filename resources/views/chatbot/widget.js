@@ -79,8 +79,47 @@
         }
     }
 
+    function updatePanelPosition() {
+        if (!panel || !openButton) return;
+        const btnRect = openButton.getBoundingClientRect();
+        
+        // Reset absolute positions with important to strictly override the stylesheet
+        panel.style.setProperty('top', 'auto', 'important');
+        panel.style.setProperty('bottom', 'auto', 'important');
+        panel.style.setProperty('left', 'auto', 'important');
+        panel.style.setProperty('right', 'auto', 'important');
+        
+        let originY = 'bottom';
+        let originX = 'right';
+
+        if (btnRect.left > window.innerWidth / 2) {
+            let rightOffset = window.innerWidth - btnRect.right;
+            if (rightOffset < 16) rightOffset = 16;
+            panel.style.setProperty('right', rightOffset + 'px', 'important');
+            originX = 'right';
+        } else {
+            let leftOffset = btnRect.left;
+            if (leftOffset < 16) leftOffset = 16;
+            panel.style.setProperty('left', leftOffset + 'px', 'important');
+            originX = 'left';
+        }
+
+        if (btnRect.top > window.innerHeight / 2) {
+            let bottomOffset = window.innerHeight - btnRect.top + 16;
+            panel.style.setProperty('bottom', bottomOffset + 'px', 'important');
+            originY = 'bottom';
+        } else {
+            let topOffset = btnRect.bottom + 16;
+            panel.style.setProperty('top', topOffset + 'px', 'important');
+            originY = 'top';
+        }
+        
+        panel.style.setProperty('transform-origin', `${originY} ${originX}`, 'important');
+    }
+
     function openPanel() {
         if (panel) {
+            updatePanelPosition();
             panel.classList.add('open');
             if (openButton) {
                 openButton.innerHTML = mainCloseIcon;
@@ -345,6 +384,10 @@
 
         openButton.style.left = newLeft + 'px';
         openButton.style.top = newTop + 'px';
+        
+        if (panel && panel.classList.contains('open')) {
+            updatePanelPosition();
+        }
     }
 
     function onDragEnd() {
