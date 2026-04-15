@@ -3,7 +3,9 @@ import AdminLayout from '@/layouts/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { ConfirmationDialog } from '@/components/admin/ConfirmationDialog';
 import { Plus, Bot, FileText, Pencil, Trash2, ArrowRight } from 'lucide-react';
+import { useState } from 'react';
 
 interface Chatbot {
     id: number;
@@ -18,15 +20,28 @@ interface Props {
 }
 
 export default function Index({ chatbots }: Props) {
-    const handleDelete = (id: number) => {
-        if (confirm('Are you sure you want to delete this chatbot? This action cannot be undone.')) {
-            router.delete(`/admin/chatbots/${id}`);
-        }
+    const [deleteId, setDeleteId] = useState<number | null>(null);
+
+    const confirmDelete = () => {
+        if (deleteId === null) return;
+        router.delete(`/admin/chatbots/${deleteId}`, {
+            onSuccess: () => setDeleteId(null),
+        });
     };
 
     return (
         <AdminLayout>
             <Head title="Chatbots" />
+
+            <ConfirmationDialog
+                isOpen={deleteId !== null}
+                onClose={() => setDeleteId(null)}
+                onConfirm={confirmDelete}
+                title="Delete Chatbot"
+                description="Are you sure you want to delete this chatbot? This action cannot be undone."
+                confirmText="Delete"
+                variant="destructive"
+            />
 
             <div className="max-w-6xl mx-auto space-y-8 py-6">
                 {/* Header */}
@@ -104,7 +119,7 @@ export default function Index({ chatbots }: Props) {
                                     <Button 
                                         variant="outline" 
                                         size="icon" 
-                                        onClick={() => handleDelete(chatbot.id)}
+                                        onClick={() => setDeleteId(chatbot.id)}
                                         className="shrink-0 text-on-surface-variant hover:text-error hover:bg-error-container border-outline-variant/50 hover:border-error-container shadow-none h-9 w-9"
                                         title="Delete Chatbot"
                                     >
