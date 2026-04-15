@@ -10,8 +10,11 @@ use Illuminate\Support\Collection;
 
 class Chatbot extends Model implements DocumentContextSource
 {
-    protected $fillable = ['name', 'description', 'public_id'];
+    protected $fillable = ['name', 'description', 'public_id', 'settings'];
 
+    protected $casts = [
+        'settings' => 'array',
+    ];
     protected static function booted(): void
     {
         static::creating(function (Chatbot $chatbot) {

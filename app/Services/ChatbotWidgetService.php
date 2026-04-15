@@ -14,14 +14,25 @@ class ChatbotWidgetService
         $javascript = file_get_contents(resource_path('views/chatbot/widget.js'));
         $css = file_get_contents(resource_path('views/chatbot/widget.css'));
 
+        $settings = $chatbot->settings ?? [];
+        $primaryColor = $settings['primary_color'] ?? '#4f46e5';
+        $welcomeTitle = $settings['welcome_title'] ?? $chatbot->name;
+        $welcomeSubtitle = $settings['welcome_subtitle'] ?? 'Ask questions about your documents';
+        
+        $css = str_replace('__PRIMARY_COLOR__', $primaryColor, $css);
+
         // Replace placeholders with actual values
         $script = str_replace([
             '__CHATBOT_ID__',
             '__CHATBOT_NAME__',
+            '__WELCOME_TITLE__',
+            '__WELCOME_SUBTITLE__',
             '__WIDGET_CSS__'
         ], [
             $chatbot->public_id,
             addslashes($chatbot->name),
+            addslashes($welcomeTitle),
+            addslashes($welcomeSubtitle),
             $css
         ], $javascript);
 

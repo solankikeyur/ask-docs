@@ -60,33 +60,7 @@
     const sendIcon = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>`;
     const closeIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
 
-    widget.innerHTML = `
-        <button id="${openButtonId}" aria-label="Open chat">
-            ${chatIcon}
-        </button>
-        <div id="${panelId}">
-            <div class="header">
-                <div class="title-area">
-                    <div class="bot-avatar">${botIcon}</div>
-                    <div>
-                        <div class="title">__CHATBOT_NAME__</div>
-                        <div class="subtitle">Ask questions about your documents</div>
-                    </div>
-                </div>
-                <button id="${closeBtnId}" class="close-btn" aria-label="Close chat">${closeIcon}</button>
-            </div>
-            <div class="body">
-                <div id="${messagesId}"></div>
-                <div class="bottom-area">
-                    <div class="input-row">
-                        <input id="${inputId}" type="text" placeholder="Type your message..." autocomplete="off" />
-                        <button id="${sendBtnId}" type="button" aria-label="Send message">${sendIcon}</button>
-                    </div>
-                    <div class="footer">Powered by AskDocs</div>
-                </div>
-            </div>
-        </div>
-    `;
+    widget.innerHTML = `<button id="${openButtonId}" aria-label="Open chat">${chatIcon}</button><div id="${panelId}"><div class="header"><div class="title-area"><div class="bot-avatar">${botIcon}</div><div><div class="title">__WELCOME_TITLE__</div><div class="subtitle">__WELCOME_SUBTITLE__</div></div></div><button id="${closeBtnId}" class="close-btn" aria-label="Close chat">${closeIcon}</button></div><div class="body"><div id="${messagesId}"></div><div class="bottom-area"><div class="input-row"><input id="${inputId}" type="text" placeholder="Type your message..." autocomplete="off" /><button id="${sendBtnId}" type="button" aria-label="Send message">${sendIcon}</button></div><div class="footer">Powered by AskDocs</div></div></div></div>`;
 
     document.body.appendChild(widget);
 

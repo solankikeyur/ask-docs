@@ -53,11 +53,17 @@ class ChatbotController extends Controller
             'description' => 'nullable|string|max:1000',
             'document_ids' => 'array',
             'document_ids.*' => 'integer|exists:documents,id',
+            'settings' => 'nullable|array',
+            'settings.primary_color' => 'nullable|string|max:20',
+            'settings.welcome_title' => 'nullable|string|max:255',
+            'settings.welcome_subtitle' => 'nullable|string|max:255',
+            'settings.header_logo' => 'nullable|string',
         ]);
 
         $chatbot = Chatbot::create([
             'name' => $validated['name'],
             'description' => $validated['description'] ?? null,
+            'settings' => $validated['settings'] ?? [],
         ]);
 
         if (!empty($validated['document_ids'])) {
@@ -107,11 +113,17 @@ class ChatbotController extends Controller
             'description' => 'nullable|string|max:1000',
             'document_ids' => 'array',
             'document_ids.*' => 'integer|exists:documents,id',
+            'settings' => 'nullable|array',
+            'settings.primary_color' => 'nullable|string|max:20',
+            'settings.welcome_title' => 'nullable|string|max:255',
+            'settings.welcome_subtitle' => 'nullable|string|max:255',
+            'settings.header_logo' => 'nullable|string',
         ]);
 
         $chatbot->update([
             'name' => $validated['name'],
             'description' => $validated['description'] ?? null,
+            'settings' => $validated['settings'] ?? [],
         ]);
 
         $chatbot->documents()->sync($validated['document_ids'] ?? []);

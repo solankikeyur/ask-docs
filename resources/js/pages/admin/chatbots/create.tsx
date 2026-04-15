@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, Bot, Layers } from 'lucide-react';
+import { ArrowLeft, Bot, Layers, Palette } from 'lucide-react';
 
 interface Document {
     id: number;
@@ -22,6 +22,11 @@ export default function Create({ documents }: Props) {
         name: '',
         description: '',
         document_ids: [] as number[],
+        settings: {
+            primary_color: '#4f46e5',
+            welcome_title: 'Chatbot',
+            welcome_subtitle: 'Ask questions about your documents',
+        }
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -90,6 +95,63 @@ export default function Create({ documents }: Props) {
                                     className="p-3 rounded-[12px] border border-outline/30 bg-surface-container-lowest focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-primary shadow-[0_2px_12px_rgba(17,48,105,0.02)] resize-y"
                                 />
                                 {errors.description && <p className="text-sm text-error font-medium">{errors.description}</p>}
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Appearance / Branding */}
+                    <Card className="border-0 shadow-[0_4px_24px_rgba(17,48,105,0.04)] rounded-[16px] bg-surface-container-lowest">
+                        <CardHeader className="bg-surface pb-6 border-b border-outline-variant/30 rounded-t-[16px] px-8 pt-8">
+                            <CardTitle className="flex items-center gap-3 text-xl text-on-surface font-semibold">
+                                <div className="p-2 bg-tertiary-container text-on-tertiary-container rounded-[10px]">
+                                    <Palette size={20} />
+                                </div>
+                                Interface & Branding
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-6 px-8 py-8">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <Label htmlFor="primary_color" className="text-sm font-semibold text-on-surface">Primary Color</Label>
+                                    <div className="flex gap-3">
+                                        <Input
+                                            type="color"
+                                            id="primary_color_picker"
+                                            value={data.settings.primary_color}
+                                            onChange={(e) => setData('settings', { ...data.settings, primary_color: e.target.value })}
+                                            className="w-12 h-12 p-1 rounded-[12px] border border-outline/30 cursor-pointer"
+                                        />
+                                        <Input
+                                            id="primary_color"
+                                            value={data.settings.primary_color}
+                                            onChange={(e) => setData('settings', { ...data.settings, primary_color: e.target.value })}
+                                            placeholder="#4f46e5"
+                                            className="h-12 flex-1 rounded-[12px] border border-outline/30 bg-surface-container-lowest focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-primary shadow-[0_2px_12px_rgba(17,48,105,0.02)] uppercase"
+                                        />
+                                    </div>
+                                </div>
+                                
+                                <div className="space-y-2">
+                                    <Label htmlFor="welcome_title" className="text-sm font-semibold text-on-surface">Welcome Title</Label>
+                                    <Input
+                                        id="welcome_title"
+                                        value={data.settings.welcome_title}
+                                        onChange={(e) => setData('settings', { ...data.settings, welcome_title: e.target.value })}
+                                        placeholder="e.g. Chatbot"
+                                        className="h-12 rounded-[12px] border border-outline/30 bg-surface-container-lowest focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-primary shadow-[0_2px_12px_rgba(17,48,105,0.02)]"
+                                    />
+                                </div>
+                            </div>
+                            
+                            <div className="space-y-2">
+                                <Label htmlFor="welcome_subtitle" className="text-sm font-semibold text-on-surface">Welcome Subtitle</Label>
+                                <Input
+                                    id="welcome_subtitle"
+                                    value={data.settings.welcome_subtitle}
+                                    onChange={(e) => setData('settings', { ...data.settings, welcome_subtitle: e.target.value })}
+                                    placeholder="e.g. Ask questions about your documents"
+                                    className="h-12 rounded-[12px] border border-outline/30 bg-surface-container-lowest focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-primary shadow-[0_2px_12px_rgba(17,48,105,0.02)]"
+                                />
                             </div>
                         </CardContent>
                     </Card>
