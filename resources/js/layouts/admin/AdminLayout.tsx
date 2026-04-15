@@ -31,7 +31,7 @@ export default function AdminLayout({ children, activePath, fullWidth = false }:
     }, [pathname]);
 
     return (
-        <div className="flex h-screen overflow-hidden bg-background">
+        <div className="flex h-[100dvh] overflow-hidden bg-background">
             <div className="hidden md:flex h-full">
                 <AdminSidebar activePath={pathname} />
             </div>
