@@ -6,6 +6,7 @@ use App\Models\Chatbot;
 use App\Models\Document;
 use App\Services\ChatbotService;
 use App\Services\DocumentService;
+use App\Http\Requests\ChatbotRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -39,19 +40,9 @@ class ChatbotController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(ChatbotRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string|max:1000',
-            'document_ids' => 'array',
-            'document_ids.*' => 'integer|exists:documents,id',
-            'settings' => 'nullable|array',
-            'settings.primary_color' => 'nullable|string|max:20',
-            'settings.welcome_title' => 'nullable|string|max:255',
-            'settings.welcome_subtitle' => 'nullable|string|max:255',
-            'settings.header_logo' => 'nullable|string',
-        ]);
+        $validated = $request->validated();
 
         $this->chatbotService->store($request->user(), $validated);
 
@@ -108,23 +99,13 @@ class ChatbotController extends Controller
         ]);
     }
 
-    public function update(Request $request, Chatbot $chatbot): RedirectResponse
+    public function update(ChatbotRequest $request, Chatbot $chatbot): RedirectResponse
     {
         if (auth()->user()->role !== \App\Enums\UserRole::ADMIN && $chatbot->user_id !== auth()->id()) {
             abort(403);
         }
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string|max:1000',
-            'document_ids' => 'array',
-            'document_ids.*' => 'integer|exists:documents,id',
-            'settings' => 'nullable|array',
-            'settings.primary_color' => 'nullable|string|max:20',
-            'settings.welcome_title' => 'nullable|string|max:255',
-            'settings.welcome_subtitle' => 'nullable|string|max:255',
-            'settings.header_logo' => 'nullable|string',
-        ]);
+        $validated = $request->validated();
 
         $this->chatbotService->update($chatbot, $validated);
 

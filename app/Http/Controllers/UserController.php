@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Concerns\PasswordValidationRules;
+use App\Concerns\ProfileValidationRules;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\User;
@@ -9,10 +11,12 @@ use App\Models\Document;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Enum;
+use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 
 class UserController extends Controller
 {
+    use ProfileValidationRules, PasswordValidationRules;
     /**
      * Display a listing of the resource.
      */
@@ -42,7 +46,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8',
+            'password' => ['required', 'string', Password::min(8)->letters()->numbers()->symbols()],
             'role' => ['required', new Enum(UserRole::class)],
         ]);
 
@@ -63,8 +67,8 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'name' => $this->nameRules(),
+            'email' => $this->emailRules($user->id),
             'role' => ['required', new Enum(UserRole::class)],
             'status' => 'required|boolean',
         ]);

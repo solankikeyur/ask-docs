@@ -73,7 +73,7 @@ class ChatController extends Controller
         $validated = $request->validate([
             'document_id' => 'required|exists:documents,id',
             'content' => 'required|string|max:10000',
-            'chat_id' => 'nullable|integer',
+            'chat_id' => 'nullable|integer|exists:chats,id',
         ]);
 
         // Authorization check for document: Admin sees all, others only their own

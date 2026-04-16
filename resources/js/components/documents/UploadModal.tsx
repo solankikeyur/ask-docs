@@ -74,7 +74,7 @@ export function UploadModal({ onClose }: UploadModalProps) {
                         ) : (
                             <div className="space-y-1">
                                 <p className="text-sm font-medium text-on-surface">Drag & Drop files here or browse</p>
-                                <p className="text-[10px] text-on-surface-variant">Supports PDF only up to 10MB</p>
+                                <p className="text-[10px] text-on-surface-variant">Supports PDF only up to 50MB</p>
                             </div>
                         )}
 
