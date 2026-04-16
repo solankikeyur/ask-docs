@@ -6,7 +6,7 @@ import { ChatInput } from '@/components/chat/ChatInput';
 import { ChatMessageList } from '@/components/chat/ChatMessageList';
 import { ChatSidebar } from '@/components/chat/ChatSidebar';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import AdminLayout from '@/layouts/admin/AdminLayout';
+import AppLayout from '@/layouts/AppLayout';
 import type { Message, Doc, ChatHistory } from '@/types/chat';
 import {
     subscribe,
@@ -21,7 +21,7 @@ const EMPTY_MESSAGES: Message[] = [];
 const EMPTY_DOCS: Doc[] = [];
 const EMPTY_CHAT_HISTORY: ChatHistory[] = [];
 
-interface AdminChatProps {
+interface ChatProps {
     documents: Doc[];
     chatHistory: ChatHistory[];
     chat?: {
@@ -32,12 +32,12 @@ interface AdminChatProps {
     messages?: Message[];
 }
 
-export default function AdminChat({
+export default function ChatIndex({
     documents = EMPTY_DOCS,
     chatHistory = EMPTY_CHAT_HISTORY,
     chat,
     messages = EMPTY_MESSAGES,
-}: AdminChatProps) {
+}: ChatProps) {
     const [localMessages, setLocalMessages] = useState<Message[]>(messages);
     const [activeDoc, setActiveDoc] = useState<Doc | null>(null);
     const [localChatId, setLocalChatId] = useState<number | undefined>(chat?.id);
@@ -109,7 +109,7 @@ export default function AdminChat({
             setLocalChatId(chatId);
 
             if (typeof window !== 'undefined') {
-                window.history.pushState({}, '', `/admin/chat/${newChatId}`);
+                window.history.pushState({}, '', `/chat/${newChatId}`);
             }
 
             const pending = pendingNewChatRef.current;
@@ -230,7 +230,7 @@ export default function AdminChat({
 
     useEffect(() => {
         if (localChatId && typeof window !== 'undefined') {
-            const url = `/admin/chat/${localChatId}`;
+            const url = `/chat/${localChatId}`;
             if (window.location.pathname !== url) {
                 window.history.pushState({}, '', url);
             }
@@ -256,7 +256,7 @@ export default function AdminChat({
             }
 
             sendStream(
-                '/admin/chat',
+                '/chat',
                 {
                     document_id: activeDoc?.id,
                     chat_id: localChatId,
@@ -280,7 +280,7 @@ export default function AdminChat({
         setLocalChatHistory((prev) => prev.map((c) => ({ ...c, active: false })));
 
         if (typeof window !== 'undefined') {
-            window.history.pushState({}, '', '/admin/chat');
+            window.history.pushState({}, '', '/chat');
         }
     };
 
@@ -288,7 +288,7 @@ export default function AdminChat({
         (chatId: number, title: string, options?: { onFinish?: () => void; onError?: () => void }) => {
             setLocalChatHistory((prev) => prev.map((c) => (c.id === chatId ? { ...c, title } : c)));
             router.put(
-                `/admin/chat/${chatId}`,
+                `/chat/${chatId}`,
                 { title },
                 {
                     preserveScroll: true,
@@ -313,11 +313,11 @@ export default function AdminChat({
                 wasStreamingRef.current = false;
 
                 if (typeof window !== 'undefined') {
-                    window.history.pushState({}, '', '/admin/chat');
+                    window.history.pushState({}, '', '/chat');
                 }
             }
 
-            router.delete(`/admin/chat/${chatId}`, {
+            router.delete(`/chat/${chatId}`, {
                 preserveScroll: true,
                 preserveState: true,
                 onFinish: () => options?.onFinish?.(),
@@ -337,10 +337,10 @@ export default function AdminChat({
             wasStreamingRef.current = false;
 
             if (typeof window !== 'undefined') {
-                window.history.pushState({}, '', '/admin/chat');
+                window.history.pushState({}, '', '/chat');
             }
 
-            router.delete('/admin/chat', {
+            router.delete('/chat', {
                 preserveScroll: true,
                 preserveState: true,
                 onFinish: () => options?.onFinish?.(),
@@ -359,7 +359,7 @@ export default function AdminChat({
     }
 
     return (
-        <AdminLayout activePath="/admin/chat" fullWidth={true}>
+        <AppLayout activePath="/chat" fullWidth={true}>
             <Head title={activeDoc ? `Analysis — ${activeDoc.name}` : (chat?.document?.name ? `Analysis — ${chat.document.name}` : 'AskDocs Analysis')} />
 
             <SidebarProvider defaultOpen={true} className="min-h-0 h-full w-full flex overflow-hidden">
@@ -431,6 +431,6 @@ export default function AdminChat({
                     )}
                 </main>
             </SidebarProvider>
-        </AdminLayout>
+        </AppLayout>
     );
 }

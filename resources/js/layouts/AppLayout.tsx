@@ -1,18 +1,18 @@
 import { usePage } from '@inertiajs/react';
 import { type ReactNode, useEffect, useState } from 'react';
 import { Menu } from 'lucide-react';
-import { AdminSidebar } from '@/components/admin/AdminSidebar';
+import { Sidebar } from '@/components/Sidebar';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 
-interface AdminLayoutProps {
+interface AppLayoutProps {
     children: ReactNode;
     activePath?: string;
     fullWidth?: boolean;
 }
 
-export default function AdminLayout({ children, activePath, fullWidth = false }: AdminLayoutProps) {
+export default function AppLayout({ children, activePath, fullWidth = false }: AppLayoutProps) {
     const { url } = usePage();
     const pathname = activePath ?? url;
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -33,7 +33,7 @@ export default function AdminLayout({ children, activePath, fullWidth = false }:
     return (
         <div className="flex h-[100dvh] overflow-hidden bg-background">
             <div className="hidden md:flex h-full">
-                <AdminSidebar activePath={pathname} />
+                <Sidebar activePath={pathname} />
             </div>
 
             {/* Main */}
@@ -49,8 +49,8 @@ export default function AdminLayout({ children, activePath, fullWidth = false }:
                                 </Button>
                             </SheetTrigger>
                             <SheetContent side="left" className="p-0 w-64 border-r-0 bg-transparent shadow-none">
-                                <SheetTitle className="sr-only">Admin Navigation</SheetTitle>
-                                <AdminSidebar activePath={pathname} />
+                                <SheetTitle className="sr-only">Navigation</SheetTitle>
+                                <Sidebar activePath={pathname} />
                             </SheetContent>
                         </Sheet>
                     </div>

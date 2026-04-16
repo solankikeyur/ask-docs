@@ -36,12 +36,21 @@ class Document extends Model
     }
 
     protected $fillable = [
+        'user_id',
         'name',
         'path',
         'size',
         'type',
         'status',
     ];
+
+    /**
+     * Get the user that owns the document.
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     /**
      * Open a readable stream for the stored file on whichever disk is configured.

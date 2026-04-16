@@ -12,6 +12,7 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
+import { usePage } from '@inertiajs/react';
 import {
     Sidebar,
     SidebarContent,
@@ -23,22 +24,30 @@ import {
 } from '@/components/ui/sidebar';
 import type { NavItem } from '@/types';
 
-const adminNavItems: NavItem[] = [
+const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
-        href: '/admin',
+        href: '/dashboard',
         icon: LayoutGrid,
     },
     {
         title: 'Documents',
-        href: '/admin/documents',
+        href: '/documents',
         icon: FileText,
     },
     {
-        title: 'Chat',
-        href: '/admin/chat',
+        title: 'Chatbots',
+        href: '/chatbots',
         icon: MessageSquare,
     },
+    {
+        title: 'Chat',
+        href: '/chat',
+        icon: MessageSquare,
+    },
+];
+
+const adminOnlyItems: NavItem[] = [
     {
         title: 'Users',
         href: '/admin/users',
@@ -60,7 +69,9 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar({ variant }: { variant?: string }) {
-    const items = adminNavItems;
+    const { auth } = usePage().props as any;
+    const isAdmin = auth.user.role === 'admin';
+    const items = isAdmin ? [...mainNavItems, ...adminOnlyItems] : mainNavItems;
 
     return (
         <Sidebar collapsible="icon" variant={variant === 'full' ? 'sidebar' : 'inset'}>
@@ -68,7 +79,7 @@ export function AppSidebar({ variant }: { variant?: string }) {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href="/admin" prefetch>
+                            <Link href="/dashboard" prefetch>
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>

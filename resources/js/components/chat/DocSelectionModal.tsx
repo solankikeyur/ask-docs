@@ -23,7 +23,7 @@ export function DocSelectionModal({ open, onOpenChange, documents, onSelect }: D
                 </DialogHeader>
                 <div className="grid gap-2 py-4">
                     <p className="text-xs font-semibold uppercase tracking-widest text-on-surface-variant mb-2">
-                        Your Assigned Documents
+                        Available Documents
                     </p>
                     <div className="max-h-[300px] overflow-y-auto space-y-1.5 pr-2">
                         {documents.length > 0 ? (

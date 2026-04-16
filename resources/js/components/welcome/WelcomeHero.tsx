@@ -1,9 +1,10 @@
 import { Link } from '@inertiajs/react';
 import { ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { login } from '@/routes';
-import { documents as adminDocuments, users as adminUsers } from '@/routes/admin';
-import { chat as userChat } from '@/routes/user';
+import { login, register } from '@/routes';
+import { users as adminUsers } from '@/routes/admin';
+import { index as adminDocuments } from '@/routes/documents';
+import { index as userChat } from '@/routes/chat';
 
 interface WelcomeHeroProps {
     isAuthenticated: boolean;
@@ -19,30 +20,31 @@ export function WelcomeHero({ isAuthenticated, isAdmin, isViewer }: WelcomeHeroP
                     size={14}
                     className="text-primary"
                 />
-                Role-based document access
+                Enterprise-grade security & privacy
             </p>
 
-            <h1 className="mt-4 text-balance text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl">
-                Upload documents. <br />
-                <span className="text-primary">Assign access.</span> <br />
-                Chat with confidence.
+            <h1 className="mt-4 text-balance text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl leading-[1.1]">
+                Revolutionize your <br />
+                <span className="text-primary">document workflow.</span> <br />
+                Intelligence, simplified.
             </h1>
             
             <p className="mt-6 max-w-2xl text-pretty text-base text-muted-foreground md:text-lg leading-relaxed">
-                AskDocs is built around your current workflow: an{' '}
-                <span className="font-medium text-foreground underline decoration-primary/30">
-                    admin
-                </span>{' '}
-                uploads documents, assigns them to users,
-                and each user can log in and chat with only
-                the documents they’re allowed to see.
+                Connect your organization's knowledge to high-precision AI. 
+                AskDocs provides a secure environment where teams chat with internal documents 
+                under a centralized permission structure.
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
                 {!isAuthenticated && (
-                    <Button asChild size="lg" className="rounded-full px-8 shadow-lg shadow-primary/20">
-                        <Link href={login()}>Get Started</Link>
-                    </Button>
+                    <div className="flex items-center gap-3">
+                        <Button asChild size="lg" className="rounded-full px-8 shadow-lg shadow-primary/20">
+                            <Link href={login()}>Log in</Link>
+                        </Button>
+                        <Button asChild variant="outline" size="lg" className="rounded-full px-8 shadow-sm">
+                            <Link href={register()}>Create Account</Link>
+                        </Button>
+                    </div>
                 )}
                 {isAuthenticated && isAdmin && (
                     <>
@@ -73,10 +75,9 @@ export function WelcomeHero({ isAuthenticated, isAdmin, isViewer }: WelcomeHeroP
             </div>
 
             {!isAuthenticated && (
-                <p className="mt-4 text-sm text-muted-foreground italic">
-                    Users are typically created by an admin.
-                    If registration is disabled, ask your
-                    admin for access.
+                <p className="mt-6 flex items-center gap-2 text-sm text-muted-foreground font-medium italic">
+                    <span className="h-px w-8 bg-border/60" />
+                    Join a workspace or create your own today.
                 </p>
             )}
         </div>

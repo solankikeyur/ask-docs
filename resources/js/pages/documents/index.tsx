@@ -1,19 +1,17 @@
 import { Head, router } from '@inertiajs/react';
 import { Upload } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import { ConfirmationDialog } from '@/components/admin/ConfirmationDialog';
-import { AssignModal } from '@/components/admin/documents/AssignModal';
-import { DocumentSearch } from '@/components/admin/documents/DocumentSearch';
-import { DocumentTable } from '@/components/admin/documents/DocumentTable';
-import { UploadModal } from '@/components/admin/documents/UploadModal';
+import { ConfirmationDialog } from '@/components/ConfirmationDialog';
+import { DocumentSearch } from '@/components/documents/DocumentSearch';
+import { DocumentTable } from '@/components/documents/DocumentTable';
+import { UploadModal } from '@/components/documents/UploadModal';
 import { Button } from '@/components/ui/button';
-import AdminLayout from '@/layouts/admin/AdminLayout';
+import AppLayout from '@/layouts/AppLayout';
 import { debounce } from '@/lib/utils';
 import type { Doc, PaginatedDocs } from '@/types/admin';
 
-export default function AdminDocuments({ documents, allUsers }: { documents: PaginatedDocs, allUsers: { id: number, name: string }[] }) {
+export default function DocumentIndex({ documents, allUsers }: { documents: PaginatedDocs, allUsers: { id: number, name: string }[] }) {
     const [showUpload, setShowUpload] = useState(false);
-    const [assignDoc, setAssignDoc] = useState<Doc | null>(null);
     const [deleteDoc, setDeleteDoc] = useState<Doc | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -23,7 +21,7 @@ export default function AdminDocuments({ documents, allUsers }: { documents: Pag
     const debouncedSearch = useMemo(
         () => debounce((q: string) => {
             router.get(
-                '/admin/documents',
+                '/documents',
                 { search: q },
                 {
                     preserveState: true,
@@ -53,25 +51,18 @@ export default function AdminDocuments({ documents, allUsers }: { documents: Pag
             return;
         }
 
-        router.delete(`/admin/documents/${deleteDoc.id}`, {
+        router.delete(`/documents/${deleteDoc.id}`, {
             onSuccess: () => setDeleteDoc(null),
         });
     };
 
     return (
-        <AdminLayout activePath="/admin/documents">
-            <Head title="Admin — Documents" />
+        <AppLayout activePath="/documents">
+            <Head title="Documents" />
 
             {/* Modals */}
             {showUpload && <UploadModal onClose={() => setShowUpload(false)} />}
 
-            {assignDoc && (
-                <AssignModal
-                    doc={assignDoc}
-                    allUsers={allUsers}
-                    onClose={() => setAssignDoc(null)}
-                />
-            )}
 
             <ConfirmationDialog
                 isOpen={!!deleteDoc}
@@ -89,7 +80,7 @@ export default function AdminDocuments({ documents, allUsers }: { documents: Pag
                     <div>
                         <h1 className="text-3xl font-bold tracking-tight text-on-surface">Documents</h1>
                         <p className="mt-1 text-sm text-on-surface-variant font-medium">
-                            Manage and assign documents to your team.
+                            Manage your personal documents.
                         </p>
                     </div>
                     <Button 
@@ -108,10 +99,9 @@ export default function AdminDocuments({ documents, allUsers }: { documents: Pag
                 {/* Main Content Table */}
                 <DocumentTable
                     documents={documents}
-                    onAssign={setAssignDoc}
                     onDelete={setDeleteDoc}
                 />
             </div>
-        </AdminLayout>
+        </AppLayout>
     );
 }

@@ -18,14 +18,16 @@ export default function Welcome() {
 
     return (
         <>
-            <Head title="AskDocs">
+            <Head title="AskDocs - Private Intelligent Knowledge Base">
                 <meta
                     name="description"
-                    content="Admins upload and assign documents. Users chat with their assigned documents."
+                    content="The intelligent workspace to securely upload documents and engage in context-aware AI conversations. Built for teams that value precision and privacy."
                 />
             </Head>
 
-            <div className="min-h-screen bg-background text-foreground antialiased selection:bg-primary/20">
+            <div className="min-h-screen bg-background text-foreground antialiased selection:bg-primary/20 relative overflow-hidden">
+                <div className="absolute inset-x-0 top-0 -z-10 h-[500px] w-full bg-gradient-to-b from-primary/5 to-transparent blur-3xl" />
+                <div className="absolute -left-1/4 top-1/2 -z-10 h-[400px] w-[600px] rounded-full bg-primary/3 blur-[120px]" />
                 <WelcomeHeader 
                     isAuthenticated={isAuthenticated} 
                     isAdmin={isAdmin} 

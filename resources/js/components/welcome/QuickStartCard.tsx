@@ -10,9 +10,9 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { login } from '@/routes';
-import { dashboard as adminDashboard } from '@/routes/admin';
-import { chat as userChat } from '@/routes/user';
+import { login, register } from '@/routes';
+import { dashboard as adminDashboard } from '@/routes';
+import { index as userChat } from '@/routes/chat';
 
 interface QuickStartCardProps {
     isAuthenticated: boolean;
@@ -32,23 +32,23 @@ export function QuickStartCard({ isAuthenticated, isAdmin, isViewer }: QuickStar
             <CardContent className="grid gap-4">
                 <WorkflowSection
                     icon={FileUp}
-                    title="Admin workflow"
-                    subtitle="Upload → assign → monitor"
+                    title="Workspace manager"
+                    subtitle="Index → Chat → Refine"
                     steps={[
-                        'Upload documents to the system.',
-                        'Create users and control access.',
-                        'Assign specific documents to specific users.',
+                        'Ingest documents into your custom warehouse.',
+                        'Orchestrate user access and permissions.',
+                        'Monitor interactions and data utilization.',
                     ]}
                 />
 
                 <WorkflowSection
                     icon={MessageSquareText}
-                    title="User workflow"
-                    subtitle="Select a doc → ask questions"
+                    title="Collaborator"
+                    subtitle="Inquire → Discover → Solve"
                     steps={[
-                        'Log in with the account your admin created.',
-                        'Choose from your assigned documents.',
-                        'Chat and keep conversation history.',
+                        'Access the secure workspace portal.',
+                        'Engage with your authorized document sets.',
+                        'Extract verified insights with AI assistance.',
                     ]}
                 />
             </CardContent>
@@ -85,16 +85,28 @@ export function QuickStartCard({ isAuthenticated, isAdmin, isViewer }: QuickStar
                     </Button>
                 )}
                 {!isAuthenticated && (
-                    <Button
-                        asChild
-                        size="sm"
-                        className="gap-2 rounded-full"
-                    >
-                        <Link href={login()}>
-                            <Users size={14} />
-                            Log in
-                        </Link>
-                    </Button>
+                    <div className="flex w-full items-center gap-2">
+                        <Button
+                            asChild
+                            size="sm"
+                            className="flex-1 gap-2 rounded-full"
+                        >
+                            <Link href={login()}>
+                                <Users size={14} />
+                                Log in
+                            </Link>
+                        </Button>
+                        <Button
+                            asChild
+                            variant="outline"
+                            size="sm"
+                            className="flex-1 gap-2 rounded-full"
+                        >
+                            <Link href={register()}>
+                                Create Account
+                            </Link>
+                        </Button>
+                    </div>
                 )}
             </CardFooter>
         </Card>

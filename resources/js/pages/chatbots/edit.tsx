@@ -1,5 +1,5 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import AdminLayout from '@/layouts/admin/AdminLayout';
+import AppLayout from '@/layouts/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -45,12 +45,12 @@ export default function Edit({ chatbot, documents }: Props) {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        put(`/admin/chatbots/${chatbot.id}`);
+        put(`/chatbots/${chatbot.id}`);
     };
 
     const handleDelete = () => {
         if (confirm('Are you sure you want to delete this chatbot? This action cannot be undone.')) {
-            destroy(`/admin/chatbots/${chatbot.id}`);
+            destroy(`/chatbots/${chatbot.id}`);
         }
     };
 
@@ -62,7 +62,7 @@ export default function Edit({ chatbot, documents }: Props) {
     };
 
     return (
-        <AdminLayout>
+        <AppLayout>
             <Head title={`Edit ${chatbot.name}`} />
 
             <div className="max-w-4xl mx-auto space-y-8 py-6">
@@ -70,7 +70,7 @@ export default function Edit({ chatbot, documents }: Props) {
                 <div className="flex items-center justify-between border-b border-outline-variant/30 pb-6">
                     <div className="flex items-center gap-4">
                         <Button variant="ghost" size="icon" asChild className="text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-[12px]">
-                            <Link href="/admin/chatbots">
+                            <Link href="/chatbots">
                                 <ArrowLeft size={18} />
                             </Link>
                         </Button>
@@ -223,7 +223,7 @@ export default function Edit({ chatbot, documents }: Props) {
                                 <div className="text-center py-10 bg-surface-container rounded-[12px] border border-dashed border-outline-variant/80">
                                     <p className="text-[15px] text-on-surface-variant">
                                         No new documents available.{' '}
-                                        <Link href="/admin/documents" className="text-primary hover:text-primary-dim hover:underline font-semibold ml-1">
+                                        <Link href="/documents" className="text-primary hover:text-primary-dim hover:underline font-semibold ml-1">
                                             Upload documents first
                                         </Link>
                                     </p>
@@ -239,11 +239,11 @@ export default function Edit({ chatbot, documents }: Props) {
                             {processing ? 'Saving...' : 'Apply Changes'}
                         </Button>
                         <Button variant="outline" asChild className="w-full sm:w-auto h-12 px-8 rounded-[12px] border-outline-variant/60 text-on-surface hover:bg-surface-container font-medium text-center">
-                            <Link href="/admin/chatbots">Cancel</Link>
+                            <Link href="/chatbots">Cancel</Link>
                         </Button>
                     </div>
                 </form>
             </div>
-        </AdminLayout>
+        </AppLayout>
     );
 }

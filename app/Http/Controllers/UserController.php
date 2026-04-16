@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers;
 
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
@@ -18,8 +18,8 @@ class UserController extends Controller
      */
     public function index()
     {
-        return Inertia::render('admin/users', [
-            'users' => User::with('documents')->get()->map(function ($user) {
+        return Inertia::render('users/index', [
+            'users' => User::all()->map(function ($user) {
                 return [
                     'id' => $user->id,
                     'name' => $user->name,
@@ -27,8 +27,6 @@ class UserController extends Controller
                     'role' => $user->role->value,
                     'status' => $user->status,
                     'statusLabel' => $user->status ? 'Enabled' : 'Disabled',
-                    'assignedDocs' => $user->documents->pluck('name'),
-                    'assignedDocIds' => $user->documents->pluck('id'),
                     'lastActive' => $user->updated_at->diffForHumans(),
                 ];
             }),
@@ -85,18 +83,4 @@ class UserController extends Controller
         return redirect()->back();
     }
 
-    /**
-     * Update document access for the user.
-     */
-    public function updateAccess(Request $request, User $user)
-    {
-        $validated = $request->validate([
-            'document_ids' => 'array',
-            'document_ids.*' => 'exists:documents,id',
-        ]);
-
-        $user->documents()->sync($validated['document_ids'] ?? []);
-
-        return redirect()->back();
-    }
 }

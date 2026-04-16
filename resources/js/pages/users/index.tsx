@@ -3,13 +3,12 @@ import { Search, UserPlus } from 'lucide-react';
 import { useCallback, useState } from 'react';
 
 // Components
-import CreateUserModal from '@/components/admin/users/CreateUserModal';
-import EditUserModal from '@/components/admin/users/EditUserModal';
-import ManageAccessModal from '@/components/admin/users/ManageAccessModal';
-import UserRow from '@/components/admin/users/UserRow';
+import CreateUserModal from '@/components/users/CreateUserModal';
+import EditUserModal from '@/components/users/EditUserModal';
+import UserRow from '@/components/users/UserRow';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import AdminLayout from '@/layouts/admin/AdminLayout';
+import AppLayout from '@/layouts/AppLayout';
 import type { AdminUser } from '@/types/admin/user';
 
 interface Props {
@@ -19,17 +18,8 @@ interface Props {
 
 export default function AdminUsers({ users, allDocuments }: Props) {
     const [showCreate, setShowCreate] = useState(false);
-    const [manageUser, setManageUser] = useState<AdminUser | null>(null);
     const [editUser, setEditUser] = useState<AdminUser | null>(null);
 
-    const handleUpdateAccess = useCallback((userId: number, docIds: number[]) => {
-        router.post(`/admin/users/${userId}/access`, {
-            document_ids: docIds
-        }, {
-            onSuccess: () => setManageUser(null),
-            preserveScroll: true
-        });
-    }, []);
 
     const handleDeleteUser = useCallback((userId: number) => {
         if (confirm('Are you sure you want to delete this user?')) {
@@ -39,14 +29,11 @@ export default function AdminUsers({ users, allDocuments }: Props) {
         }
     }, []);
 
-    const handleManageAccess = useCallback((user: AdminUser) => {
-        setManageUser(user);
-    }, []);
 
 
 
     return (
-        <AdminLayout activePath="/admin/users">
+        <AppLayout activePath="/admin/users">
             <Head title="Admin — Users" />
             
             {showCreate && <CreateUserModal onClose={() => setShowCreate(false)} />}
@@ -58,14 +45,6 @@ export default function AdminUsers({ users, allDocuments }: Props) {
                 />
             )}
 
-            {manageUser && (
-                <ManageAccessModal
-                    user={manageUser}
-                    allDocuments={allDocuments}
-                    onClose={() => setManageUser(null)}
-                    onSave={(docIds) => handleUpdateAccess(manageUser.id, docIds)}
-                />
-            )}
 
             <div className="space-y-6">
                 {/* Header */}
@@ -73,7 +52,7 @@ export default function AdminUsers({ users, allDocuments }: Props) {
                     <div>
                         <h1 className="text-2xl font-bold text-on-surface">Users</h1>
                         <p className="mt-0.5 text-sm text-on-surface-variant">
-                            Create users and manage which documents they can chat with.
+                            Create and manage user accounts.
                         </p>
                     </div>
                     <Button size="sm" className="gap-2 w-full sm:w-fit" onClick={() => setShowCreate(true)}>
@@ -98,7 +77,6 @@ export default function AdminUsers({ users, allDocuments }: Props) {
                             <UserRow 
                                 key={user.id} 
                                 user={user} 
-                                onManageAccess={handleManageAccess} 
                                 onEdit={setEditUser}
                                 onDelete={handleDeleteUser}
                             />
@@ -106,6 +84,6 @@ export default function AdminUsers({ users, allDocuments }: Props) {
                     </div>
                 </div>
             </div>
-        </AdminLayout>
+        </AppLayout>
     );
 }

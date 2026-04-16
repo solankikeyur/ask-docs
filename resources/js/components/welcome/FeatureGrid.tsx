@@ -8,18 +8,18 @@ import {
 
 const features = [
     {
-        title: 'Upload & index',
-        description: 'Admins upload documents to make them available for Q&A.',
+        title: 'Centralized Knowledge',
+        description: 'Securely host and index your organization’s documents in a single, unified database.',
         icon: FileUp,
     },
     {
-        title: 'Assign access',
-        description: 'Grant each user access only to the documents they need.',
+        title: 'Precision Permissions',
+        description: 'Full control over access. Grant workspace collaborators access to specific data only.',
         icon: Link2,
     },
     {
-        title: 'Chat per document',
-        description: 'Users ask questions and keep chat history tied to a document.',
+        title: 'Context-Aware Chat',
+        description: 'Advanced AI conversations tied directly to your internal documents for maximum accuracy.',
         icon: MessageSquareText,
     },
 ];

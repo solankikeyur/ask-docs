@@ -100,7 +100,7 @@ export default function CreateUserModal({ onClose }: CreateUserModalProps) {
                 </div>
 
                 <p className="mt-6 rounded-[var(--radius-md)] bg-primary-container px-3 py-2 text-xs text-on-primary-container leading-relaxed">
-                    <strong>Next:</strong> After creating the user, use "Manage Access" to assign documents they can chat with.
+                    <strong>Next:</strong> After creating the user, they can log in and manage their own private document library.
                 </p>
 
                 <div className="mt-6 flex justify-end gap-2">

@@ -2,52 +2,47 @@
 
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
-use App\Http\Controllers\Admin\DocumentController;
-use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Admin\ChatController;
-use App\Http\Controllers\Admin\ChatbotController;
-use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\User\ChatController as UserChatController;
+use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\ChatbotController;
+use App\Http\Controllers\ChatController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\DashboardController;
 
 Route::inertia('/', 'welcome', [
     'canRegister' => Features::enabled(Features::registration()),
 ])->name('home');
 
-Route::middleware(['auth', 'verified'])->group(function () {
-    // Viewer routes (normal users)
-    Route::middleware('viewer')->group(function () {
-        Route::get('/chat', [UserChatController::class, 'index'])->name('user.chat');
-        Route::get('/chat/{chat}', [UserChatController::class, 'show'])->name('user.chat.show');
-        Route::post('/chat', [UserChatController::class, 'store'])->name('user.chat.store');
-        Route::delete('/chat', [UserChatController::class, 'destroyAll'])->name('user.chat.destroyAll');
-        Route::put('/chat/{chat}', [UserChatController::class, 'update'])->name('user.chat.update');
-        Route::delete('/chat/{chat}', [UserChatController::class, 'destroy'])->name('user.chat.destroy');
-    });
+// Legacy Redirects
+Route::get('/admin/documents', fn() => redirect('/documents'));
 
-    // Admin routes (admin-only app)
+Route::middleware(['auth', 'verified'])->group(function () {
+    
+    // Dashboard (Home for all users)
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Document Management
+    Route::get('/documents', [DocumentController::class, 'index'])->name('documents.index');
+    Route::post('/documents', [DocumentController::class, 'store'])->name('documents.store');
+    Route::get('/documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
+    Route::delete('/documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
+
+    // Chatbot Management
+    Route::resource('chatbots', ChatbotController::class);
+
+    // Chat Interface
+    Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
+    Route::get('/chat/{chat}', [ChatController::class, 'show'])->name('chat.show');
+    Route::post('/chat', [ChatController::class, 'store'])->name('chat.store');
+    Route::delete('/chat', [ChatController::class, 'destroyAll'])->name('chat.destroyAll');
+    Route::put('/chat/{chat}', [ChatController::class, 'update'])->name('chat.update');
+    Route::delete('/chat/{chat}', [ChatController::class, 'destroy'])->name('chat.destroy');
+
+    // Admin-only: User management
     Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
-        Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
-        Route::get('/documents', [DocumentController::class, 'index'])->name('documents');
-        Route::post('/documents', [DocumentController::class, 'store'])->name('documents.store');
-        Route::post('/documents/{document}/assign', [DocumentController::class, 'assign'])->name('documents.assign');
-        Route::delete('/documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
-        
-        // User management
         Route::get('/users', [UserController::class, 'index'])->name('users');
         Route::post('/users', [UserController::class, 'store'])->name('users.store');
         Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
         Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
-        Route::post('/users/{user}/access', [UserController::class, 'updateAccess'])->name('users.access');
-
-        Route::get('/chat', [ChatController::class, 'index'])->name('chat');
-        Route::get('/chat/{chat}', [ChatController::class, 'show'])->name('chat.show');
-        Route::post('/chat', [ChatController::class, 'store'])->name('chat.store');
-        Route::delete('/chat', [ChatController::class, 'destroyAll'])->name('chat.destroyAll');
-        Route::put('/chat/{chat}', [ChatController::class, 'update'])->name('chat.update');
-        Route::delete('/chat/{chat}', [ChatController::class, 'destroy'])->name('chat.destroy');
-
-        // Chatbot management
-        Route::resource('chatbots', ChatbotController::class);
     });
 });
 

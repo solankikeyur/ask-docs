@@ -1,16 +1,15 @@
-import { FileText, Users, Trash2 } from 'lucide-react';
-import { Pagination } from '@/components/admin/Pagination';
+import { FileText, Users, Trash2, Download } from 'lucide-react';
+import { Pagination } from '@/components/Pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { Doc, PaginatedDocs } from '@/types/admin';
 
 interface DocumentTableProps {
     documents: PaginatedDocs;
-    onAssign: (doc: Doc) => void;
     onDelete: (doc: Doc) => void;
 }
 
-export function DocumentTable({ documents, onAssign, onDelete }: DocumentTableProps) {
+export function DocumentTable({ documents, onDelete }: DocumentTableProps) {
     return (
         <div className="overflow-hidden rounded-[var(--radius-lg)] border border-outline-variant/10 bg-surface-container-low transition-all">
             <div className="overflow-x-auto">
@@ -20,14 +19,13 @@ export function DocumentTable({ documents, onAssign, onDelete }: DocumentTablePr
                             <th className="px-4 py-3 sm:px-5 sm:py-4 text-left font-semibold">Document</th>
                             <th className="hidden px-4 py-3 sm:px-5 sm:py-4 text-left font-semibold sm:table-cell">Type / Size</th>
                             <th className="px-4 py-3 sm:px-5 sm:py-4 text-left font-semibold">Status</th>
-                            <th className="hidden px-4 py-3 sm:px-5 sm:py-4 text-left font-semibold md:table-cell border-0">Assigned To</th>
                             <th className="px-4 py-3 sm:px-5 sm:py-4 text-left font-semibold">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {documents.data.length === 0 ? (
                             <tr>
-                                <td colSpan={5} className="py-20 text-center animate-in fade-in transition-all">
+                                <td colSpan={4} className="py-20 text-center animate-in fade-in transition-all">
                                     <div className="flex flex-col items-center gap-3">
                                         <div className="h-12 w-12 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant/40">
                                             <FileText size={24} />
@@ -79,36 +77,19 @@ export function DocumentTable({ documents, onAssign, onDelete }: DocumentTablePr
                                             {doc.status}
                                         </Badge>
                                     </td>
-                                    <td className="hidden px-4 py-3 sm:px-5 sm:py-4 md:table-cell">
-                                        <div className="flex items-center -space-x-1.5 overflow-hidden">
-                                            {doc.assignedTo && doc.assignedTo.length > 0 ? (
-                                                doc.assignedTo.map((name, i) => (
-                                                    <div
-                                                        key={i}
-                                                        className="h-6 w-6 rounded-full border border-surface-container ring-1 ring-black/5 bg-primary-gradient flex items-center justify-center text-[8px] font-bold text-white uppercase"
-                                                        title={name}
-                                                    >
-                                                        {name.charAt(0)}
-                                                    </div>
-                                                ))
-                                            ) : (
-                                                <span className="text-xs text-on-surface-variant/40 italic flex items-center gap-1.5 font-medium">
-                                                    Unassigned
-                                                </span>
-                                            )}
-                                        </div>
-                                    </td>
                                     <td className="px-4 py-3 sm:px-5 sm:py-4">
-                                        <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity translate-x-2 group-hover:translate-x-0">
-                                            <Button
-                                                variant="ghost"
-                                                size="icon-sm"
-                                                onClick={() => onAssign(doc)}
-                                                className="bg-primary/5 hover:bg-primary/10 text-primary transition-colors"
-                                                title="Assign"
+                                        <div className="flex items-center gap-1.5 transition-all">
+                                            <a
+                                                href={doc.download_url}
+                                                className="flex h-8 w-8 items-center justify-center rounded-md text-on-surface-variant hover:bg-primary/10 hover:text-primary transition-colors"
+                                                title="Download"
+                                                download
+                                                data-inertia-ignore
+                                                target="_blank"
+                                                rel="noopener noreferrer"
                                             >
-                                                <Users size={15} />
-                                            </Button>
+                                                <Download size={15} />
+                                            </a>
                                             <Button
                                                 variant="ghost"
                                                 size="icon-sm"
