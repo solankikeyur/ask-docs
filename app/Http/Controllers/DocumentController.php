@@ -15,7 +15,8 @@ class DocumentController extends Controller
 {
     public function __construct(
         protected DocumentService $documentService
-    ) {}
+    ) {
+    }
 
     public function index(Request $request): Response
     {
@@ -87,13 +88,13 @@ class DocumentController extends Controller
         if (!Storage::disk($disk)->exists($document->path)) {
             return back()->withErrors(['download' => 'File not found on storage disk: ' . $document->path]);
         }
-
-        return response()->streamDownload(function () use ($disk, $document) {
-            $stream = Storage::disk($disk)->readStream($document->path);
-            fpassthru($stream);
-            if (is_resource($stream)) {
-                fclose($stream);
-            }
-        }, $document->name);
+        // Redirect to a direct URL. For S3, use a temporary signed URL.
+        if ($disk === 's3') {
+            return redirect()->away(
+                Storage::disk($disk)->temporaryUrl($document->path, now()->addMinutes(15))
+            );
+        }
+        // For local storage, redirect to the public URL
+        return redirect()->away(Storage::disk($disk)->url($document->path));
     }
 }

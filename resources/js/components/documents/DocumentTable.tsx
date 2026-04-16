@@ -82,8 +82,7 @@ export function DocumentTable({ documents, onDelete }: DocumentTableProps) {
                                             <a
                                                 href={doc.download_url}
                                                 className="flex h-8 w-8 items-center justify-center rounded-md text-on-surface-variant hover:bg-primary/10 hover:text-primary transition-colors"
-                                                title="Download"
-                                                download
+                                                title="View Document"
                                                 data-inertia-ignore
                                                 target="_blank"
                                                 rel="noopener noreferrer"
