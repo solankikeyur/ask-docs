@@ -2,9 +2,9 @@ import { Link } from '@inertiajs/react';
 import { MessageSquareText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { login } from '@/routes';
-import { dashboard as adminDashboard } from '@/routes/admin';
-import { chat as userChat } from '@/routes/user';
+import { login, register } from '@/routes';
+import { dashboard as adminDashboard } from '@/routes';
+import { index as userChat } from '@/routes/chat';
 
 interface WelcomeHeaderProps {
     isAuthenticated: boolean;
@@ -71,6 +71,9 @@ export function WelcomeHeader({ isAuthenticated, isAdmin, isViewer }: WelcomeHea
                             <ThemeToggle />
                             <Button asChild variant="ghost" size="sm">
                                 <Link href={login()}>Log in</Link>
+                            </Button>
+                            <Button asChild size="sm">
+                                <Link href={register()}>Register</Link>
                             </Button>
                         </>
                     )}

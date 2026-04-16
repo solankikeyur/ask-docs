@@ -16,6 +16,7 @@ import {
     SidebarMenuAction,
     SidebarMenuItem,
     SidebarMenuButton,
+    useSidebar,
 } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
 import { DocSelectionModal } from './DocSelectionModal';
@@ -47,13 +48,14 @@ interface ChatSidebarProps {
 export function ChatSidebar({
     chatHistory,
     assignedDocs,
-    chatPrefix = '/admin/chat',
+    chatPrefix = '/chat',
     showNewChatButton = true,
     onNewChat,
     onRenameChat,
     onDeleteChat,
     onClearAllChats,
 }: ChatSidebarProps) {
+    const { setOpenMobile } = useSidebar();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [renameChatId, setRenameChatId] = useState<number | null>(null);
     const [renameTitle, setRenameTitle] = useState('');
@@ -65,6 +67,7 @@ export function ChatSidebar({
 
     const handleSelectForNewChat = (doc: Doc) => {
         setIsModalOpen(false);
+        setOpenMobile(false);
 
         if (onNewChat) {
             onNewChat(doc);
@@ -75,7 +78,7 @@ export function ChatSidebar({
 
     return (
         <>
-            <Sidebar className="border-r border-sidebar-border/50 bg-sidebar/50 backdrop-blur-sm overflow-hidden">
+            <Sidebar className="md:left-56 border-r border-sidebar-border/50 bg-sidebar/50 backdrop-blur-sm overflow-hidden">
                 {showNewChatButton && (
                     <div className="px-4 py-3.5 border-b border-sidebar-border/50">
                         <Button
@@ -114,12 +117,16 @@ export function ChatSidebar({
                                 {chatHistory.length > 0 ? (
                                     chatHistory.map((c) => (
                                         <SidebarMenuItem key={c.id}>
-                                            <SidebarMenuButton 
-                                                asChild 
+                                            <SidebarMenuButton
+                                                asChild
                                                 isActive={c.active}
                                                 className="h-auto py-2.5"
                                             >
-                                                <Link href={`${chatPrefix}/${c.id}`} className="flex flex-col items-start gap-1 min-w-0 w-full overflow-hidden">
+                                                <Link 
+                                                    href={`${chatPrefix}/${c.id}`} 
+                                                    className="flex flex-col items-start gap-1 min-w-0 w-full overflow-hidden"
+                                                    onClick={() => setOpenMobile(false)}
+                                                >
                                                     <span className="line-clamp-2 text-xs leading-relaxed font-medium w-full break-words">
                                                         {c.title || 'Untitled Chat'}
                                                     </span>
@@ -203,12 +210,12 @@ export function ChatSidebar({
                 open={renameChatId !== null}
                 onOpenChange={(open) => {
                     if (isRenaming) {
-return;
-}
+                        return;
+                    }
 
                     if (!open) {
-setRenameChatId(null);
-}
+                        setRenameChatId(null);
+                    }
                 }}
             >
                 <DialogContent>
@@ -240,8 +247,8 @@ setRenameChatId(null);
                             type="button"
                             onClick={() => {
                                 if (!onRenameChat || renameChatId === null) {
-return;
-}
+                                    return;
+                                }
 
                                 setIsRenaming(true);
                                 onRenameChat(renameChatId, renameTitle.trim(), {
@@ -265,12 +272,12 @@ return;
                 open={deleteChatId !== null}
                 onOpenChange={(open) => {
                     if (isDeleting) {
-return;
-}
+                        return;
+                    }
 
                     if (!open) {
-setDeleteChatId(null);
-}
+                        setDeleteChatId(null);
+                    }
                 }}
             >
                 <DialogContent>
@@ -295,8 +302,8 @@ setDeleteChatId(null);
                             variant="destructive"
                             onClick={() => {
                                 if (!onDeleteChat || deleteChatId === null) {
-return;
-}
+                                    return;
+                                }
 
                                 setIsDeleting(true);
                                 onDeleteChat(deleteChatId, {
@@ -320,8 +327,8 @@ return;
                 open={clearAllOpen}
                 onOpenChange={(open) => {
                     if (isClearingAll) {
- return;
- }
+                        return;
+                    }
 
                     setClearAllOpen(open);
                 }}
@@ -341,8 +348,8 @@ return;
                             variant="destructive"
                             onClick={() => {
                                 if (!onClearAllChats) {
- return;
- }
+                                    return;
+                                }
 
                                 setIsClearingAll(true);
                                 onClearAllChats({

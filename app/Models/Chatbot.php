@@ -10,7 +10,7 @@ use Illuminate\Support\Collection;
 
 class Chatbot extends Model implements DocumentContextSource
 {
-    protected $fillable = ['name', 'description', 'public_id', 'settings'];
+    protected $fillable = ['user_id', 'name', 'description', 'public_id', 'settings'];
 
     protected $casts = [
         'settings' => 'array',
@@ -22,6 +22,11 @@ class Chatbot extends Model implements DocumentContextSource
                 $chatbot->public_id = (string) \Illuminate\Support\Str::uuid();
             }
         });
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function documents(): BelongsToMany

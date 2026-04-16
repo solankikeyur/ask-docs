@@ -14,8 +14,8 @@ class RedirectAfterAuthentication
         $user = $request->user();
 
         $fallback = $user?->role === UserRole::ADMIN
-            ? route('admin.dashboard')
-            : route('user.chat');
+            ? route('dashboard')
+            : route('chat.index');
 
         $intended = $request->session()->pull('url.intended');
         if (! is_string($intended) || $intended === '') {

@@ -1,5 +1,5 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import AdminLayout from '@/layouts/admin/AdminLayout';
+import AppLayout from '@/layouts/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -31,7 +31,7 @@ export default function Create({ documents }: Props) {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        post('/admin/chatbots');
+        post('/chatbots');
     };
 
     const toggleDocument = (documentId: number) => {
@@ -42,14 +42,14 @@ export default function Create({ documents }: Props) {
     };
 
     return (
-        <AdminLayout>
+        <AppLayout>
             <Head title="Create Chatbot" />
 
             <div className="max-w-4xl mx-auto space-y-8 py-6">
                 {/* Header */}
                 <div className="flex items-center gap-4 border-b border-outline-variant/30 pb-6">
                     <Button variant="ghost" size="icon" asChild className="text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-[12px]">
-                        <Link href="/admin/chatbots">
+                        <Link href="/chatbots">
                             <ArrowLeft size={18} />
                         </Link>
                     </Button>
@@ -197,7 +197,7 @@ export default function Create({ documents }: Props) {
                                 <div className="text-center py-10 bg-surface-container rounded-[12px] border border-dashed border-outline-variant/80">
                                     <p className="text-[15px] text-on-surface-variant">
                                         The library is empty.{' '}
-                                        <Link href="/admin/documents" className="text-primary hover:text-primary-dim hover:underline font-semibold ml-1">
+                                        <Link href="/documents" className="text-primary hover:text-primary-dim hover:underline font-semibold ml-1">
                                             Curate documents first
                                         </Link>
                                     </p>
@@ -213,11 +213,11 @@ export default function Create({ documents }: Props) {
                             {processing ? 'Synthesizing...' : 'Launch Chatbot'}
                         </Button>
                         <Button variant="outline" asChild className="w-full sm:w-auto h-12 px-8 rounded-[12px] border-outline-variant/60 text-on-surface hover:bg-surface-container font-medium text-center">
-                            <Link href="/admin/chatbots">Cancel</Link>
+                            <Link href="/chatbots">Cancel</Link>
                         </Button>
                     </div>
                 </form>
             </div>
-        </AdminLayout>
+        </AppLayout>
     );
 }

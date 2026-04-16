@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import AdminLayout from '@/layouts/admin/AdminLayout';
+import AppLayout from '@/layouts/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -21,7 +21,7 @@ export default function Show({ chatbot }: Props) {
     const embedCode = `<script src="${window.location.origin}/chatbot/${chatbot.public_id}/widget.js"></script>`;
 
     return (
-        <AdminLayout>
+        <AppLayout>
             <Head title={chatbot.name} />
 
             <div className="max-w-6xl mx-auto space-y-8 py-6">
@@ -29,7 +29,7 @@ export default function Show({ chatbot }: Props) {
                 <div className="flex items-center justify-between border-b border-outline-variant/30 pb-6">
                     <div className="flex items-center gap-4">
                         <Button variant="ghost" size="icon" asChild className="text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-[12px]">
-                            <Link href="/admin/chatbots">
+                            <Link href="/chatbots">
                                 <ArrowLeft size={18} />
                             </Link>
                         </Button>
@@ -39,7 +39,7 @@ export default function Show({ chatbot }: Props) {
                         </div>
                     </div>
                     <Button asChild className="gap-2 shrink-0 bg-primary-container hover:bg-surface-dim text-on-primary-container h-10 px-5 rounded-[12px] border-0 shadow-none">
-                        <Link href={`/admin/chatbots/${chatbot.id}/edit`}>
+                        <Link href={`/chatbots/${chatbot.id}/edit`}>
                             <Edit size={16} />
                             Edit Protocol
                         </Link>
@@ -133,6 +133,6 @@ export default function Show({ chatbot }: Props) {
                     </div>
                 </div>
             </div>
-        </AdminLayout>
+        </AppLayout>
     );
 }

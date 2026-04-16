@@ -14,10 +14,14 @@ createInertiaApp({
             switch (true) {
                 case name === 'welcome':
                     return null;
+                case name.startsWith('dashboard/'):
+                case name.startsWith('documents/'):
+                case name.startsWith('chatbots/'):
+                case name.startsWith('chat/'):
                 case name.startsWith('admin/'):
-                    return null; // Admin pages manage their own layouts
                 case name.startsWith('user/'):
-                    return null; // User pages manage their own layouts
+                case name.startsWith('users/'):
+                    return null; // These pages manage their own layouts to avoid doubling up
                 case name.startsWith('auth/'):
                     return AuthLayout;
                 case name.startsWith('settings/'):

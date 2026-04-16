@@ -36,9 +36,19 @@ class User extends Authenticatable
         ];
     }
 
-    public function documents(): BelongsToMany
+    public function documents(): HasMany
+    {
+        return $this->hasMany(Document::class);
+    }
+
+    public function assignedDocuments(): BelongsToMany
     {
         return $this->belongsToMany(Document::class);
+    }
+
+    public function chatbots(): HasMany
+    {
+        return $this->hasMany(Chatbot::class);
     }
 
     public function chats(): HasMany

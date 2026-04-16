@@ -6,12 +6,11 @@ import { ROLE_COLORS } from '@/types/admin/user';
 
 interface UserRowProps {
     user: AdminUser;
-    onManageAccess: (user: AdminUser) => void;
     onEdit: (user: AdminUser) => void;
     onDelete: (userId: number) => void;
 }
 
-const UserRow = memo(({ user, onManageAccess, onEdit, onDelete }: UserRowProps) => {
+const UserRow = memo(({ user, onEdit, onDelete }: UserRowProps) => {
     return (
         <div className="border-b border-outline-variant/10 px-4 py-4 transition-all hover:bg-surface-container/50">
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
@@ -48,13 +47,6 @@ const UserRow = memo(({ user, onManageAccess, onEdit, onDelete }: UserRowProps) 
 
                 {/* Actions */}
                 <div className="flex items-center gap-1 sm:ml-auto ml-13">
-                    <button
-                        type="button"
-                        onClick={() => onManageAccess(user)}
-                        className="flex items-center gap-1.5 rounded-[var(--radius-md)] bg-primary-container/60 px-3 py-1.5 text-[11px] font-bold text-primary transition-all hover:bg-primary hover:text-primary-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
-                    >
-                        <FileText size={14} /> Manage Access
-                    </button>
                     <button 
                         type="button" 
                         onClick={() => onEdit(user)}
@@ -74,24 +66,6 @@ const UserRow = memo(({ user, onManageAccess, onEdit, onDelete }: UserRowProps) 
                 </div>
             </div>
 
-            {/* Assigned docs */}
-            {user.assignedDocs.length > 0 ? (
-                <div className="mt-4 flex flex-wrap gap-2 pl-14">
-                    {user.assignedDocs.map((doc) => (
-                        <span key={doc} className="flex items-center gap-1.5 rounded-full bg-surface-container px-3 py-1 text-[10px] font-medium text-on-surface-variant border border-outline-variant/10 shadow-sm">
-                            <FileText size={10} className="text-primary" />
-                            {doc}
-                        </span>
-                    ))}
-                </div>
-            ) : (
-                <div className="mt-3 pl-14 flex items-center gap-2 opacity-60">
-                    <div className="h-1 w-1 rounded-full bg-error" />
-                    <p className="text-[11px] font-medium text-error italic">
-                        No documents assigned — user cannot access chat session.
-                    </p>
-                </div>
-            )}
         </div>
     );
 });

@@ -15,7 +15,7 @@ export function UploadModal({ onClose }: UploadModalProps) {
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
-        post('/admin/documents', {
+        post('/documents', {
             onSuccess: () => {
                 reset();
                 onClose();
@@ -30,7 +30,7 @@ export function UploadModal({ onClose }: UploadModalProps) {
                     <div className="mb-5 flex items-center justify-between">
                         <div>
                             <h2 className="font-semibold text-on-surface">Upload Document</h2>
-                            <p className="text-xs text-on-surface-variant">Uploaded docs can be assigned to users after indexing.</p>
+                            <p className="text-xs text-on-surface-variant">Manage and index your personal documents for AI analysis.</p>
                         </div>
                         <button type="button" onClick={onClose} className="rounded-full p-1 text-on-surface-variant hover:bg-surface-container-low transition-colors">
                             <X size={18} />

@@ -1,9 +1,9 @@
 import { Head, Link, router } from '@inertiajs/react';
-import AdminLayout from '@/layouts/admin/AdminLayout';
+import AppLayout from '@/layouts/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ConfirmationDialog } from '@/components/admin/ConfirmationDialog';
+import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { Plus, Bot, FileText, Pencil, Trash2, ArrowRight } from 'lucide-react';
 import { useState } from 'react';
 
@@ -24,13 +24,13 @@ export default function Index({ chatbots }: Props) {
 
     const confirmDelete = () => {
         if (deleteId === null) return;
-        router.delete(`/admin/chatbots/${deleteId}`, {
+        router.delete(`/chatbots/${deleteId}`, {
             onSuccess: () => setDeleteId(null),
         });
     };
 
     return (
-        <AdminLayout>
+        <AppLayout>
             <Head title="Chatbots" />
 
             <ConfirmationDialog
@@ -51,7 +51,7 @@ export default function Index({ chatbots }: Props) {
                         <p className="text-on-surface-variant mt-1 text-[15px]">Create and manage your embeddable AI chatbots.</p>
                     </div>
                     <Button asChild className="gap-2 shrink-0 bg-primary hover:bg-primary-dim text-primary-foreground h-11 px-6 rounded-[12px] shadow-[0_4px_24px_rgba(17,48,105,0.06)] border-0">
-                        <Link href="/admin/chatbots/create">
+                        <Link href="/chatbots/create">
                             <Plus size={18} />
                             Create Chatbot
                         </Link>
@@ -108,14 +108,14 @@ export default function Index({ chatbots }: Props) {
                                 
                                 {/* Right Section: Actions */}
                                 <div className="border-t md:border-t-0 md:border-l border-outline-variant/20 p-5 md:p-6 bg-surface-bright group-hover:bg-surface transition-colors shrink-0 flex flex-col items-center justify-center gap-3 w-full md:w-[220px]">
-                                    <Link href={`/admin/chatbots/${chatbot.id}`} className="flex-1 md:w-full md:flex-none">
+                                    <Link href={`/chatbots/${chatbot.id}`} className="flex-1 md:w-full md:flex-none">
                                         <Button className="w-full bg-surface-container hover:bg-surface-container-high text-on-surface hover:text-primary shadow-none transition-colors border-0 h-10 px-5 font-medium rounded-[10px]">
                                             Open Canvas <ArrowRight size={16} className="ml-2" />
                                         </Button>
                                     </Link>
                                     <div className="flex flex-row gap-2 w-full justify-end">
                                         <Button variant="outline" asChild className="flex-1 md:flex-auto text-on-surface-variant hover:text-primary border-outline-variant/50 hover:bg-primary-container hover:border-primary-container shadow-none h-10 rounded-[10px]">
-                                            <Link href={`/admin/chatbots/${chatbot.id}/edit`}>
+                                            <Link href={`/chatbots/${chatbot.id}/edit`}>
                                                 <Pencil size={15} className="mr-2 md:mr-0" />
                                                 <span className="md:hidden text-sm font-medium">Edit</span>
                                             </Link>
@@ -144,7 +144,7 @@ export default function Index({ chatbots }: Props) {
                         <h3 className="text-xl font-bold text-on-surface mb-2">Workspace Zero</h3>
                         <p className="text-on-surface-variant mb-6 text-center max-w-sm leading-relaxed text-[15px]">The canvas is empty. Start by creating an intelligent chatbot to curate responses from your documents.</p>
                         <Button asChild className="bg-primary hover:bg-primary-dim text-primary-foreground px-6 h-11 rounded-[12px] shadow-sm border-0">
-                            <Link href="/admin/chatbots/create">
+                            <Link href="/chatbots/create">
                                 <Plus size={18} className="mr-2" />
                                 Create Chatbot
                             </Link>
@@ -152,6 +152,6 @@ export default function Index({ chatbots }: Props) {
                     </div>
                 )}
             </div>
-        </AdminLayout>
+        </AppLayout>
     );
 }

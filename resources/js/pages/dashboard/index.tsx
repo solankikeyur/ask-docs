@@ -1,11 +1,12 @@
 import { Head } from '@inertiajs/react';
 import { FileText, MessageSquare, Users } from 'lucide-react';
 import type { ElementType } from 'react';
-import AdminLayout from '@/layouts/admin/AdminLayout';
+import AppLayout from '@/layouts/AppLayout';
 
 type DashboardStats = {
     documentsUploaded: number;
-    usersCreated: number;
+    chatbotsCreated: number;
+    usersCreated?: number;
     activeChatsToday: number;
 };
 
@@ -39,12 +40,12 @@ function StatCard({
     );
 }
 
-export default function AdminDashboard({ stats }: { stats: DashboardStats }) {
-    const format = (value: number) => value.toLocaleString();
+export default function Dashboard({ stats }: { stats: DashboardStats }) {
+    const format = (value?: number) => (value ?? 0).toLocaleString();
 
     return (
-        <AdminLayout activePath="/admin">
-            <Head title="Admin — Dashboard" />
+        <AppLayout activePath="/dashboard">
+            <Head title="Dashboard" />
 
             <div className="space-y-6">
                 {/* Header */}
@@ -56,8 +57,11 @@ export default function AdminDashboard({ stats }: { stats: DashboardStats }) {
 
                 {/* Stats */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <StatCard label="Documents Uploaded" value={format(stats.documentsUploaded)} icon={FileText} />
-                    <StatCard label="Users Created" value={format(stats.usersCreated)} icon={Users} />
+                    <StatCard label="My Documents" value={format(stats.documentsUploaded)} icon={FileText} />
+                    <StatCard label="My Chatbots" value={format(stats.chatbotsCreated)} icon={FileText} />
+                    {typeof stats.usersCreated !== 'undefined' && (
+                        <StatCard label="Workspace Users" value={format(stats.usersCreated)} icon={Users} />
+                    )}
                     <StatCard label="Active Chats Today" value={format(stats.activeChatsToday)} icon={MessageSquare} accent />
                 </div>
 
@@ -66,9 +70,9 @@ export default function AdminDashboard({ stats }: { stats: DashboardStats }) {
                     <h2 className="mb-4 font-semibold text-on-surface">How It Works</h2>
                     <div className="flex flex-col md:flex-row gap-3">
                         {[
-                            { step: '01', title: 'Upload Documents', desc: 'Add PDFs, DOCX, and CSVs to the knowledge base. The AI indexes them automatically.', icon: FileText },
-                            { step: '02', title: 'Create Users & Assign', desc: 'Create user accounts, then assign specific documents each user can access.', icon: Users },
-                            { step: '03', title: 'Users Chat with Docs', desc: 'Users log in and can only chat with the documents you have assigned to them.', icon: MessageSquare },
+                            { step: '01', title: 'Upload Documents', desc: 'Securely upload PDFs for indexing. Only you can access your personal documents.', icon: FileText },
+                            { step: '02', title: 'Ask Questions', desc: 'Engage with our AI to extract insights and summaries from your document library.', icon: MessageSquare },
+                            { step: '03', title: 'Expand Insights', desc: 'Use integrated chatbots to automate workflows and deep-dive into your data.', icon: Users },
                         ].map(({ step, title, desc, icon: Icon }) => (
                             <div key={step} className="relative rounded-[var(--radius-md)] bg-surface-container p-4 flex-1">
                                 <div className="mb-3 flex items-center gap-3">
@@ -84,6 +88,6 @@ export default function AdminDashboard({ stats }: { stats: DashboardStats }) {
                     </div>
                 </div>
             </div>
-        </AdminLayout>
+        </AppLayout>
     );
 }

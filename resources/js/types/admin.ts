@@ -8,6 +8,7 @@ export interface Doc {
     status: DocStatus;
     assignedTo: string[];   // user names
     assignedUserIds: number[];
+    download_url: string;
     updated: string;
 }
 
