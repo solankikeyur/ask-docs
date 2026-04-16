@@ -28,6 +28,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Chatbot Management
     Route::resource('chatbots', ChatbotController::class);
+    Route::get('/chatbots/{chatbot}/sessions/{sessionId}', [ChatbotController::class, 'getTranscript'])->name('chatbots.transcript');
 
     // Chat Interface
     Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');

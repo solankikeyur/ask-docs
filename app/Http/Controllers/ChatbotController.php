@@ -66,8 +66,27 @@ class ChatbotController extends Controller
 
         $chatbot->load(['documents' => fn ($q) => $q->select('documents.id', 'documents.name')]);
 
+        $conversations = $this->chatbotService->getConversationsForChatbot($chatbot);
+
         return Inertia::render('chatbots/show', [
             'chatbot' => $chatbot,
+            'conversations' => $conversations,
+        ]);
+    }
+
+    public function getTranscript(Chatbot $chatbot, string $sessionId): \Illuminate\Http\JsonResponse
+    {
+        if (auth()->user()->role !== \App\Enums\UserRole::ADMIN && $chatbot->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $messages = \App\Models\ChatbotMessage::where('chatbot_id', $chatbot->id)
+            ->where('session_id', $sessionId)
+            ->orderBy('id', 'asc')
+            ->get();
+
+        return response()->json([
+            'messages' => $messages,
         ]);
     }
 

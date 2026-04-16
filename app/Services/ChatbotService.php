@@ -65,4 +65,20 @@ class ChatbotService
     {
         return $chatbot->delete();
     }
+
+    /**
+     * Get unique conversation sessions for a chatbot.
+     */
+    public function getConversationsForChatbot(Chatbot $chatbot, int $limit = 50)
+    {
+        return \App\Models\ChatbotMessage::where('chatbot_id', $chatbot->id)
+            ->select('session_id')
+            ->selectRaw('MAX(created_at) as last_message_at')
+            ->selectRaw('COUNT(*) as message_count')
+            ->selectRaw('(SELECT content FROM chatbot_messages as cm2 WHERE cm2.session_id = chatbot_messages.session_id AND cm2.role = \'user\' ORDER BY cm2.id DESC LIMIT 1) as latest_user_message')
+            ->groupBy('session_id')
+            ->orderBy('last_message_at', 'desc')
+            ->limit($limit)
+            ->get();
+    }
 }
