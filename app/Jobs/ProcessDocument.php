@@ -45,46 +45,48 @@ class ProcessDocument implements ShouldQueue
      */
     public function handle(TextChunker $textChunker): void
     {
-        DB::transaction(function () use ($textChunker) {
+        $documentParser = new DocumentParser($this->document);
+        $documentContent = $documentParser->extractText();
+
+        $chunks = $textChunker->chunk($documentContent);
+
+        if (empty($chunks)) {
+            Log::warning('ProcessDocument: no chunks extracted', [
+                'document_id' => $this->document->id,
+            ]);
+            $this->document->update(['status' => Document::STATUS_FAILED]);
+            return;
+        }
+
+        $allRows = [];
+        $batchSize = 100;
+
+        foreach (array_chunk($chunks, $batchSize) as $batchIndex => $batch) {
+            // 외부 API 호출 (OpenAI) - 트랜잭션 외부에서 수행
+            $response = Embeddings::for($batch)
+                ->dimensions(1536)
+                ->generate(Lab::OpenAI, 'text-embedding-3-small');
+
+            $now = now();
+            foreach ($batch as $indexInBatch => $chunk) {
+                $allRows[] = [
+                    'document_id' => $this->document->id,
+                    'content' => $chunk,
+                    'embedding' => json_encode($response->embeddings[$indexInBatch]),
+                    'chunk_index' => ($batchIndex * $batchSize) + $indexInBatch,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+            }
+        }
+
+        DB::transaction(function () use ($allRows) {
             // Wipe any stale chunks from a previous failed attempt so retries are idempotent.
             $this->document->chunks()->delete();
 
-            $documentParser = new DocumentParser($this->document);
-            $documentContent = $documentParser->extractText();
-
-            $chunks = $textChunker->chunk($documentContent);
-
-            if (empty($chunks)) {
-                Log::warning('ProcessDocument: no chunks extracted', [
-                    'document_id' => $this->document->id,
-                ]);
-                $this->document->update(['status' => Document::STATUS_FAILED]);
-                return;
-            }
-
-            $batchSize = 100;
-
-            foreach (array_chunk($chunks, $batchSize) as $batchIndex => $batch) {
-                $response = Embeddings::for($batch)
-                    ->dimensions(1536)
-                    ->generate(Lab::OpenAI, 'text-embedding-3-small');
-
-                // Bulk-insert the entire batch in a single query instead of N individual INSERTs.
-                $rows = [];
-                $now = now();
-
-                foreach ($batch as $indexInBatch => $chunk) {
-                    $rows[] = [
-                        'document_id' => $this->document->id,
-                        'content' => $chunk,
-                        'embedding' => json_encode($response->embeddings[$indexInBatch]),
-                        'chunk_index' => ($batchIndex * $batchSize) + $indexInBatch,
-                        'created_at' => $now,
-                        'updated_at' => $now,
-                    ];
-                }
-
-                DocumentChunk::insert($rows);
+            // Bulk-insert the prepared rows in batches for performance.
+            foreach (array_chunk($allRows, 100) as $rowBatch) {
+                DocumentChunk::insert($rowBatch);
             }
 
             $this->document->update(['status' => Document::STATUS_READY]);

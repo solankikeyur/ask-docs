@@ -20,7 +20,7 @@ class DocumentController extends Controller
     public function index(Request $request): Response
     {
         $search = $request->input('search');
-        $documents = $this->documentService->getPaginatedForUser($request->user(), $search)
+        $documents = $this->documentService->getPaginatedForUser($request->user(), $search, 10, ['users'])
             ->through(function ($doc) {
                 return [
                     'id' => $doc->id,
@@ -71,10 +71,7 @@ class DocumentController extends Controller
 
     public function destroy(Document $document): RedirectResponse
     {
-        // Authorization check if not admin
-        if (auth()->user()->role !== \App\Enums\UserRole::ADMIN && $document->user_id !== auth()->id()) {
-            abort(403);
-        }
+        $this->authorize('delete', $document);
 
         $this->documentService->delete($document);
 
@@ -83,20 +80,20 @@ class DocumentController extends Controller
 
     public function download(Document $document)
     {
-        \Illuminate\Support\Facades\Log::info('Download requested for document: ' . $document->id);
-
-        // Authorization check: Admin sees all, others only their own uploads
-        if (auth()->user()->role !== \App\Enums\UserRole::ADMIN && $document->user_id !== auth()->id()) {
-            abort(403);
-        }
+        $this->authorize('download', $document);
 
         $disk = Document::storageDisk();
+
         if (!Storage::disk($disk)->exists($document->path)) {
             return back()->withErrors(['download' => 'File not found on storage disk: ' . $document->path]);
         }
 
-        $absolutePath = Storage::disk($disk)->path($document->path);
-        
-        return response()->download($absolutePath, $document->name);
+        return response()->streamDownload(function () use ($disk, $document) {
+            $stream = Storage::disk($disk)->readStream($document->path);
+            fpassthru($stream);
+            if (is_resource($stream)) {
+                fclose($stream);
+            }
+        }, $document->name);
     }
 }

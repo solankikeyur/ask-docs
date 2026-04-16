@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { ChatbotConversationList } from '@/components/chatbots/ChatbotConversationList';
 import { ConversationTranscriptModal } from '@/components/chatbots/ConversationTranscriptModal';
 import { cn } from '@/lib/utils';
+import type { PaginatedConversations } from '@/types/admin';
 
 interface Chatbot {
     id: number;
@@ -17,16 +18,9 @@ interface Chatbot {
     documents: Array<{ id: number; name: string }>;
 }
 
-interface Conversation {
-    session_id: string;
-    last_message_at: string;
-    message_count: number;
-    latest_user_message: string | null;
-}
-
 interface Props {
     chatbot: Chatbot;
-    conversations: Conversation[];
+    conversations: PaginatedConversations;
 }
 
 export default function Show({ chatbot, conversations }: Props) {
@@ -101,15 +95,15 @@ export default function Show({ chatbot, conversations }: Props) {
                         className={cn(
                             "flex items-center gap-2 px-6 py-2.5 rounded-[10px] text-[14px] font-semibold transition-all",
                             activeTab === 'history' 
-                            ? "bg-surface-bright text-primary shadow-[0_2px_8_rgba(0,0,0,0.04)]" 
+                            ? "bg-surface-bright text-primary shadow-[0_2px_8px_rgba(0,0,0,0.04)]" 
                             : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high"
                         )}
                     >
                         <MessageSquare size={16} />
                         Conversation History
-                        {conversations.length > 0 && (
+                        {conversations.meta.total > 0 && (
                             <span className="ml-1 bg-primary/10 text-primary text-[11px] px-2 py-0.5 rounded-full">
-                                {conversations.length}
+                                {conversations.meta.total}
                             </span>
                         )}
                     </button>
@@ -209,7 +203,7 @@ export default function Show({ chatbot, conversations }: Props) {
                                 <div className="flex justify-between items-center text-sm py-2">
                                     <span className="text-on-surface-variant font-medium">Total Sessions</span>
                                     <Badge variant="secondary" className="bg-primary/10 text-primary border-0 hover:bg-primary/10 shadow-none">
-                                        {conversations.length} total
+                                        {conversations.meta.total} total
                                     </Badge>
                                 </div>
                             </CardContent>

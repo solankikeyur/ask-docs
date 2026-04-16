@@ -12,8 +12,18 @@ export interface Doc {
     updated: string;
 }
 
-export interface PaginatedDocs {
-    data: Doc[];
+    };
+}
+
+export interface Conversation {
+    session_id: string;
+    last_message_at: string;
+    message_count: number;
+    latest_user_message: string | null;
+}
+
+export interface PaginatedConversations {
+    data: Conversation[];
     links: { url: string | null; label: string; active: boolean }[];
     meta: {
         current_page: number;

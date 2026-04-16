@@ -33,7 +33,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Chat Interface
     Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
     Route::get('/chat/{chat}', [ChatController::class, 'show'])->name('chat.show');
-    Route::post('/chat', [ChatController::class, 'store'])->name('chat.store');
+    Route::post('/chat', [ChatController::class, 'store'])
+        ->middleware('throttle:30,1')
+        ->name('chat.store');
     Route::delete('/chat', [ChatController::class, 'destroyAll'])->name('chat.destroyAll');
     Route::put('/chat/{chat}', [ChatController::class, 'update'])->name('chat.update');
     Route::delete('/chat/{chat}', [ChatController::class, 'destroy'])->name('chat.destroy');

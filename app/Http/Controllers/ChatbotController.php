@@ -51,9 +51,7 @@ class ChatbotController extends Controller
 
     public function show(Chatbot $chatbot): Response
     {
-        if (auth()->user()->role !== \App\Enums\UserRole::ADMIN && $chatbot->user_id !== auth()->id()) {
-            abort(403);
-        }
+        $this->authorize('view', $chatbot);
 
         $chatbot->load(['documents' => fn ($q) => $q->select('documents.id', 'documents.name')]);
 
@@ -67,13 +65,12 @@ class ChatbotController extends Controller
 
     public function getTranscript(Chatbot $chatbot, string $sessionId): \Illuminate\Http\JsonResponse
     {
-        if (auth()->user()->role !== \App\Enums\UserRole::ADMIN && $chatbot->user_id !== auth()->id()) {
-            abort(403);
-        }
+        $this->authorize('view', $chatbot);
 
         $messages = \App\Models\ChatbotMessage::where('chatbot_id', $chatbot->id)
             ->where('session_id', $sessionId)
             ->orderBy('id', 'asc')
+            ->limit(500) // Safety limit
             ->get();
 
         return response()->json([
@@ -83,9 +80,7 @@ class ChatbotController extends Controller
 
     public function edit(Chatbot $chatbot): Response
     {
-        if (auth()->user()->role !== \App\Enums\UserRole::ADMIN && $chatbot->user_id !== auth()->id()) {
-            abort(403);
-        }
+        $this->authorize('update', $chatbot);
 
         $chatbot->load(['documents' => fn ($q) => $q->select('documents.id', 'documents.name')]);
 
@@ -101,9 +96,7 @@ class ChatbotController extends Controller
 
     public function update(ChatbotRequest $request, Chatbot $chatbot): RedirectResponse
     {
-        if (auth()->user()->role !== \App\Enums\UserRole::ADMIN && $chatbot->user_id !== auth()->id()) {
-            abort(403);
-        }
+        $this->authorize('update', $chatbot);
 
         $validated = $request->validated();
 
@@ -114,9 +107,7 @@ class ChatbotController extends Controller
 
     public function destroy(Chatbot $chatbot): RedirectResponse
     {
-        if (auth()->user()->role !== \App\Enums\UserRole::ADMIN && $chatbot->user_id !== auth()->id()) {
-            abort(403);
-        }
+        $this->authorize('delete', $chatbot);
 
         $this->chatbotService->delete($chatbot);
 

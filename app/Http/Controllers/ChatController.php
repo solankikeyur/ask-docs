@@ -40,9 +40,7 @@ class ChatController extends Controller
 
     public function show(Request $request, Chat $chat): Response
     {
-        if (auth()->user()->role !== \App\Enums\UserRole::ADMIN && $chat->user_id !== auth()->id()) {
-            abort(403);
-        }
+        $this->authorize('view', $chat);
 
         $user = $request->user();
 
@@ -78,9 +76,7 @@ class ChatController extends Controller
 
         // Authorization check for document: Admin sees all, others only their own
         $document = Document::findOrFail($validated['document_id']);
-        if ($user->role !== \App\Enums\UserRole::ADMIN && $document->user_id !== $user->id) {
-            abort(403, 'You do not have access to this document.');
-        }
+        $this->authorize('view', $document);
 
         if ($document->status !== Document::STATUS_READY) {
             return response()->json([
@@ -131,9 +127,7 @@ class ChatController extends Controller
 
     public function update(Request $request, Chat $chat): RedirectResponse
     {
-        if (auth()->user()->role !== \App\Enums\UserRole::ADMIN && $chat->user_id !== auth()->id()) {
-            abort(403);
-        }
+        $this->authorize('update', $chat);
 
         $validated = $request->validate([
             'title' => 'nullable|string|max:255',
@@ -148,9 +142,7 @@ class ChatController extends Controller
 
     public function destroy(Chat $chat): RedirectResponse
     {
-        if (auth()->user()->role !== \App\Enums\UserRole::ADMIN && $chat->user_id !== auth()->id()) {
-            abort(403);
-        }
+        $this->authorize('delete', $chat);
 
         $this->chatService->delete($chat);
 
@@ -164,3 +156,4 @@ class ChatController extends Controller
         return redirect()->route('chat.index');
     }
 }
+

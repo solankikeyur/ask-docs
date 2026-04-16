@@ -16,9 +16,9 @@ class DocumentService
     /**
      * Get paginated documents based on user role and search query.
      */
-    public function getPaginatedForUser(User $user, ?string $search = null, int $perPage = 10): LengthAwarePaginator
+    public function getPaginatedForUser(User $user, ?string $search = null, int $perPage = 10, array $with = []): LengthAwarePaginator
     {
-        $query = Document::query();
+        $query = Document::query()->with($with);
 
         // Scoping: Admin sees all, others see only their own.
         if ($user->role !== UserRole::ADMIN) {
