@@ -101,9 +101,9 @@ export default function Show({ chatbot, conversations }: Props) {
                     >
                         <MessageSquare size={16} />
                         Conversation History
-                        {conversations.meta.total > 0 && (
+                        {(conversations.total ?? conversations.meta?.total ?? 0) > 0 && (
                             <span className="ml-1 bg-primary/10 text-primary text-[11px] px-2 py-0.5 rounded-full">
-                                {conversations.meta.total}
+                                {conversations.total ?? conversations.meta?.total ?? 0}
                             </span>
                         )}
                     </button>
@@ -203,7 +203,7 @@ export default function Show({ chatbot, conversations }: Props) {
                                 <div className="flex justify-between items-center text-sm py-2">
                                     <span className="text-on-surface-variant font-medium">Total Sessions</span>
                                     <Badge variant="secondary" className="bg-primary/10 text-primary border-0 hover:bg-primary/10 shadow-none">
-                                        {conversations.meta.total} total
+                                        {conversations.total ?? conversations.meta?.total ?? 0} total
                                     </Badge>
                                 </div>
                             </CardContent>

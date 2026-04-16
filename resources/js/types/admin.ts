@@ -12,7 +12,40 @@ export interface Doc {
     updated: string;
 }
 
+export interface PaginationLink {
+    url: string | null;
+    label: string;
+    active: boolean;
+}
+
+export interface PaginationProps {
+    current_page: number;
+    data: any[];
+    first_page_url: string;
+    from: number | null;
+    last_page: number;
+    last_page_url: string;
+    links: PaginationLink[];
+    next_page_url: string | null;
+    path: string;
+    per_page: number;
+    prev_page_url: string | null;
+    to: number | null;
+    total: number;
+    // Some setups (like using API Resources) might wrap these in meta
+    meta?: {
+        current_page: number;
+        from: number;
+        last_page: number;
+        path: string;
+        per_page: number;
+        to: number;
+        total: number;
     };
+}
+
+export interface PaginatedDocs extends PaginationProps {
+    data: Doc[];
 }
 
 export interface Conversation {
@@ -22,15 +55,6 @@ export interface Conversation {
     latest_user_message: string | null;
 }
 
-export interface PaginatedConversations {
+export interface PaginatedConversations extends PaginationProps {
     data: Conversation[];
-    links: { url: string | null; label: string; active: boolean }[];
-    meta: {
-        current_page: number;
-        last_page: number;
-        per_page: number;
-        total: number;
-        from: number;
-        to: number;
-    };
 }
