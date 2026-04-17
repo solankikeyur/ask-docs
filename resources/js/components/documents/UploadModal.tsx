@@ -49,7 +49,8 @@ export function UploadModal({ onClose }: UploadModalProps) {
                             const file = e.dataTransfer.files[0];
 
                             if (file) {
-                                if (file.type !== 'application/pdf') {
+                                const allowedTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword'];
+                                if (!allowedTypes.includes(file.type)) {
                                     return;
                                 }
 
@@ -74,7 +75,7 @@ export function UploadModal({ onClose }: UploadModalProps) {
                         ) : (
                             <div className="space-y-1">
                                 <p className="text-sm font-medium text-on-surface">Drag & Drop files here or browse</p>
-                                <p className="text-[10px] text-on-surface-variant">Supports PDF only up to 50MB</p>
+                                <p className="text-[10px] text-on-surface-variant">Supports PDF and Word Documents up to 15MB</p>
                             </div>
                         )}
 
@@ -82,12 +83,15 @@ export function UploadModal({ onClose }: UploadModalProps) {
                             type="file"
                             id="file-upload"
                             className="hidden"
-                            accept=".pdf"
+                            accept=".pdf,.docx,.doc"
                             onChange={(e) => {
                                 const file = e.target.files?.[0];
 
-                                if (file && file.type !== 'application/pdf') {
-                                    return;
+                                if (file) {
+                                    const allowedTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword'];
+                                    if (!allowedTypes.includes(file.type)) {
+                                        return;
+                                    }
                                 }
 
                                 setData('document', file || null);
