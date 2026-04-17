@@ -19,4 +19,9 @@ interface DocumentContextSource
      * @return Collection
      */
     public function messages(): Collection;
+
+    /**
+     * Get the system instruction (persona/behavior) for this source.
+     */
+    public function getSystemInstruction(): ?string;
 }

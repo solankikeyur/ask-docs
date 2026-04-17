@@ -22,7 +22,7 @@ class AskDoc implements Agent, Conversational
      */
     public function instructions(): Stringable|string
     {
-        return <<<'EOT'
+        $baseInstructions = <<<'EOT'
 You are a helpful, professional AI assistant designed to answer questions based strictly on the provided document context.
 
 You will receive the user's question along with relevant CONTEXT retrieved from a knowledge base. You also have access to the CONVERSATION HISTORY.
@@ -46,6 +46,19 @@ FORMATTING RULES
 - Prefer concise, structured answers. Use bullet points, numbered lists, and short paragraphs to make your response highly readable.
 - Keep the tone professional, accurate, and helpful. Provide directly the final answer without meta-commentary.
 EOT;
+
+        $customInstruction = $this->source->getSystemInstruction();
+
+        if (blank($customInstruction)) {
+            return $baseInstructions;
+        }
+
+        return $baseInstructions . "\n\n" . 
+               "=====================\n" .
+               "PERSONALITY & TONE (USER DEFINED)\n" .
+               "=====================\n\n" .
+               "You must also follow these specific personality and behavior instructions provided by the chatbot owner:\n" .
+               $customInstruction;
     }
 
     /**

@@ -53,4 +53,9 @@ class Chat extends Model implements DocumentContextSource
     {
         return $this->messageRecords()->orderBy('id')->get();
     }
+
+    public function getSystemInstruction(): ?string
+    {
+        return null; // Standard chat uses base instructions only
+    }
 }
