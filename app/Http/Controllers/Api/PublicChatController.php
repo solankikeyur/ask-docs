@@ -78,6 +78,4 @@ class PublicChatController extends Controller
             'X-Session-Id' => $sessionId,
         ]);
     }
-
-    }
 }
