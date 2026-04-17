@@ -95,15 +95,23 @@ class ChatController extends Controller
 
         $aiChatService = new AiChatService($chat);
 
-        $stream = $aiChatService->streamAnswer($validated['content'])
-            ->then(function (StreamedAgentResponse $response) use ($chat) {
-                $chat->messageRecords()->create([
-                    'role' => 'assistant',
-                    'content' => $response->text,
-                ]);
-            });
+        $result = $aiChatService->streamAnswer($validated['content']);
+        $stream = $result['stream'];
+        $citations = $result['citations'];
 
-        return response()->stream(function () use ($stream) {
+        $stream->then(function (StreamedAgentResponse $response) use ($chat, $citations, $aiChatService) {
+            $chat->messageRecords()->create([
+                'role' => 'assistant',
+                'content' => $response->text,
+                'metadata' => ['citations' => $aiChatService->filterUsedCitations($response->text, $citations)],
+            ]);
+        });
+
+        return response()->stream(function () use ($stream, $citations) {
+            // First, send the metadata event
+            echo "event: metadata\n";
+            echo "data: " . json_encode(['citations' => $citations]) . "\n\n";
+
             foreach ($stream as $event) {
                 if (is_string($event)) {
                     echo $event;

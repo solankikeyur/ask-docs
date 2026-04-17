@@ -343,3 +343,28 @@
         #ask-docs-chatbot-messages .message p { margin: 6px 0; }
         #ask-docs-chatbot-messages .message > p:first-child { margin-top: 0; }
         #ask-docs-chatbot-messages .message > p:last-child { margin-bottom: 0; }
+
+        /* Citations */
+        .citations-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 10px;
+        }
+        .citation-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            color: #475569;
+            font-weight: 500;
+        }
+        .citation-tag svg {
+            width: 10px;
+            height: 10px;
+            stroke: #64748b;
+        }

@@ -94,7 +94,7 @@ export default function ChatIndex({
     }, []);
 
     // Destructure for convenience
-    const { data: streamedData, isStreaming, isFetching, responseHeaders, error: streamError } = streamState;
+    const { data: streamedData, citations: streamedCitations, isStreaming, isFetching, responseHeaders, error: streamError } = streamState;
 
     // ─── Handle new chat-id coming back in response headers ─────────────────────
     const handledResponseRef = useRef(false);
@@ -109,7 +109,7 @@ export default function ChatIndex({
             setLocalChatId(chatId);
 
             if (typeof window !== 'undefined') {
-                window.history.pushState({}, '', `/chat/${newChatId}`);
+                window.history.pushState({}, '', `/chat/${chatId}`);
             }
 
             const pending = pendingNewChatRef.current;
@@ -204,11 +204,17 @@ export default function ChatIndex({
             return;
         }
 
-        setLocalMessages((prev) => [...prev, { id: Date.now(), role: 'assistant', content: full }]);
+        setLocalMessages((prev) => [...prev, { 
+            id: Date.now(), 
+            role: 'assistant', 
+            content: full,
+            metadata: streamedCitations ? { citations: streamedCitations } : undefined
+        }]);
+
         clearStreamData();
         resetTyping();
         handledResponseRef.current = false;  // allow next message to pick up new chat-id if any
-    }, [streamEnded, streamedDisplay, resetTyping]);
+    }, [streamEnded, streamedDisplay, resetTyping, streamedCitations]);
 
     // ─── Sync props → local state ────────────────────────────────────────────────
     useEffect(() => { setLocalMessages(messages); }, [messages]);
@@ -355,7 +361,12 @@ export default function ChatIndex({
     const showSkeleton = (isFetching || isStreaming || streamEnded) && streamedDisplay.length === 0;
 
     if (streamedDisplay) {
-        displayMessages.push({ id: -1, role: 'assistant', content: streamedDisplay });
+        displayMessages.push({ 
+            id: -1, 
+            role: 'assistant', 
+            content: streamedDisplay,
+            metadata: streamedCitations ? { citations: streamedCitations } : undefined
+        });
     }
 
     return (

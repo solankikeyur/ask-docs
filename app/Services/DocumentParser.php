@@ -18,13 +18,25 @@ class DocumentParser
 
     public function extractText(): string
     {
+        $pages = $this->extractPages();
+        
+        return collect($pages)->pluck('text')->implode(' ');
+    }
+
+    /**
+     * Extracts text from the document, preserving page numbers.
+     * 
+     * @return array<int, array{page: int, text: string}>
+     */
+    public function extractPages(): array
+    {
         try {
             return match ($this->document->type) {
-                'PDF'   => $this->parsePdf(),
+                'PDF'   => $this->parsePdfToPages(),
                 default => throw new Exception("Unsupported document type: {$this->document->type}"),
             };
         } catch (Exception $e) {
-            Log::error('DocumentParser: extraction failed', [
+            Log::error('DocumentParser: page extraction failed', [
                 'document_id' => $this->document->id,
                 'path'        => $this->document->path,
                 'error'       => $e->getMessage(),
@@ -33,23 +45,17 @@ class DocumentParser
         }
     }
 
-    protected function parsePdf(): string
+    protected function parsePdfToPages(): array
     {
-        // Download the file from whichever storage disk is configured (local, S3, R2…)
-        // into a local temp file. This allows all downstream parsers (pdftotext, Smalot)
-        // to work on a real local path regardless of where the file actually lives.
         $localTempFile = $this->downloadToTemp();
 
         try {
-            $text = $this->extractTextFromLocalFile($localTempFile);
+            return $this->extractPagesFromLocalFile($localTempFile);
         } finally {
-            // Always clean up the temp file, even if parsing throws.
             if (file_exists($localTempFile)) {
                 unlink($localTempFile);
             }
         }
-
-        return $text;
     }
 
     /**
@@ -81,50 +87,35 @@ class DocumentParser
     }
 
     /**
-     * Extract text from a local filesystem path.
-     * Tries pdftotext (Poppler) first — memory-efficient for large files.
-     * Falls back to Smalot\PdfParser (PHP-native) if pdftotext is unavailable.
+     * Extract pages from a local filesystem path.
+     * Uses Smalot\PdfParser for structured page extraction.
      */
-    private function extractTextFromLocalFile(string $filePath): string
+    private function extractPagesFromLocalFile(string $filePath): array
     {
-        // ── Attempt 1: pdftotext (Poppler CLI) ──────────────────────────────
-        $outputFile = tempnam(sys_get_temp_dir(), 'pdf_text_');
-
-        try {
-            // Suppress stderr cross-platform: NUL on Windows, /dev/null on Unix.
-            $nullDevice = PHP_OS_FAMILY === 'Windows' ? 'NUL' : '/dev/null';
-            $command    = sprintf(
-                'pdftotext %s %s 2>%s',
-                escapeshellarg($filePath),
-                escapeshellarg($outputFile),
-                $nullDevice
-            );
-            exec($command, $output, $returnCode);
-
-            if ($returnCode === 0 && file_exists($outputFile) && filesize($outputFile) > 0) {
-                $text = file_get_contents($outputFile);
-                return trim((string) preg_replace('/\s+/', ' ', $text));
-            }
-        } catch (Exception $e) {
-            Log::warning('DocumentParser: pdftotext failed, falling back to Smalot\\PdfParser', [
-                'document_id' => $this->document->id,
-                'error'       => $e->getMessage(),
-            ]);
-        } finally {
-            if (file_exists($outputFile)) {
-                unlink($outputFile);
-            }
-        }
-
-        // ── Attempt 2: Smalot\PdfParser (PHP-native fallback) ───────────────
-        Log::info('DocumentParser: using Smalot\\PdfParser fallback', [
+        Log::info('DocumentParser: extracting pages using Smalot\\PdfParser', [
             'document_id' => $this->document->id,
         ]);
 
         $parser = new Parser();
         $pdf    = $parser->parseFile($filePath);
-        $text   = $pdf->getText();
+        $pages  = $pdf->getPages();
+        
+        $extracted = [];
+        
+        foreach ($pages as $index => $page) {
+            $text = $page->getText();
+            $text = trim((string) preg_replace('/\s+/', ' ', $text));
+            
+            if (empty($text)) {
+                continue;
+            }
+            
+            $extracted[] = [
+                'page' => $index + 1,
+                'text' => $text,
+            ];
+        }
 
-        return trim((string) preg_replace('/\s+/', ' ', $text));
+        return $extracted;
     }
 }

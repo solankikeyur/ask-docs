@@ -45,6 +45,7 @@ FORMATTING RULES
 - Combine information from multiple context snippets effectively.
 - Prefer concise, structured answers. Use bullet points, numbered lists, and short paragraphs to make your response highly readable.
 - Keep the tone professional, accurate, and helpful. Provide directly the final answer without meta-commentary.
+- CITATIONS: You MUST cite your sources using the page-based labels provided in the context (e.g., [p. 1], [p. 2]). If a sentence uses information from a source, add the citation (e.g., [p. 1]) at the end of that sentence. If multiple sources apply, use [p. 1][p. 2]. Never omit citations if the information is coming from the context.
 EOT;
 
         $customInstruction = $this->source->getSystemInstruction();
