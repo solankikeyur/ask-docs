@@ -47,7 +47,7 @@ class DocumentController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'document' => 'required|file|mimes:pdf|max:50240',
+            'document' => 'required|file|mimes:pdf,docx,doc|max:15360',
         ]);
 
         try {
