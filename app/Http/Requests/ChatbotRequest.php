@@ -30,6 +30,7 @@ class ChatbotRequest extends FormRequest
             'settings.primary_color' => ['nullable', 'string', 'regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/'],
             'settings.welcome_title' => 'nullable|string|max:255',
             'settings.welcome_subtitle' => 'nullable|string|max:255',
+            'settings.system_prompt' => 'nullable|string|max:2000',
             'settings.header_logo' => 'nullable|url|max:2048',
         ];
     }

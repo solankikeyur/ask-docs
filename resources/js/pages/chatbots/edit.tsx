@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, Bot, Trash2, Layers, Palette } from 'lucide-react';
+import { ArrowLeft, Bot, Trash2, Layers, Palette, Sparkles } from 'lucide-react';
 
 interface Document {
     id: number;
@@ -23,6 +23,7 @@ interface Chatbot {
         primary_color?: string;
         welcome_title?: string;
         welcome_subtitle?: string;
+        system_prompt?: string;
     };
 }
 
@@ -40,6 +41,7 @@ export default function Edit({ chatbot, documents }: Props) {
             primary_color: chatbot.settings?.primary_color || '#4f46e5',
             welcome_title: chatbot.settings?.welcome_title || 'Chatbot',
             welcome_subtitle: chatbot.settings?.welcome_subtitle || 'Ask questions about your documents',
+            system_prompt: chatbot.settings?.system_prompt || '',
         }
     });
 
@@ -121,6 +123,36 @@ export default function Edit({ chatbot, documents }: Props) {
                                     className="p-3 rounded-[12px] border border-outline/30 bg-surface-container-lowest focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-primary shadow-[0_2px_12px_rgba(17,48,105,0.02)] resize-y"
                                 />
                                 {errors.description && <p className="text-sm text-error font-medium">{errors.description}</p>}
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* AI Personality & Instructions */}
+                    <Card className="border-0 shadow-[0_4px_24px_rgba(17,48,105,0.04)] rounded-[16px] bg-surface-container-lowest">
+                        <CardHeader className="bg-surface pb-4 sm:pb-6 border-b border-outline-variant/30 rounded-t-[16px] px-6 sm:px-8 pt-6 sm:pt-8">
+                            <CardTitle className="flex items-center gap-3 text-xl text-on-surface font-semibold">
+                                <div className="p-2 bg-secondary-container text-on-secondary-container rounded-[10px]">
+                                    <Sparkles size={20} />
+                                </div>
+                                AI Personality & Instructions
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-6 px-4 sm:px-8 py-4 sm:py-8">
+                            <div className="space-y-2">
+                                <Label htmlFor="system_prompt" className="text-sm font-semibold text-on-surface">System Prompt / Custom Instructions</Label>
+                                <Textarea
+                                    id="system_prompt"
+                                    value={data.settings.system_prompt}
+                                    onChange={(e) => setData('settings', { ...data.settings, system_prompt: e.target.value })}
+                                    placeholder="e.g. You are a professional customer support agent for a fintech company. Be helpful, concise, and always refer to the user by name if they provide it."
+                                    rows={5}
+                                    className="p-3 rounded-[12px] border border-outline/30 bg-surface-container-lowest focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-primary shadow-[0_2px_12px_rgba(17,48,105,0.02)] resize-y"
+                                />
+                                <p className="text-[13px] text-on-surface-variant font-medium">
+                                    Define how the AI should behave, its tone, and any special formatting rules. 
+                                    <span className="text-primary ml-1">Example: "Answer like a creative copywriter."</span>
+                                </p>
+                                {errors['settings.system_prompt'] && <p className="text-sm text-error font-medium">{errors['settings.system_prompt']}</p>}
                             </div>
                         </CardContent>
                     </Card>

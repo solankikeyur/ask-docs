@@ -61,4 +61,9 @@ class Chatbot extends Model implements DocumentContextSource
             ->get()
             ->reverse();
     }
+
+    public function getSystemInstruction(): ?string
+    {
+        return $this->settings['system_prompt'] ?? null;
+    }
 }
