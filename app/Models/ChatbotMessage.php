@@ -7,7 +7,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ChatbotMessage extends Model
 {
-    protected $fillable = ['chatbot_id', 'session_id', 'role', 'content'];
+    protected $fillable = ['chatbot_id', 'session_id', 'role', 'content', 'metadata'];
+
+    protected $casts = [
+        'metadata' => 'array',
+    ];
 
     public function chatbot(): BelongsTo
     {

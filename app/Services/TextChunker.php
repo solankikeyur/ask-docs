@@ -18,71 +18,81 @@ class TextChunker
      */
     public function chunk(string $text, int $chunkSize = 1000, int $chunkOverlap = 150): array
     {
-        $text = $this->cleanText($text);
+        $chunks = $this->chunkWithPages([['page' => 1, 'text' => $text]], $chunkSize, $chunkOverlap);
+        
+        return collect($chunks)->pluck('content')->toArray();
+    }
 
-        if (empty($text)) {
-            return [];
-        }
-
-        if (mb_strlen($text) <= $chunkSize) {
-            return [$text];
-        }
-
-        // Split on sentence-ending punctuation followed by whitespace, or on paragraph breaks.
-        $sentences = preg_split(
-            '/(?<=[.?!。])\s+|\n{2,}/',
-            $text,
-            -1,
-            PREG_SPLIT_NO_EMPTY
-        );
-
-        if (empty($sentences)) {
-            return [$text];
-        }
-
-        $chunks  = [];
+    /**
+     * Chunk the text while preserving page attribution.
+     * 
+     * @param  array<int, array{page: int, text: string}> $pages
+     * @return array<int, array{content: string, page: int}>
+     */
+    public function chunkWithPages(array $pages, int $chunkSize = 1000, int $chunkOverlap = 150): array
+    {
+        $allChunks = [];
         $current = '';
+        $currentPage = null;
 
-        foreach ($sentences as $sentence) {
-            $sentence = trim($sentence);
+        foreach ($pages as $page) {
+            $text = $this->cleanText($page['text']);
+            if (empty($text)) continue;
+            
+            if ($currentPage === null) $currentPage = $page['page'];
 
-            if ($sentence === '') {
-                continue;
-            }
+            // Split on sentence-ending punctuation or paragraph breaks
+            $sentences = preg_split('/(?<=[.?!。])\s+|\n{2,}/', $text, -1, PREG_SPLIT_NO_EMPTY);
 
-            $wouldBe = $current === ''
-                ? $sentence
-                : $current . ' ' . $sentence;
+            foreach ($sentences as $sentence) {
+                $sentence = trim($sentence);
+                if ($sentence === '') continue;
 
-            if (mb_strlen($wouldBe) > $chunkSize && $current !== '') {
-                // Flush the current chunk.
-                $chunks[] = trim($current);
+                $wouldBe = $current === '' ? $sentence : $current . ' ' . $sentence;
 
-                // Carry the last $chunkOverlap characters of the flushed chunk
-                // into the next one so context is not lost at boundaries.
-                $overlap = mb_strlen($current) > $chunkOverlap
-                    ? mb_substr($current, -$chunkOverlap)
-                    : $current;
+                if (mb_strlen($wouldBe) > $chunkSize && $current !== '') {
+                    // Flush current chunk
+                    $allChunks[] = [
+                        'content' => trim($current),
+                        'page' => $currentPage
+                    ];
 
-                $current = trim($overlap) . ' ' . $sentence;
-            } else {
-                $current = $wouldBe;
-            }
+                    // Carry overlap
+                    $overlap = mb_strlen($current) > $chunkOverlap
+                        ? mb_substr($current, -$chunkOverlap)
+                        : $current;
 
-            // A single sentence that is itself longer than $chunkSize: hard-split it.
-            if (mb_strlen($current) > $chunkSize * 2) {
-                $hardChunks = $this->hardSplit($current, $chunkSize, $chunkOverlap);
-                $last       = array_pop($hardChunks);
-                $chunks     = array_merge($chunks, $hardChunks);
-                $current    = $last ?? '';
+                    $current = trim($overlap) . ' ' . $sentence;
+                    // For the next chunk, we associate it with the page where the most recent sentence started
+                    $currentPage = $page['page'];
+                } else {
+                    $current = $wouldBe;
+                    if ($currentPage === null) $currentPage = $page['page'];
+                }
+
+                // Handle runaway single sentences
+                if (mb_strlen($current) > $chunkSize * 2) {
+                    $hardChunks = $this->hardSplit($current, $chunkSize, $chunkOverlap);
+                    $last = array_pop($hardChunks);
+                    foreach ($hardChunks as $hc) {
+                        $allChunks[] = [
+                            'content' => $hc,
+                            'page' => $currentPage
+                        ];
+                    }
+                    $current = $last ?? '';
+                }
             }
         }
 
         if (trim($current) !== '') {
-            $chunks[] = trim($current);
+            $allChunks[] = [
+                'content' => trim($current),
+                'page' => $currentPage
+            ];
         }
 
-        return array_values(array_filter($chunks));
+        return $allChunks;
     }
 
     /**

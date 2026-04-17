@@ -1,5 +1,5 @@
 import { Check, Copy, MessageSquare } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePage } from '@inertiajs/react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useInitials } from '@/hooks/use-initials';
@@ -47,6 +47,37 @@ export function ChatMessageBubble({ message }: ChatMessageBubbleProps) {
 
         return () => clearTimeout(timer);
     }, [copied]);
+
+    const renderedCitations = useMemo(() => {
+        const cites = message.metadata?.citations;
+        if (!cites || cites.length === 0) return [];
+
+        // If it's already the processed format (e.g. loaded from history), return as is
+        if (cites[0].pages) return cites;
+
+        // Perform dynamic filtering based on [p. n] markers in text
+        const text = message.content || '';
+        const citedPages = Array.from(text.matchAll(/\[p\. (\d+)\]/g)).map((m) => m[1]);
+
+        if (citedPages.length === 0) return [];
+
+        const filtered = cites.filter((c: any) => citedPages.includes(String(c.page_number)));
+
+        // Group by document
+        const groups: Record<string, (string | number)[]> = {};
+        filtered.forEach((c: any) => {
+            if (!groups[c.document_name]) groups[c.document_name] = [];
+            if (!groups[c.document_name].includes(c.page_number)) {
+                groups[c.document_name].push(c.page_number);
+            }
+        });
+
+        // Format for display
+        return Object.entries(groups).map(([doc, pages]) => ({
+            document_name: doc,
+            pages: pages.sort((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true })),
+        }));
+    }, [message.content, message.metadata?.citations]);
 
     return (
         <div className={`flex gap-3 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}>
@@ -103,10 +134,10 @@ export function ChatMessageBubble({ message }: ChatMessageBubbleProps) {
                                 </div>
                             )}
 
-                            {message.metadata?.citations && (
+                            {renderedCitations.length > 0 && (
                                 <div className="mt-3 flex flex-wrap gap-1.5">
-                                    {message.metadata.citations.map((cite, ci) => (
-                                        <ChatCitation key={ci} doc={cite.doc} page={cite.page} />
+                                    {renderedCitations.map((cite: any, ci: number) => (
+                                        <ChatCitation key={ci} doc={cite.document_name} pages={cite.pages} />
                                     ))}
                                 </div>
                             )}

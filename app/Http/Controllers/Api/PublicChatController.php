@@ -39,17 +39,25 @@ class PublicChatController extends Controller
 
         $aiChatService = new AiChatService($chatbot);
 
-        $stream = $aiChatService->streamAnswer($validated['message'])
-            ->then(function (StreamedAgentResponse $response) use ($chatbot, $sessionId) {
-                ChatbotMessage::create([
-                    'chatbot_id' => $chatbot->id,
-                    'session_id' => $sessionId,
-                    'role' => 'assistant',
-                    'content' => $response->text,
-                ]);
-            });
+        $result = $aiChatService->streamAnswer($validated['message']);
+        $stream = $result['stream'];
+        $citations = $result['citations'];
 
-        return response()->stream(function () use ($stream) {
+        $stream->then(function (StreamedAgentResponse $response) use ($chatbot, $sessionId, $citations, $aiChatService) {
+            ChatbotMessage::create([
+                'chatbot_id' => $chatbot->id,
+                'session_id' => $sessionId,
+                'role' => 'assistant',
+                'content' => $response->text,
+                'metadata' => ['citations' => $aiChatService->filterUsedCitations($response->text, $citations)],
+            ]);
+        });
+
+        return response()->stream(function () use ($stream, $citations) {
+            // Send the metadata event
+            echo "event: metadata\n";
+            echo "data: " . json_encode(['citations' => $citations]) . "\n\n";
+
             foreach ($stream as $event) {
                 if (is_string($event)) {
                     echo $event;
@@ -69,5 +77,7 @@ class PublicChatController extends Controller
             'Connection' => 'keep-alive',
             'X-Session-Id' => $sessionId,
         ]);
+    }
+
     }
 }

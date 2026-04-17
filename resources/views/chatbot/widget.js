@@ -233,11 +233,66 @@
             let typingIndex = 0;
             let isTypingAnimRunning = false;
             let isStreamDone = false;
+            let metadataParsed = false;
+            let citations = null;
 
             const responseSessionId = response.headers.get('X-Session-Id');
             if (responseSessionId) {
                 sessionId = responseSessionId;
                 localStorage.setItem('chatbot-session-' + chatbotId, sessionId);
+            }
+
+            function renderCitations(container, citeList, currentText = '') {
+                if (!citeList || !citeList.length) return;
+                
+                let filteredList = [];
+                if (citeList[0].pages) {
+                    // History mode or already grouped
+                    filteredList = citeList;
+                } else {
+                    // Raw mode, needs filtering by page number from text
+                    const matches = Array.from(currentText.matchAll(/\[p\. (\d+)\]/g));
+                    const usedPages = matches.map(m => m[1]);
+                    
+                    if (usedPages.length === 0) {
+                        const existing = container.querySelector('.citations-container');
+                        if (existing) existing.remove();
+                        return;
+                    }
+
+                    const filtered = citeList.filter(c => usedPages.includes(String(c.page_number)));
+                    const groups = {};
+                    filtered.forEach(c => {
+                        if (!groups[c.document_name]) groups[c.document_name] = [];
+                        if (!groups[c.document_name].includes(c.page_number)) {
+                            groups[c.document_name].push(c.page_number);
+                        }
+                    });
+
+                    filteredList = Object.entries(groups).map(([doc, pages]) => ({
+                        document_name: doc,
+                        pages: pages.sort((a,b) => String(a).localeCompare(String(b), undefined, {numeric: true}))
+                    }));
+                }
+
+                if (filteredList.length === 0) return;
+
+                let wrapper = container.querySelector('.citations-container');
+                if (!wrapper) {
+                    wrapper = document.createElement('div');
+                    wrapper.className = 'citations-container';
+                    container.appendChild(wrapper);
+                } else {
+                    wrapper.innerHTML = '';
+                }
+                
+                filteredList.forEach(cite => {
+                    const tag = document.createElement('div');
+                    tag.className = 'citation-tag';
+                    const pageDisplay = cite.pages.join(', ');
+                    tag.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> ${cite.document_name} · Pages: ${pageDisplay}`;
+                    wrapper.appendChild(tag);
+                });
             }
 
             function processQueue() {
@@ -249,6 +304,11 @@
                     
                     typingMsgDiv.innerHTML = renderMarkdown(displayedText);
                     typingMsgDiv.dataset.raw = displayedText;
+
+                    if (citations) {
+                        renderCitations(typingMsgDiv, citations, displayedText);
+                    }
+
                     scrollToBottom();
                     
                     setTimeout(processQueue, 30);
@@ -261,6 +321,11 @@
                             typingMsgDiv.innerHTML = renderMarkdown(networkText);
                             typingMsgDiv.dataset.raw = networkText;
                         }
+                        
+                        if (citations) {
+                            renderCitations(typingMsgDiv, citations, displayedText);
+                        }
+                        
                         scrollToBottom();
                         enableInput();
                     }
@@ -268,30 +333,56 @@
             }
 
             function read() {
-                reader.read().then(({ done, value }) => {
-                    if (done) {
-                        isStreamDone = true;
-                        networkText += decoder.decode();
-                        if (!isTypingAnimRunning && typingIndex < networkText.length) {
-                            processQueue();
-                        } else if (!isTypingAnimRunning && typingIndex === networkText.length) {
-                            if (!networkText) {
-                                typingMsgDiv.innerHTML = 'No answer received.';
+                let buffer = '';
+                
+                function internalRead() {
+                    reader.read().then(({ done, value }) => {
+                        if (done) {
+                            isStreamDone = true;
+                            if (!isTypingAnimRunning) {
+                                processQueue();
                             }
-                            scrollToBottom();
-                            enableInput();
+                            return;
                         }
-                        return;
-                    }
-                    networkText += decoder.decode(value, { stream: true });
-                    if (!isTypingAnimRunning) {
-                        processQueue();
-                    }
-                    read();
-                }).catch(() => {
-                    typingMsgDiv.innerHTML = 'Sorry, something went wrong.';
-                    enableInput();
-                });
+                        
+                        const chunk = decoder.decode(value, { stream: true });
+                        
+                        if (!metadataParsed) {
+                            buffer += chunk;
+                            const metadataEnd = buffer.indexOf('\n\n');
+                            
+                            if (metadataEnd !== -1) {
+                                const metadataPart = buffer.slice(0, metadataEnd);
+                                const remaining = buffer.slice(metadataEnd + 2);
+                                
+                                if (metadataPart.startsWith('event: metadata')) {
+                                    const dataLine = metadataPart.split('\n').find(l => l.trim().startsWith('data:'));
+                                    if (dataLine) {
+                                        try {
+                                            const json = JSON.parse(dataLine.replace('data:', '').trim());
+                                            citations = json.citations;
+                                        } catch(e) {}
+                                    }
+                                }
+                                
+                                metadataParsed = true;
+                                if (remaining) {
+                                    networkText += remaining;
+                                    if (!isTypingAnimRunning) processQueue();
+                                }
+                            }
+                        } else {
+                            networkText += chunk;
+                            if (!isTypingAnimRunning) processQueue();
+                        }
+                        
+                        internalRead();
+                    }).catch(() => {
+                        typingMsgDiv.innerHTML = 'Sorry, something went wrong.';
+                        enableInput();
+                    });
+                }
+                internalRead();
             }
             read();
         }).catch(() => {

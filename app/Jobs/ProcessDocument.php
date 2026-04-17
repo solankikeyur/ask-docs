@@ -46,9 +46,9 @@ class ProcessDocument implements ShouldQueue
     public function handle(TextChunker $textChunker): void
     {
         $documentParser = new DocumentParser($this->document);
-        $documentContent = $documentParser->extractText();
+        $pages = $documentParser->extractPages();
 
-        $chunks = $textChunker->chunk($documentContent);
+        $chunks = $textChunker->chunkWithPages($pages);
 
         if (empty($chunks)) {
             Log::warning('ProcessDocument: no chunks extracted', [
@@ -62,18 +62,20 @@ class ProcessDocument implements ShouldQueue
         $batchSize = 100;
 
         foreach (array_chunk($chunks, $batchSize) as $batchIndex => $batch) {
-            // 외부 API 호출 (OpenAI) - 트랜잭션 외부에서 수행
-            $response = Embeddings::for($batch)
+            $contents = collect($batch)->pluck('content')->toArray();
+            
+            $response = Embeddings::for($contents)
                 ->dimensions(1536)
                 ->generate(Lab::OpenAI, 'text-embedding-3-small');
 
             $now = now();
-            foreach ($batch as $indexInBatch => $chunk) {
+            foreach ($batch as $indexInBatch => $chunkData) {
                 $allRows[] = [
                     'document_id' => $this->document->id,
-                    'content' => $chunk,
+                    'content' => $chunkData['content'],
                     'embedding' => json_encode($response->embeddings[$indexInBatch]),
                     'chunk_index' => ($batchIndex * $batchSize) + $indexInBatch,
+                    'metadata' => json_encode(['page' => $chunkData['page']]),
                     'created_at' => $now,
                     'updated_at' => $now,
                 ];

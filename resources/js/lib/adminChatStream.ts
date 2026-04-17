@@ -10,6 +10,8 @@
 export interface StreamState {
     /** Accumulated streamed text so far */
     data: string;
+    /** Citation metadata received via SSE event */
+    citations: any[] | null;
     /** Response headers received (e.g. X-Chat-Id) */
     responseHeaders: Headers | null;
     /** True while the HTTP response body is still being read */
@@ -24,6 +26,7 @@ type Listener = (state: StreamState) => void;
 
 const state: StreamState = {
     data: '',
+    citations: null,
     responseHeaders: null,
     isStreaming: false,
     isFetching: false,
@@ -54,6 +57,7 @@ export function getSnapshot(): StreamState {
 /** Reset accumulated data (e.g. before sending a new message). */
 export function clearStreamData() {
     state.data = '';
+    state.citations = null;
     state.responseHeaders = null;
     notify();
 }
@@ -63,6 +67,7 @@ export function abortStream() {
     abortController?.abort();
     abortController = null;
     state.data = '';
+    state.citations = null;
     state.responseHeaders = null;
     state.isStreaming = false;
     state.isFetching = false;
@@ -84,6 +89,7 @@ export async function sendStream(
     abortController = new AbortController();
 
     state.data = '';
+    state.citations = null;
     state.responseHeaders = null;
     state.isStreaming = false;
     state.isFetching = true;
@@ -127,6 +133,9 @@ export async function sendStream(
             return;
         }
 
+        let metadataParsed = false;
+        let buffer = '';
+
         // Read chunks until the stream closes
         // eslint-disable-next-line no-constant-condition
         while (true) {
@@ -134,7 +143,36 @@ export async function sendStream(
             if (done) break;
 
             const chunk = decoder.decode(value, { stream: true });
-            state.data += chunk;
+            
+            if (!metadataParsed) {
+                buffer += chunk;
+                const metadataEnd = buffer.indexOf('\n\n');
+                
+                if (metadataEnd !== -1) {
+                    const metadataPart = buffer.slice(0, metadataEnd);
+                    const remaining = buffer.slice(metadataEnd + 2);
+                    
+                    if (metadataPart.startsWith('event: metadata')) {
+                        const dataLine = metadataPart.split('\n').find((l) => l.trim().startsWith('data:'));
+                        if (dataLine) {
+                            try {
+                                const json = JSON.parse(dataLine.replace('data:', '').trim());
+                                state.citations = json.citations;
+                            } catch (e) {
+                                console.error('[adminChatStream] metadata parse error', e);
+                            }
+                        }
+                    }
+                    
+                    metadataParsed = true;
+                    if (remaining) {
+                        state.data += remaining;
+                    }
+                }
+            } else {
+                state.data += chunk;
+            }
+            
             notify();
         }
     } catch (err) {

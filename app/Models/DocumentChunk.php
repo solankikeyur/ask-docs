@@ -15,12 +15,14 @@ class DocumentChunk extends Model
         'content',
         'embedding',
         'chunk_index',
+        'metadata',
     ];
 
     protected function casts(): array
     {
         return [
             'embedding' => 'array',
+            'metadata' => 'array',
         ];
     }
 
