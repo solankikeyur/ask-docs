@@ -94,20 +94,32 @@ class AiChatService
             ];
         }
 
-        $similarChunks = DocumentChunk::with('document')
+        // 1. Semantic (Vector) Search candidates
+        $semanticChunks = DocumentChunk::with('document')
             ->whereIn('document_id', $documentIds)
             ->whereVectorSimilarTo('embedding', $vector, $this->similarityThreshold)
             ->limit($this->rerankCandidateLimit)
             ->get();
 
-        if ($similarChunks->isEmpty()) {
+        // 2. Keyword (FTS) Search candidates
+        $keywordChunks = DocumentChunk::with('document')
+            ->whereIn('document_id', $documentIds)
+            ->whereRaw("to_tsvector('english', content) @@ plainto_tsquery('english', ?)", [$message])
+            ->limit($this->rerankCandidateLimit)
+            ->get();
+
+        // 3. Combine and Deduplicate
+        $combinedChunks = $semanticChunks->merge($keywordChunks)->unique('id')->values();
+
+        if ($combinedChunks->isEmpty()) {
             return [
                 'context' => '',
                 'citations' => []
             ];
         }
 
-        $reranked = $this->cohere->rerank($message, $similarChunks, $this->contextChunkLimit);
+        // 4. Rerank down to context chunk limit
+        $reranked = $this->cohere->rerank($message, $combinedChunks, $this->contextChunkLimit);
 
         $relevantChunks = $reranked->take($this->contextChunkLimit);
 
