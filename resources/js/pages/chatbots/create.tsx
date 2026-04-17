@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, Bot, Layers, Palette, Sparkles } from 'lucide-react';
+import { ArrowLeft, Bot, Layers, Palette, Sparkles, Globe, MessageSquarePlus, X } from 'lucide-react';
 
 interface Document {
     id: number;
@@ -27,6 +27,8 @@ export default function Create({ documents }: Props) {
             welcome_title: 'Chatbot',
             welcome_subtitle: 'Ask questions about your documents',
             system_prompt: '',
+            allowed_domains: [] as string[],
+            starter_questions: [] as string[],
         }
     });
 
@@ -40,6 +42,30 @@ export default function Create({ documents }: Props) {
             ? data.document_ids.filter(id => id !== documentId)
             : [...data.document_ids, documentId]
         );
+    };
+
+    const addDomain = () => setData('settings', { ...data.settings, allowed_domains: [...data.settings.allowed_domains, ''] });
+    const updateDomain = (index: number, val: string) => {
+        const newDomains = [...data.settings.allowed_domains];
+        newDomains[index] = val;
+        setData('settings', { ...data.settings, allowed_domains: newDomains });
+    };
+    const removeDomain = (index: number) => {
+        const newDomains = [...data.settings.allowed_domains];
+        newDomains.splice(index, 1);
+        setData('settings', { ...data.settings, allowed_domains: newDomains });
+    };
+
+    const addQuestion = () => setData('settings', { ...data.settings, starter_questions: [...data.settings.starter_questions, ''] });
+    const updateQuestion = (index: number, val: string) => {
+        const newQs = [...data.settings.starter_questions];
+        newQs[index] = val;
+        setData('settings', { ...data.settings, starter_questions: newQs });
+    };
+    const removeQuestion = (index: number) => {
+        const newQs = [...data.settings.starter_questions];
+        newQs.splice(index, 1);
+        setData('settings', { ...data.settings, starter_questions: newQs });
     };
 
     return (
@@ -184,6 +210,75 @@ export default function Create({ documents }: Props) {
                                     className="h-12 rounded-[12px] border border-outline/30 bg-surface-container-lowest focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-primary shadow-[0_2px_12px_rgba(17,48,105,0.02)]"
                                 />
                             </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Security & Engagement */}
+                    <Card className="border-0 shadow-[0_4px_24px_rgba(17,48,105,0.04)] rounded-[16px] bg-surface-container-lowest">
+                        <CardHeader className="bg-surface pb-4 sm:pb-6 border-b border-outline-variant/30 rounded-t-[16px] px-6 sm:px-8 pt-6 sm:pt-8">
+                            <CardTitle className="flex items-center gap-3 text-xl text-on-surface font-semibold">
+                                <div className="p-2 bg-error-container text-on-error-container rounded-[10px]">
+                                    <Globe size={20} />
+                                </div>
+                                Security & Engagement
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-8 px-4 sm:px-8 py-4 sm:py-8">
+                            
+                            {/* Allowed Domains */}
+                            <div className="space-y-4">
+                                <div>
+                                    <Label className="text-sm font-semibold text-on-surface">Allowed Domains (CORS)</Label>
+                                    <p className="text-[13px] text-on-surface-variant font-medium mt-1">Restrict which websites can embed your chatbot.</p>
+                                </div>
+                                <div className="space-y-3">
+                                    {data.settings.allowed_domains.map((domain, index) => (
+                                        <div key={`domain-${index}`} className="flex gap-2 items-center">
+                                            <Input
+                                                value={domain}
+                                                onChange={(e) => updateDomain(index, e.target.value)}
+                                                placeholder="e.g. example.com"
+                                                className="h-10 flex-1 rounded-[8px] bg-surface-container border-outline/30 focus-visible:ring-primary focus-visible:border-primary"
+                                            />
+                                            <Button type="button" variant="ghost" size="icon" onClick={() => removeDomain(index)} className="text-error hover:bg-error-container hover:text-on-error-container h-10 w-10">
+                                                <X size={18} />
+                                            </Button>
+                                        </div>
+                                    ))}
+                                    <Button type="button" variant="outline" size="sm" onClick={addDomain} className="rounded-[8px] border-outline-variant hover:bg-surface-container text-on-surface text-xs h-9">
+                                        + Add Domain
+                                    </Button>
+                                </div>
+                            </div>
+
+                            <hr className="border-outline-variant/30" />
+
+                            {/* Starter Questions */}
+                            <div className="space-y-4">
+                                <div>
+                                    <Label className="text-sm font-semibold text-on-surface">Starter Questions</Label>
+                                    <p className="text-[13px] text-on-surface-variant font-medium mt-1">Provide clickable starter prompts to help users begin their chat.</p>
+                                </div>
+                                <div className="space-y-3">
+                                    {data.settings.starter_questions.map((q, index) => (
+                                        <div key={`q-${index}`} className="flex gap-2 items-center">
+                                            <Input
+                                                value={q}
+                                                onChange={(e) => updateQuestion(index, e.target.value)}
+                                                placeholder="e.g. What is the refund policy?"
+                                                className="h-10 flex-1 rounded-[8px] bg-surface-container border-outline/30 focus-visible:ring-primary focus-visible:border-primary"
+                                            />
+                                            <Button type="button" variant="ghost" size="icon" onClick={() => removeQuestion(index)} className="text-error hover:bg-error-container hover:text-on-error-container h-10 w-10">
+                                                <X size={18} />
+                                            </Button>
+                                        </div>
+                                    ))}
+                                    <Button type="button" variant="outline" size="sm" onClick={addQuestion} className="rounded-[8px] border-outline-variant hover:bg-surface-container text-on-surface text-xs h-9 flex items-center gap-1.5">
+                                        <MessageSquarePlus size={14} /> Add Question
+                                    </Button>
+                                </div>
+                            </div>
+                            
                         </CardContent>
                     </Card>
 

@@ -9,6 +9,11 @@
     const sendBtnId = 'ask-docs-chatbot-send-btn';
     const closeBtnId = 'ask-docs-chatbot-close-btn';
 
+    let starterQuestions = [];
+    try {
+        starterQuestions = __STARTER_QUESTIONS__;
+    } catch(e) {}
+
     if (document.getElementById(widgetId)) {
         return;
     }
@@ -140,6 +145,24 @@
                         }
                     });
                 }).catch(err => console.warn('Failed to load markdown:', err));
+            }
+
+            if (starterQuestions && starterQuestions.length > 0 && !messagesDiv.hasChildNodes()) {
+                const bubblesContainer = document.createElement('div');
+                bubblesContainer.className = 'starter-bubbles-container';
+                starterQuestions.forEach(q => {
+                    if (!q) return;
+                    const btn = document.createElement('button');
+                    btn.className = 'starter-bubble';
+                    btn.textContent = q;
+                    btn.onclick = () => {
+                        if (input) input.value = q;
+                        sendMessage();
+                        bubblesContainer.remove();
+                    };
+                    bubblesContainer.appendChild(btn);
+                });
+                messagesDiv.appendChild(bubblesContainer);
             }
         }
     }

@@ -32,6 +32,10 @@ class ChatbotRequest extends FormRequest
             'settings.welcome_subtitle' => 'nullable|string|max:255',
             'settings.system_prompt' => 'nullable|string|max:2000',
             'settings.header_logo' => 'nullable|url|max:2048',
+            'settings.allowed_domains' => 'nullable|array|max:20',
+            'settings.allowed_domains.*' => 'string|max:255',
+            'settings.starter_questions' => 'nullable|array|max:10',
+            'settings.starter_questions.*' => 'string|max:255',
         ];
     }
 

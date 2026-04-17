@@ -368,3 +368,30 @@
             height: 10px;
             stroke: #64748b;
         }
+
+        /* Starter Questions */
+        .starter-bubbles-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 20px;
+            align-items: flex-end;
+        }
+        .starter-bubble {
+            background: white;
+            border: 1px solid __PRIMARY_COLOR__;
+            color: __PRIMARY_COLOR__;
+            padding: 8px 14px;
+            border-radius: 18px;
+            border-bottom-right-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: right;
+            max-width: 85%;
+        }
+        .starter-bubble:hover {
+            background: __PRIMARY_COLOR__;
+            color: white;
+            transform: scale(1.02);
+        }
