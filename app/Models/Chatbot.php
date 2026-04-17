@@ -66,4 +66,26 @@ class Chatbot extends Model implements DocumentContextSource
     {
         return $this->settings['system_prompt'] ?? null;
     }
+
+    public function isDomainAllowed(?string $origin): bool
+    {
+        $settings = $this->settings ?? [];
+        $allowedDomains = $settings['allowed_domains'] ?? [];
+
+        if (!is_array($allowedDomains) || count($allowedDomains) === 0) {
+            return true; // No restrictions
+        }
+
+        $originHost = $origin ? parse_url($origin, PHP_URL_HOST) : null;
+        
+        if (!$originHost) {
+            return false;
+        }
+
+        $cleanedDomains = array_filter(array_map(function($d) {
+            return rtrim(preg_replace('#^https?://#', '', trim($d)), '/');
+        }, $allowedDomains));
+        
+        return in_array($originHost, $cleanedDomains);
+    }
 }

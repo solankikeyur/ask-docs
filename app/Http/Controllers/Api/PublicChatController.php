@@ -19,6 +19,11 @@ class PublicChatController extends Controller
     {
         $chatbot = Chatbot::where('public_id', $publicId)->firstOrFail();
 
+        $origin = $request->header('Origin') ?? $request->header('Referer');
+        if (!$chatbot->isDomainAllowed($origin)) {
+            return response()->json(['error' => 'Domain not authorized to use this chatbot.'], 403);
+        }
+
         $validated = $request->validate([
             'message' => 'required|string|max:10000',
             'session_id' => 'nullable|string',

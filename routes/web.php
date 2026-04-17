@@ -52,8 +52,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
 require __DIR__.'/settings.php';
 
 // Public chatbot widget
-Route::get('/chatbot/{publicId}/widget.js', function (string $publicId) {
+Route::get('/chatbot/{publicId}/widget.js', function (Illuminate\Http\Request $request, string $publicId) {
     $chatbot = \App\Models\Chatbot::where('public_id', $publicId)->firstOrFail();
+
+    $origin = $request->header('Origin') ?? $request->header('Referer');
+    if (!$chatbot->isDomainAllowed($origin)) {
+        return response('console.error("AskDocs: Domain not authorized to load this chatbot.");', 403, [
+            'Content-Type' => 'application/javascript'
+        ]);
+    }
 
     $widgetService = app(\App\Services\ChatbotWidgetService::class);
     $script = $widgetService->generateWidgetScript($chatbot);
