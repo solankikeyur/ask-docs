@@ -229,6 +229,10 @@
         input.value = '';
         disableInput();
         addMessage('user', message);
+        
+        // Remove starter questions if they exist
+        const bubbles = messagesDiv.querySelector('.starter-bubbles-container');
+        if (bubbles) bubbles.remove();
 
         const typingMsgDiv = addMessage('assistant', getTypingIndicatorHtml(), true);
 
