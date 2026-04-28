@@ -1,6 +1,6 @@
 (function() {
     const chatbotId = '__CHATBOT_ID__';
-    const apiUrl = '/api/chat/' + chatbotId;
+    const apiUrl = '__APP_URL__/api/chat/' + chatbotId;
     const widgetId = 'ask-docs-chatbot-widget';
     const openButtonId = 'ask-docs-chatbot-open-btn';
     const panelId = 'ask-docs-chatbot-panel';

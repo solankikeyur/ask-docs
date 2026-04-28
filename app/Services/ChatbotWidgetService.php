@@ -31,14 +31,16 @@ class ChatbotWidgetService
             '__WELCOME_TITLE__',
             '__WELCOME_SUBTITLE__',
             '__WIDGET_CSS__',
-            '__STARTER_QUESTIONS__'
+            '__STARTER_QUESTIONS__',
+            '__APP_URL__'
         ], [
             $chatbot->public_id,
             addslashes($chatbot->name),
             addslashes($welcomeTitle),
             addslashes($welcomeSubtitle),
             $css,
-            $starterQuestionsJson
+            $starterQuestionsJson,
+            rtrim(config('app.url'), '/')
         ], $javascript);
 
         return $script;
