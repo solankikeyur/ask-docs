@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('chatbot_messages', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('chatbot_id')->constrained()->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('chatbot_id')->constrained()->cascadeOnDelete();
             $table->uuid('session_id');
             $table->enum('role', ['user', 'assistant']);
             $table->longText('content');

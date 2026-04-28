@@ -6,6 +6,7 @@ use App\Models\Document;
 use App\Services\Contracts\DocumentParserStrategy;
 use App\Services\Parsers\PdfParser;
 use App\Services\Parsers\DocxParser;
+use App\Services\Parsers\TxtParser;
 use Exception;
 use Illuminate\Support\Facades\Log;
 
@@ -50,6 +51,7 @@ class DocumentParser
         return match (strtoupper($this->document->type)) {
             'PDF'   => new PdfParser(),
             'DOCX', 'DOC' => new DocxParser(),
+            'TXT'   => new TxtParser(),
             default => throw new Exception("Unsupported document type: {$this->document->type}"),
         };
     }

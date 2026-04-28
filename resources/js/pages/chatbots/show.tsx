@@ -11,26 +11,28 @@ import { cn } from '@/lib/utils';
 import type { PaginatedConversations } from '@/types/admin';
 
 interface Chatbot {
-    id: number;
+    id: string;
     name: string;
     description: string | null;
-    public_id: string;
-    documents: Array<{ id: number; name: string }>;
+    documents: Array<{ id: string; name: string }>;
 }
 
 interface Props {
-    chatbot: Chatbot;
+    chatbot: {
+        data: Chatbot;
+    };
     conversations: PaginatedConversations;
 }
 
-export default function Show({ chatbot, conversations }: Props) {
+export default function Show({ chatbot: chatbotProp, conversations }: Props) {
+    const chatbot = chatbotProp.data;
     const [activeTab, setActiveTab] = useState<'config' | 'history'>('config');
     const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
     const [messages, setMessages] = useState<any[]>([]);
     const [isLoadingTranscript, setIsLoadingTranscript] = useState(false);
     const [isTranscriptModalOpen, setIsTranscriptModalOpen] = useState(false);
 
-    const embedCode = `<script src="${window.location.origin}/chatbot/${chatbot.public_id}/widget.js"></script>`;
+    const embedCode = `<script src="${window.location.origin}/chatbot/${chatbot.id}/widget.js"></script>`;
 
     const handleViewTranscript = async (sessionId: string) => {
         setSelectedSessionId(sessionId);
@@ -189,9 +191,9 @@ export default function Show({ chatbot, conversations }: Props) {
                             </CardHeader>
                             <CardContent className="space-y-3 pt-2">
                                 <div className="flex justify-between items-center text-sm py-2 border-b border-outline-variant/20">
-                                    <span className="text-on-surface-variant font-medium">Public ID</span>
+                                    <span className="text-on-surface-variant font-medium">Internal ID</span>
                                     <code className="text-[12px] font-mono bg-surface-container text-on-surface px-2 py-1 rounded-[6px]">
-                                        {chatbot.public_id}
+                                        {chatbot.id.substring(0, 8)}
                                     </code>
                                 </div>
                                 <div className="flex justify-between items-center text-sm py-2 border-b border-outline-variant/20">

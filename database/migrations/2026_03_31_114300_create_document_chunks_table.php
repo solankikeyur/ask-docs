@@ -16,8 +16,8 @@ return new class extends Migration
         DB::statement('CREATE EXTENSION IF NOT EXISTS vector');
 
         Schema::create('document_chunks', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('document_id')->constrained()->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('document_id')->constrained()->cascadeOnDelete();
             $table->text('content');
             $table->vector('embedding', 1536)->nullable();
             $table->integer('chunk_index');

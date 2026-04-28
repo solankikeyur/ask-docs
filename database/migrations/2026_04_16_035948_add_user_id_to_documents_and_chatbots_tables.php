@@ -12,11 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('documents', function (Blueprint $table) {
-            $table->foreignId('user_id')->after('id')->nullable()->constrained()->cascadeOnDelete();
+            $table->foreignUuid('user_id')->after('id')->nullable()->constrained()->cascadeOnDelete();
         });
 
         Schema::table('chatbots', function (Blueprint $table) {
-            $table->foreignId('user_id')->after('id')->nullable()->constrained()->cascadeOnDelete();
+            $table->foreignUuid('user_id')->after('id')->nullable()->constrained()->cascadeOnDelete();
         });
     }
 

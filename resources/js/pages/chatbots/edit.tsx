@@ -9,16 +9,15 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ArrowLeft, Bot, Trash2, Layers, Palette, Sparkles, Globe, MessageSquarePlus, X } from 'lucide-react';
 
 interface Document {
-    id: number;
+    id: string;
     name: string;
 }
 
 interface Chatbot {
-    id: number;
+    id: string;
     name: string;
     description: string | null;
-    public_id: string;
-    documents: Array<{ id: number; name: string }>;
+    documents: Array<{ id: string; name: string }>;
     settings?: {
         primary_color?: string;
         welcome_title?: string;
@@ -30,11 +29,18 @@ interface Chatbot {
 }
 
 interface Props {
-    chatbot: Chatbot;
-    documents: Document[];
+    chatbot: {
+        data: Chatbot;
+    };
+    documents: {
+        data: Document[];
+    };
 }
 
-export default function Edit({ chatbot, documents }: Props) {
+export default function Edit({ chatbot: chatbotProp, documents: documentsProp }: Props) {
+    const chatbot = chatbotProp.data;
+    const documents = documentsProp.data;
+    
     const { data, setData, put, processing, errors, delete: destroy } = useForm({
         name: chatbot.name,
         description: chatbot.description || '',
@@ -60,7 +66,7 @@ export default function Edit({ chatbot, documents }: Props) {
         }
     };
 
-    const toggleDocument = (documentId: number) => {
+    const toggleDocument = (documentId: string) => {
         setData('document_ids', data.document_ids.includes(documentId)
             ? data.document_ids.filter(id => id !== documentId)
             : [...data.document_ids, documentId]

@@ -116,7 +116,7 @@ export function DocumentTable({ documents, onDelete }: DocumentTableProps) {
                         Showing <span className="text-on-surface font-bold underline underline-offset-4 decoration-primary/30">{documents.data.length}</span> of <span className="text-on-surface font-bold underline underline-offset-4 decoration-primary/30">{documents.meta?.total || 0}</span> results
                     </p>
                 </div>
-                <Pagination links={documents.links} />
+                <Pagination links={documents.meta?.links || []} />
             </div>
         </div>
     );

@@ -14,7 +14,7 @@ const SCROLL_THRESHOLD = 80;
 export function ChatMessageList({ messages, isLoading }: ChatMessageListProps) {
     const containerRef = useRef<HTMLDivElement | null>(null);
     const lastMessageCountRef = useRef<number>(0);
-    const lastMessageIdRef = useRef<number | undefined>(undefined);
+    const lastMessageIdRef = useRef<string | number | undefined>(undefined);
     const lastStreamingLenRef = useRef<number>(0);
     // Whether the user is considered "at the bottom" (auto-follow enabled)
     const isAtBottomRef = useRef<boolean>(true);
@@ -53,7 +53,7 @@ export function ChatMessageList({ messages, isLoading }: ChatMessageListProps) {
 
         const last = messages[messages.length - 1];
         const lastId = last?.id;
-        const isStreaming = lastId === -1;
+        const isStreaming = lastId === 'stream' || lastId === -1;
         const streamingLen = isStreaming ? (last?.content?.length ?? 0) : 0;
 
         const messageCountChanged = messages.length !== lastMessageCountRef.current;

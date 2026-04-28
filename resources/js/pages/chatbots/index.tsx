@@ -8,19 +8,20 @@ import { Plus, Bot, FileText, Pencil, Trash2, ArrowRight } from 'lucide-react';
 import { useState } from 'react';
 
 interface Chatbot {
-    id: number;
+    id: string;
     name: string;
     description: string | null;
-    public_id: string;
-    documents: Array<{ id: number; name: string }>;
+    documents: Array<{ id: string; name: string }>;
 }
 
 interface Props {
-    chatbots: Chatbot[];
+    chatbots: {
+        data: Chatbot[];
+    };
 }
 
 export default function Index({ chatbots }: Props) {
-    const [deleteId, setDeleteId] = useState<number | null>(null);
+    const [deleteId, setDeleteId] = useState<string | null>(null);
 
     const confirmDelete = () => {
         if (deleteId === null) return;
@@ -60,7 +61,7 @@ export default function Index({ chatbots }: Props) {
 
                 {/* Chatbots List */}
                 <div className="flex flex-col gap-4">
-                    {chatbots.map((chatbot) => (
+                    {chatbots.data.map((chatbot) => (
                         <Card key={chatbot.id} className="group overflow-hidden border border-outline-variant/40 shadow-[0_2px_12px_rgba(17,48,105,0.02)] hover:shadow-[0_4px_24px_rgba(17,48,105,0.06)] hover:border-outline-variant/80 transition-all duration-300 rounded-[16px] bg-surface-container-lowest">
                             <div className="flex flex-col md:flex-row md:items-stretch">
                                 {/* Left Section: Info */}
@@ -73,7 +74,7 @@ export default function Index({ chatbots }: Props) {
                                         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-2">
                                             <h3 className="font-semibold text-[17px] text-on-surface truncate">{chatbot.name}</h3>
                                             <Badge variant="outline" className="hidden sm:inline-flex bg-surface-container-lowest text-on-surface-variant border-outline-variant/40 font-mono tracking-wider px-2 py-0.5 text-[10px] rounded-md uppercase">
-                                                ID: {chatbot.public_id.substring(0, 8)}
+                                                ID: {chatbot.id.substring(0, 8)}
                                             </Badge>
                                         </div>
                                         <p className="text-[14px] text-on-surface-variant line-clamp-2 sm:line-clamp-1 mb-4 leading-relaxed max-w-3xl">
@@ -136,7 +137,7 @@ export default function Index({ chatbots }: Props) {
                     ))}
                 </div>
 
-                {chatbots.length === 0 && (
+                {chatbots.data.length === 0 && (
                     <div className="flex flex-col items-center justify-center p-12 mt-8 rounded-[24px] border border-outline-variant/50 bg-surface-container-lowest/50 shadow-sm">
                         <div className="w-16 h-16 rounded-[16px] bg-primary-container text-on-primary-container flex items-center justify-center mb-4 shadow-sm">
                             <Bot size={32} />

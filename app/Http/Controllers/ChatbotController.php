@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\DTOs\Chatbot\CreateChatbotDTO;
+use App\Http\Requests\Chatbot\StoreChatbotRequest;
+use App\Http\Resources\Chatbot\ChatbotResource;
+use App\Http\Resources\Document\DocumentResource;
 use App\Models\Chatbot;
-use App\Models\Document;
-use App\Services\ChatbotService;
-use App\Services\DocumentService;
-use App\Http\Requests\ChatbotRequest;
+use App\Models\ChatbotMessage;
+use App\Repositories\Chatbot\ChatbotRepository;
+use App\Repositories\Document\DocumentRepository;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -15,36 +19,38 @@ use Inertia\Response;
 class ChatbotController extends Controller
 {
     public function __construct(
-        protected ChatbotService $chatbotService,
-        protected DocumentService $documentService
+        protected ChatbotRepository $chatbotRepository,
+        protected DocumentRepository $documentRepository
     ) {}
 
     public function index(Request $request): Response
     {
-        $chatbots = $this->chatbotService->getAllForUser($request->user());
+        $chatbots = $this->chatbotRepository->getAllForUser($request->user());
 
         return Inertia::render('chatbots/index', [
-            'chatbots' => $chatbots,
+            'chatbots' => ChatbotResource::collection($chatbots),
         ]);
     }
 
     public function create(Request $request): Response
     {
-        // Users can only attach documents they own/have access to.
-        $documents = $this->documentService->getPaginatedForUser($request->user(), null, 100)
-            ->through(fn($doc) => ['id' => $doc->id, 'name' => $doc->name])
-            ->items();
+        $documents = $this->documentRepository->getPaginatedForUser($request->user(), null, 100);
 
         return Inertia::render('chatbots/create', [
-            'documents' => $documents,
+            'documents' => DocumentResource::collection($documents->items()),
         ]);
     }
 
-    public function store(ChatbotRequest $request): RedirectResponse
+    public function store(StoreChatbotRequest $request): RedirectResponse
     {
-        $validated = $request->validated();
+        $dto = CreateChatbotDTO::fromRequest($request);
 
-        $this->chatbotService->store($request->user(), $validated);
+        $this->chatbotRepository->create([
+            'user_id' => $request->user()->id,
+            'name' => $dto->name,
+            'description' => $dto->description,
+            'settings' => $dto->settings,
+        ], $dto->document_ids);
 
         return redirect()->route('chatbots.index')->with('success', 'Chatbot created successfully.');
     }
@@ -53,24 +59,22 @@ class ChatbotController extends Controller
     {
         $this->authorize('view', $chatbot);
 
-        $chatbot->load(['documents' => fn ($q) => $q->select('documents.id', 'documents.name')]);
-
-        $conversations = $this->chatbotService->getConversationsForChatbot($chatbot);
+        $chatbot->load('documents');
 
         return Inertia::render('chatbots/show', [
-            'chatbot' => $chatbot,
-            'conversations' => $conversations,
+            'chatbot' => new ChatbotResource($chatbot),
+            'conversations' => $this->chatbotRepository->getConversations($chatbot),
         ]);
     }
 
-    public function getTranscript(Chatbot $chatbot, string $sessionId): \Illuminate\Http\JsonResponse
+    public function getTranscript(Chatbot $chatbot, string $sessionId): JsonResponse
     {
         $this->authorize('view', $chatbot);
 
-        $messages = \App\Models\ChatbotMessage::where('chatbot_id', $chatbot->id)
+        $messages = ChatbotMessage::where('chatbot_id', $chatbot->id)
             ->where('session_id', $sessionId)
-            ->orderBy('id', 'asc')
-            ->limit(500) // Safety limit
+            ->orderBy('created_at', 'asc')
+            ->limit(500)
             ->get();
 
         return response()->json([
@@ -82,25 +86,27 @@ class ChatbotController extends Controller
     {
         $this->authorize('update', $chatbot);
 
-        $chatbot->load(['documents' => fn ($q) => $q->select('documents.id', 'documents.name')]);
+        $chatbot->load('documents');
 
-        $documents = $this->documentService->getPaginatedForUser(auth()->user(), null, 100)
-            ->through(fn($doc) => ['id' => $doc->id, 'name' => $doc->name])
-            ->items();
+        $documents = $this->documentRepository->getPaginatedForUser(auth()->user(), null, 100);
 
         return Inertia::render('chatbots/edit', [
-            'chatbot' => $chatbot,
-            'documents' => $documents,
+            'chatbot' => new ChatbotResource($chatbot),
+            'documents' => DocumentResource::collection($documents->items()),
         ]);
     }
 
-    public function update(ChatbotRequest $request, Chatbot $chatbot): RedirectResponse
+    public function update(StoreChatbotRequest $request, Chatbot $chatbot): RedirectResponse
     {
         $this->authorize('update', $chatbot);
 
-        $validated = $request->validated();
+        $dto = CreateChatbotDTO::fromRequest($request);
 
-        $this->chatbotService->update($chatbot, $validated);
+        $this->chatbotRepository->update($chatbot, [
+            'name' => $dto->name,
+            'description' => $dto->description,
+            'settings' => $dto->settings,
+        ], $dto->document_ids);
 
         return redirect()->route('chatbots.index')->with('success', 'Chatbot updated successfully.');
     }
@@ -109,7 +115,7 @@ class ChatbotController extends Controller
     {
         $this->authorize('delete', $chatbot);
 
-        $this->chatbotService->delete($chatbot);
+        $this->chatbotRepository->delete($chatbot);
 
         return redirect()->route('chatbots.index')->with('success', 'Chatbot deleted successfully.');
     }

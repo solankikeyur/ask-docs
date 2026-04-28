@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class Document extends Model
 {
-    use HasFactory;
+    use HasFactory, HasUuids;
 
     const STATUS_READY = 'ready';
     const STATUS_PROCESSING = 'processing';

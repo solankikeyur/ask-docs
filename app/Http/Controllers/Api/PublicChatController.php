@@ -15,9 +15,9 @@ class PublicChatController extends Controller
     /**
      * Handle public chatbot chat requests.
      */
-    public function store(Request $request, string $publicId)
+    public function store(Request $request, string $id)
     {
-        $chatbot = Chatbot::where('public_id', $publicId)->firstOrFail();
+        $chatbot = Chatbot::where('id', $id)->firstOrFail();
 
         $origin = $request->header('Origin') ?? $request->header('Referer');
         if (!$chatbot->isDomainAllowed($origin)) {

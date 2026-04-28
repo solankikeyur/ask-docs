@@ -12,8 +12,8 @@ interface PaginationProps {
 }
 
 export function Pagination({ links }: PaginationProps) {
-    if (links.length <= 3) {
-        // Previous, 1, Next - don't show if only one page
+    if (!Array.isArray(links) || links.length <= 3) {
+        // Previous, 1, Next - don't show if only one page or not an array
         return null;
     }
 

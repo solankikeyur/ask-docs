@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('chatbot_document', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('chatbot_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('document_id')->constrained()->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('chatbot_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('document_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
             $table->unique(['chatbot_id', 'document_id']);
         });

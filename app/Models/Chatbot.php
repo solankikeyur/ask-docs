@@ -7,22 +7,17 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class Chatbot extends Model implements DocumentContextSource
 {
-    protected $fillable = ['user_id', 'name', 'description', 'public_id', 'settings'];
+    use HasUuids;
+
+    protected $fillable = ['user_id', 'name', 'description', 'settings'];
 
     protected $casts = [
         'settings' => 'array',
     ];
-    protected static function booted(): void
-    {
-        static::creating(function (Chatbot $chatbot) {
-            if (empty($chatbot->public_id)) {
-                $chatbot->public_id = (string) \Illuminate\Support\Str::uuid();
-            }
-        });
-    }
 
     public function user()
     {
