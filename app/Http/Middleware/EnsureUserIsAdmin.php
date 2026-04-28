@@ -18,7 +18,7 @@ class EnsureUserIsAdmin
     {
         $user = $request->user();
 
-        if (! $user || $user->role !== UserRole::ADMIN) {
+        if (! $user || ! $user->isAdmin()) {
             if ($user && ! $request->expectsJson()) {
                 return redirect()->route('user.chat');
             }

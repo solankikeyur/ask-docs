@@ -2,7 +2,7 @@ import { FileText, ArrowRight } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface Doc {
-    id: number;
+    id: string;
     name: string;
     status: 'ready' | 'processing';
 }

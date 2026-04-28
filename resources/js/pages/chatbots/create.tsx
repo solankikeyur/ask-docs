@@ -9,19 +9,23 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ArrowLeft, Bot, Layers, Palette, Sparkles, Globe, MessageSquarePlus, X } from 'lucide-react';
 
 interface Document {
-    id: number;
+    id: string;
     name: string;
 }
 
 interface Props {
-    documents: Document[];
+    documents: {
+        data: Document[];
+    };
 }
 
-export default function Create({ documents }: Props) {
+export default function Create({ documents: documentsProp }: Props) {
+    const documents = documentsProp.data;
+    
     const { data, setData, post, processing, errors } = useForm({
         name: '',
         description: '',
-        document_ids: [] as number[],
+        document_ids: [] as string[],
         settings: {
             primary_color: '#4f46e5',
             welcome_title: 'Chatbot',
@@ -37,7 +41,7 @@ export default function Create({ documents }: Props) {
         post('/chatbots');
     };
 
-    const toggleDocument = (documentId: number) => {
+    const toggleDocument = (documentId: string) => {
         setData('document_ids', data.document_ids.includes(documentId)
             ? data.document_ids.filter(id => id !== documentId)
             : [...data.document_ids, documentId]

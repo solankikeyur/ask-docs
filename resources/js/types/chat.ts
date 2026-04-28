@@ -13,7 +13,7 @@ export interface TableRow {
 }
 
 export interface Message {
-    id?: number;
+    id?: string | number;
     role: 'user' | 'assistant';
     content: string;
     metadata?: { 
@@ -24,14 +24,14 @@ export interface Message {
 }
 
 export interface Doc {
-    id: number;
+    id: string;
     name: string;
     status: 'ready' | 'processing';
 }
 
 export interface ChatHistory {
-    id: number;
+    id: string;
     title: string;
-    docId: number;
+    docId: string;
     active: boolean;
 }

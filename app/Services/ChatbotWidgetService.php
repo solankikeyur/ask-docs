@@ -34,7 +34,7 @@ class ChatbotWidgetService
             '__STARTER_QUESTIONS__',
             '__APP_URL__'
         ], [
-            $chatbot->public_id,
+            $chatbot->id,
             addslashes($chatbot->name),
             addslashes($welcomeTitle),
             addslashes($welcomeSubtitle),

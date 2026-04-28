@@ -9,7 +9,9 @@ interface Props {
 }
 
 export function ChatbotConversationList({ conversations, onViewTranscript }: Props) {
-    if (conversations.data.length === 0) {
+    const data = conversations?.data || [];
+    
+    if (data.length === 0) {
         return (
             <div className="text-center py-12 bg-surface-container rounded-[16px] border border-dashed border-outline-variant/80">
                 <div className="mx-auto w-12 h-12 bg-surface-bright rounded-full flex items-center justify-center text-on-surface-variant mb-4">
@@ -26,7 +28,7 @@ export function ChatbotConversationList({ conversations, onViewTranscript }: Pro
     return (
         <div className="space-y-4">
             <div className="space-y-4">
-                {conversations.data.map((conv) => (
+                {data.map((conv) => (
                 <div 
                     key={conv.session_id} 
                     className="group bg-surface-bright border border-outline-variant/30 rounded-[16px] p-5 hover:border-primary transition-all cursor-pointer shadow-[0_2px_8px_rgba(17,48,105,0.01)] hover:shadow-[0_4px_16px_rgba(17,48,105,0.04)]"
@@ -76,7 +78,7 @@ export function ChatbotConversationList({ conversations, onViewTranscript }: Pro
             </div>
             
             <div className="flex justify-center pt-4">
-                <Pagination links={conversations.links} />
+                <Pagination links={conversations.meta?.links || []} />
             </div>
         </div>
     );

@@ -9,6 +9,6 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 // Public chatbot API (no authentication needed for embedding)
-Route::post('/chat/{publicId}', [PublicChatController::class, 'store'])
+Route::post('/chat/{id}', [PublicChatController::class, 'store'])
     ->middleware('throttle:60,1')
     ->name('api.chat.store');

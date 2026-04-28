@@ -2,89 +2,64 @@
 
 namespace App\Http\Controllers;
 
-use App\Concerns\PasswordValidationRules;
-use App\Concerns\ProfileValidationRules;
-use App\Enums\UserRole;
-use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\DTOs\User\CreateUserDTO;
+use App\Http\Requests\User\StoreUserRequest;
+use App\Http\Resources\Document\DocumentResource;
+use App\Http\Resources\User\UserResource;
 use App\Models\Document;
+use App\Models\User;
+use App\Repositories\User\UserRepository;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules\Enum;
-use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class UserController extends Controller
 {
-    use ProfileValidationRules, PasswordValidationRules;
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function __construct(
+        protected UserRepository $userRepository
+    ) {}
+
+    public function index(): Response
     {
         return Inertia::render('users/index', [
-            'users' => User::all()->map(function ($user) {
-                return [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'role' => $user->role->value,
-                    'status' => $user->status,
-                    'statusLabel' => $user->status ? 'Enabled' : 'Disabled',
-                    'lastActive' => $user->updated_at->diffForHumans(),
-                ];
-            }),
-            'allDocuments' => Document::all(['id', 'name']),
+            'users' => UserResource::collection($this->userRepository->all()),
+            'allDocuments' => DocumentResource::collection(Document::all(['id', 'name'])),
         ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(StoreUserRequest $request): RedirectResponse
+    {
+        $dto = CreateUserDTO::fromRequest($request);
+
+        $this->userRepository->create([
+            'name' => $dto->name,
+            'email' => $dto->email,
+            'password' => $dto->password,
+            'role' => $dto->role,
+            'status' => $dto->status,
+        ]);
+
+        return redirect()->back();
+    }
+
+    public function update(Request $request, User $user): RedirectResponse
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => ['required', 'string', Password::min(8)->letters()->numbers()->symbols()],
-            'role' => ['required', new Enum(UserRole::class)],
-        ]);
-
-        User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'role' => $validated['role'],
-            'status' => true,
-        ]);
-
-        return redirect()->back();
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, User $user)
-    {
-        $validated = $request->validate([
-            'name' => $this->nameRules(),
-            'email' => $this->emailRules($user->id),
-            'role' => ['required', new Enum(UserRole::class)],
+            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'status' => 'required|boolean',
         ]);
 
-        $user->update($validated);
+        $this->userRepository->update($user, $validated);
 
         return redirect()->back();
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(User $user)
+    public function destroy(User $user): RedirectResponse
     {
-        $user->delete();
+        $this->userRepository->delete($user);
+        
         return redirect()->back();
     }
-
 }

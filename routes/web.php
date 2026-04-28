@@ -52,8 +52,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 require __DIR__.'/settings.php';
 
 // Public chatbot widget
-Route::get('/chatbot/{publicId}/widget.js', function (Illuminate\Http\Request $request, string $publicId) {
-    $chatbot = \App\Models\Chatbot::where('public_id', $publicId)->firstOrFail();
+Route::get('/chatbot/{id}/widget.js', function (Illuminate\Http\Request $request, string $id) {
+    $chatbot = \App\Models\Chatbot::where('id', $id)->firstOrFail();
 
     $origin = $request->header('Origin') ?? $request->header('Referer');
     if (!$chatbot->isDomainAllowed($origin)) {

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Laravel\Ai\Embeddings;
 use Laravel\Ai\Enums\Lab;
+use Illuminate\Support\Str;
 
 class ProcessDocument implements ShouldQueue
 {
@@ -71,6 +72,7 @@ class ProcessDocument implements ShouldQueue
             $now = now();
             foreach ($batch as $indexInBatch => $chunkData) {
                 $allRows[] = [
+                    'id' => (string) Str::uuid(),
                     'document_id' => $this->document->id,
                     'content' => $chunkData['content'],
                     'embedding' => json_encode($response->embeddings[$indexInBatch]),

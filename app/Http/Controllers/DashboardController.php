@@ -16,7 +16,7 @@ class DashboardController extends Controller
     public function index(Request $request): Response
     {
         $user = $request->user();
-        $isAdmin = $user->role === UserRole::ADMIN;
+        $isAdmin = $user->isAdmin();
 
         $stats = [
             'documentsUploaded' => $isAdmin ? Document::count() : $user->documents()->count(),

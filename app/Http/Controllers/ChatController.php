@@ -2,11 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Chat\CreateChatAction;
+use App\DTOs\Chat\CreateChatDTO;
+use App\Http\Requests\Chat\StoreChatRequest;
+use App\Http\Resources\Chat\ChatResource;
+use App\Http\Resources\Document\DocumentResource;
 use App\Models\Chat;
 use App\Models\Document;
-use App\Services\ChatService;
+use App\Repositories\Chat\ChatRepository;
+use App\Repositories\Document\DocumentRepository;
 use App\Services\AiChatService;
-use App\Services\DocumentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -16,25 +21,20 @@ use Laravel\Ai\Responses\StreamedAgentResponse;
 class ChatController extends Controller
 {
     public function __construct(
-        protected ChatService $chatService,
-        protected DocumentService $documentService
+        protected ChatRepository $chatRepository,
+        protected DocumentRepository $documentRepository,
+        protected CreateChatAction $createChatAction
     ) {}
 
     public function index(Request $request): Response
     {
         $user = $request->user();
         
-        $documents = $this->documentService->getPaginatedForUser($user, null, 100)
-            ->through(fn($doc) => [
-                'id' => $doc->id,
-                'name' => $doc->name,
-                'status' => $doc->status,
-            ])
-            ->items();
+        $documents = $this->documentRepository->getPaginatedForUser($user, null, 100);
 
         return Inertia::render('chat/index', [
-            'documents' => $documents,
-            'chatHistory' => $this->chatService->getHistoryForUser($user),
+            'documents' => DocumentResource::collection($documents->items()),
+            'chatHistory' => $this->chatRepository->getHistoryForUser($user),
         ]);
     }
 
@@ -44,38 +44,21 @@ class ChatController extends Controller
 
         $user = $request->user();
 
-        $documents = $this->documentService->getPaginatedForUser($user, null, 100)
-            ->through(fn($doc) => [
-                'id' => $doc->id,
-                'name' => $doc->name,
-                'status' => $doc->status,
-            ])
-            ->items();
+        $documents = $this->documentRepository->getPaginatedForUser($user, null, 100);
 
         return Inertia::render('chat/index', [
-            'documents' => $documents,
-            'chatHistory' => $this->chatService->getHistoryForUser($user, $chat->id),
-            'chat' => [
-                'id' => $chat->id,
-                'docId' => $chat->document_id,
-                'document' => $chat->document()->select('id', 'name')->first(),
-            ],
-            'messages' => $chat->messageRecords()->orderBy('id')->get(),
+            'documents' => DocumentResource::collection($documents->items()),
+            'chatHistory' => $this->chatRepository->getHistoryForUser($user, $chat->id),
+            'chat' => new ChatResource($chat),
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreChatRequest $request)
     {
         $user = $request->user();
+        $dto = CreateChatDTO::fromRequest($request);
 
-        $validated = $request->validate([
-            'document_id' => 'required|exists:documents,id',
-            'content' => 'required|string|max:10000',
-            'chat_id' => 'nullable|integer|exists:chats,id',
-        ]);
-
-        // Authorization check for document: Admin sees all, others only their own
-        $document = Document::findOrFail($validated['document_id']);
+        $document = $this->documentRepository->findOrFail($dto->document_id);
         $this->authorize('view', $document);
 
         if ($document->status !== Document::STATUS_READY) {
@@ -84,18 +67,16 @@ class ChatController extends Controller
             ], 422);
         }
 
-        $chat = filled($validated['chat_id'] ?? null)
-            ? $this->chatService->findForUser($user, $validated['chat_id'])
-            : $this->chatService->createChat($user, $validated['document_id'], $validated['content']);
+        $chat = $this->createChatAction->execute($user, $dto);
 
         $chat->messageRecords()->create([
             'role' => 'user',
-            'content' => $validated['content'],
+            'content' => $dto->content,
         ]);
 
         $aiChatService = new AiChatService($chat);
 
-        $result = $aiChatService->streamAnswer($validated['content']);
+        $result = $aiChatService->streamAnswer($dto->content);
         $stream = $result['stream'];
         $citations = $result['citations'];
 
@@ -108,7 +89,6 @@ class ChatController extends Controller
         });
 
         return response()->stream(function () use ($stream, $citations) {
-            // First, send the metadata event
             echo "event: metadata\n";
             echo "data: " . json_encode(['citations' => $citations]) . "\n\n";
 
@@ -152,16 +132,15 @@ class ChatController extends Controller
     {
         $this->authorize('delete', $chat);
 
-        $this->chatService->delete($chat);
+        $this->chatRepository->delete($chat);
 
         return redirect()->route('chat.index');
     }
 
     public function destroyAll(Request $request): RedirectResponse
     {
-        $this->chatService->deleteAllForUser($request->user());
+        $this->chatRepository->deleteAllForUser($request->user());
 
         return redirect()->route('chat.index');
     }
 }
-

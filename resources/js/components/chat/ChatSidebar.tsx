@@ -22,15 +22,15 @@ import { Spinner } from '@/components/ui/spinner';
 import { DocSelectionModal } from './DocSelectionModal';
 
 interface Doc {
-    id: number;
+    id: string;
     name: string;
     status: 'ready' | 'processing';
 }
 
 interface ChatHistory {
-    id: number;
+    id: string;
     title: string;
-    docId: number;
+    docId: string;
     active: boolean;
 }
 
@@ -40,8 +40,8 @@ interface ChatSidebarProps {
     chatPrefix?: string;
     showNewChatButton?: boolean;
     onNewChat?: (doc: Doc) => void;
-    onRenameChat?: (chatId: number, title: string, options?: { onFinish?: () => void; onError?: () => void }) => void;
-    onDeleteChat?: (chatId: number, options?: { onFinish?: () => void; onError?: () => void }) => void;
+    onRenameChat?: (chatId: string, title: string, options?: { onFinish?: () => void; onError?: () => void }) => void;
+    onDeleteChat?: (chatId: string, options?: { onFinish?: () => void; onError?: () => void }) => void;
     onClearAllChats?: (options?: { onFinish?: () => void; onError?: () => void }) => void;
 }
 
@@ -57,10 +57,10 @@ export function ChatSidebar({
 }: ChatSidebarProps) {
     const { setOpenMobile } = useSidebar();
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [renameChatId, setRenameChatId] = useState<number | null>(null);
+    const [renameChatId, setRenameChatId] = useState<string | null>(null);
     const [renameTitle, setRenameTitle] = useState('');
     const [isRenaming, setIsRenaming] = useState(false);
-    const [deleteChatId, setDeleteChatId] = useState<number | null>(null);
+    const [deleteChatId, setDeleteChatId] = useState<string | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
     const [clearAllOpen, setClearAllOpen] = useState(false);
     const [isClearingAll, setIsClearingAll] = useState(false);

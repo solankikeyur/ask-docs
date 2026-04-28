@@ -12,8 +12,10 @@ import AppLayout from '@/layouts/AppLayout';
 import type { AdminUser } from '@/types/admin/user';
 
 interface Props {
-    users: AdminUser[];
-    allDocuments: { id: number; name: string }[];
+    users: {
+        data: AdminUser[];
+    };
+    allDocuments: { id: string; name: string }[];
 }
 
 export default function AdminUsers({ users, allDocuments }: Props) {
@@ -21,7 +23,7 @@ export default function AdminUsers({ users, allDocuments }: Props) {
     const [editUser, setEditUser] = useState<AdminUser | null>(null);
 
 
-    const handleDeleteUser = useCallback((userId: number) => {
+    const handleDeleteUser = useCallback((userId: string) => {
         if (confirm('Are you sure you want to delete this user?')) {
             router.delete(`/admin/users/${userId}`, {
                 preserveScroll: true
@@ -69,11 +71,11 @@ export default function AdminUsers({ users, allDocuments }: Props) {
                 {/* User list */}
                 <div className="overflow-hidden rounded-[var(--radius-lg)] bg-surface-container-low">
                     <div className="border-b border-outline-variant/10 px-4 py-2 text-xs uppercase tracking-widest text-on-surface-variant">
-                        {users.length} users
+                        {users.data.length} users
                     </div>
 
                     <div className="divide-y divide-outline-variant/10">
-                        {users.map((user) => (
+                        {users.data.map((user) => (
                             <UserRow 
                                 key={user.id} 
                                 user={user} 
