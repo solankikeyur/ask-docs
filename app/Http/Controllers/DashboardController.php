@@ -19,7 +19,10 @@ class DashboardController extends Controller
         $isAdmin = $user->isAdmin();
 
         $stats = [
-            'documentsUploaded' => $isAdmin ? Document::count() : $user->documents()->count(),
+            'documentsUploaded' => $isAdmin ? Document::count() : Document::where(function($q) use ($user) {
+                $q->where('user_id', $user->id)
+                  ->orWhereHas('users', fn($uq) => $uq->where('users.id', $user->id));
+            })->count(),
             'chatbotsCreated' => $isAdmin ? Chatbot::count() : $user->chatbots()->count(),
             'activeChatsToday' => ($isAdmin ? Chat::query() : $user->chats())
                 ->whereDate('created_at', now()->toDateString())

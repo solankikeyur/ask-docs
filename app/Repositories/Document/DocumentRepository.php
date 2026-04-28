@@ -12,7 +12,10 @@ class DocumentRepository
     {
         $query = $user->isAdmin() 
             ? Document::query() 
-            : $user->assignedDocuments();
+            : Document::where(function($q) use ($user) {
+                $q->where('user_id', $user->id)
+                  ->orWhereHas('users', fn($uq) => $uq->where('users.id', $user->id));
+            });
 
         if ($search) {
             $query->where('name', 'like', "%{$search}%");

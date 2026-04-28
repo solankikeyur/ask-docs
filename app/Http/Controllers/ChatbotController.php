@@ -37,7 +37,7 @@ class ChatbotController extends Controller
         $documents = $this->documentRepository->getPaginatedForUser($request->user(), null, 100);
 
         return Inertia::render('chatbots/create', [
-            'documents' => DocumentResource::collection($documents->items()),
+            'documents' => DocumentResource::collection($documents),
         ]);
     }
 
@@ -92,7 +92,7 @@ class ChatbotController extends Controller
 
         return Inertia::render('chatbots/edit', [
             'chatbot' => new ChatbotResource($chatbot),
-            'documents' => DocumentResource::collection($documents->items()),
+            'documents' => DocumentResource::collection($documents),
         ]);
     }
 

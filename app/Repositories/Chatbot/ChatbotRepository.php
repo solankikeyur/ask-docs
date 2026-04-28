@@ -11,6 +11,10 @@ class ChatbotRepository
 {
     public function getAllForUser(User $user): Collection
     {
+        if ($user->isAdmin()) {
+            return Chatbot::latest()->get();
+        }
+        
         return $user->chatbots()->latest()->get();
     }
 

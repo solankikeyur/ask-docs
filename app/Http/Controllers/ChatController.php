@@ -33,7 +33,7 @@ class ChatController extends Controller
         $documents = $this->documentRepository->getPaginatedForUser($user, null, 100);
 
         return Inertia::render('chat/index', [
-            'documents' => DocumentResource::collection($documents->items()),
+            'documents' => DocumentResource::collection($documents),
             'chatHistory' => $this->chatRepository->getHistoryForUser($user),
         ]);
     }
@@ -47,7 +47,7 @@ class ChatController extends Controller
         $documents = $this->documentRepository->getPaginatedForUser($user, null, 100);
 
         return Inertia::render('chat/index', [
-            'documents' => DocumentResource::collection($documents->items()),
+            'documents' => DocumentResource::collection($documents),
             'chatHistory' => $this->chatRepository->getHistoryForUser($user, $chat->id),
             'chat' => new ChatResource($chat),
         ]);
