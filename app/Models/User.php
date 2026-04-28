@@ -44,7 +44,9 @@ class User extends Authenticatable
 
     public function assignedDocuments(): BelongsToMany
     {
-        return $this->belongsToMany(Document::class);
+        return $this->belongsToMany(Document::class)
+            ->using(DocumentUser::class)
+            ->withTimestamps();
     }
 
     public function chatbots(): HasMany

@@ -15,7 +15,9 @@ const EMPTY_DOCS: Doc[] = [];
 const EMPTY_CHAT_HISTORY: ChatHistory[] = [];
 
 interface ChatProps {
-    documents: Doc[];
+    documents: {
+        data: Doc[];
+    };
     chatHistory: ChatHistory[];
     chat?: {
         id: string;
@@ -26,11 +28,12 @@ interface ChatProps {
 }
 
 export default function ChatIndex({
-    documents = EMPTY_DOCS,
+    documents: documentsProp,
     chatHistory = EMPTY_CHAT_HISTORY,
     chat,
     messages = EMPTY_MESSAGES,
 }: ChatProps) {
+    const documents = documentsProp?.data || EMPTY_DOCS;
     const [localMessages, setLocalMessages] = useState<Message[]>(messages);
     const [activeDoc, setActiveDoc] = useState<Doc | null>(null);
     const [localChatId, setLocalChatId] = useState<string | undefined>(chat?.id);

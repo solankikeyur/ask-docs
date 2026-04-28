@@ -27,6 +27,7 @@ class Chatbot extends Model implements DocumentContextSource
     public function documents(): BelongsToMany
     {
         return $this->belongsToMany(Document::class)
+            ->using(ChatbotDocument::class)
             ->withTimestamps();
     }
 
