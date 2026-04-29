@@ -20,9 +20,16 @@ interface ChatProps {
     };
     chatHistory: ChatHistory[];
     chat?: {
+        data?: {
+            id: string;
+            docId: string;
+            document: Doc;
+            messages: Message[];
+        };
         id: string;
         docId: string;
-        document: { id: string; name: string };
+        document: Doc;
+        messages: Message[];
     };
     messages?: Message[];
 }
@@ -34,9 +41,13 @@ export default function ChatIndex({
     messages = EMPTY_MESSAGES,
 }: ChatProps) {
     const documents = documentsProp?.data || EMPTY_DOCS;
-    const [localMessages, setLocalMessages] = useState<Message[]>(messages);
+    const resolvedChat = chat?.data || chat;
+    
+    const [localMessages, setLocalMessages] = useState<Message[]>(
+        messages.length > 0 ? messages : (resolvedChat?.messages || EMPTY_MESSAGES)
+    );
     const [activeDoc, setActiveDoc] = useState<Doc | null>(null);
-    const [localChatId, setLocalChatId] = useState<string | undefined>(chat?.id);
+    const [localChatId, setLocalChatId] = useState<string | undefined>(resolvedChat?.id);
     const [localChatHistory, setLocalChatHistory] = useState<ChatHistory[]>(chatHistory);
 
     const csrfToken = useMemo(() => 
@@ -64,16 +75,20 @@ export default function ChatIndex({
     });
 
     // Sync props to local state
-    useEffect(() => { setLocalMessages(messages); }, [messages]);
+    useEffect(() => { 
+        const nextMessages = messages.length > 0 ? messages : (resolvedChat?.messages || EMPTY_MESSAGES);
+        setLocalMessages(nextMessages);
+    }, [messages, resolvedChat?.messages]);
+
     useEffect(() => { setLocalChatHistory(chatHistory); }, [chatHistory]);
 
     useEffect(() => {
-        if (chat) {
-            const doc = documents.find((d) => d.id === chat.docId);
-            if (doc) setActiveDoc(doc);
+        if (resolvedChat) {
+            const doc = documents.find((d) => d.id === resolvedChat.docId) || resolvedChat.document;
+            if (doc) setActiveDoc(doc as Doc);
         }
-        setLocalChatId(chat?.id);
-    }, [chat, documents]);
+        setLocalChatId(resolvedChat?.id);
+    }, [resolvedChat, documents]);
 
     useEffect(() => {
         setLocalChatHistory((prev) =>
