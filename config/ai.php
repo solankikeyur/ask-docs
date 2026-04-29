@@ -127,4 +127,50 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | RAG & Retrieval Settings
+    |--------------------------------------------------------------------------
+    |
+    | Below are the settings for the RAG (Retrieval Augmented Generation) 
+    | pipeline, including models, search thresholds, and limits.
+    |
+    */
+
+    'rag' => [
+        'models' => [
+            'completion' => env('AI_COMPLETION_MODEL', 'gpt-4o-mini-2024-07-18'),
+            'embedding'  => env('AI_EMBEDDING_MODEL', 'text-embedding-3-small'),
+            'expansion'  => env('AI_EXPANSION_MODEL', 'gpt-4o-mini-2024-07-18'),
+        ],
+
+        'retrieval' => [
+            'dimensions'           => (int) env('AI_EMBEDDING_DIMENSIONS', 1536),
+            'similarity_threshold' => (float) env('AI_SIMILARITY_THRESHOLD', 0.35),
+            'candidate_limit'      => (int) env('AI_RERANK_CANDIDATE_LIMIT', 25),
+            'context_limit'        => (int) env('AI_CONTEXT_CHUNK_LIMIT', 6),
+            'search_limit'         => (int) env('AI_SEARCH_LIMIT', 100),
+            'expansion_count'      => (int) env('AI_EXPANSION_COUNT', 3),
+        ],
+
+        'rerank' => [
+            'enabled'      => (bool) env('AI_RERANK_ENABLED', true),
+            'max_chars'    => (int) env('AI_RERANK_MAX_CHARS', 1000),
+            'cache_expiry' => (int) env('AI_RERANK_CACHE_EXPIRY', 600), // In seconds
+            'timeout'      => (int) env('AI_RERANK_TIMEOUT', 8),
+            'retries'      => (int) env('AI_RERANK_RETRIES', 2),
+            'score_threshold' => (float) env('AI_RERANK_SCORE_THRESHOLD', 0.3),
+        ],
+
+        'timeouts' => [
+            'completion' => (int) env('AI_COMPLETION_TIMEOUT', 20),
+            'expansion'  => (int) env('AI_EXPANSION_TIMEOUT', 10),
+        ],
+
+        'limits' => [
+            'pagination'   => (int) env('AI_PAGINATION_LIMIT', 100),
+            'max_message'  => (int) env('AI_MAX_MESSAGE_LENGTH', 10000),
+        ],
+    ],
+
 ];
