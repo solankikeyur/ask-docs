@@ -2,12 +2,11 @@
 
 namespace App\Services;
 
+use App\Actions\Chat\GetRerankedContextAction;
 use App\Ai\Agents\AskDoc;
 use App\Contracts\DocumentContextSource;
-use App\Models\DocumentChunk;
-use Illuminate\Support\Facades\Cache;
-use Laravel\Ai\Embeddings;
 use Laravel\Ai\Enums\Lab;
+use Log;
 
 class AiChatService
 {
@@ -47,7 +46,8 @@ class AiChatService
     protected CohereService $cohere;
 
     public function __construct(
-        protected DocumentContextSource $source
+        protected DocumentContextSource $source,
+        protected GetRerankedContextAction $getRerankedContext
     ) {
         $this->cohere = new CohereService();
     }
@@ -60,6 +60,10 @@ class AiChatService
     public function streamAnswer(string $message)
     {
         $contextResult = $this->getDocContext($message);
+
+        Log::info("Context: ", [
+            "context" => $contextResult
+        ]);
 
         $prompt = sprintf("Question: %s\n\nContext:\n%s", $message, $contextResult['context']);
 
@@ -83,45 +87,20 @@ class AiChatService
      */
     public function getDocContext(string $message): array
     {
-        $vector = $this->getQueryEmbedding($message);
+        $relevantChunks = $this->getRerankedContext->execute(
+            message: $message,
+            source: $this->source,
+            chunkLimit: $this->contextChunkLimit,
+            candidateLimit: $this->rerankCandidateLimit,
+            similarityThreshold: $this->similarityThreshold
+        );
 
-        $documentIds = $this->source->getAssignedDocumentIds();
-
-        if (empty($documentIds)) {
-            return [
-                'context' => '(No documents assigned to this context source)',
-                'citations' => []
-            ];
-        }
-
-        // 1. Semantic (Vector) Search candidates
-        $semanticChunks = DocumentChunk::with('document')
-            ->whereIn('document_id', $documentIds)
-            ->whereVectorSimilarTo('embedding', $vector, $this->similarityThreshold)
-            ->limit($this->rerankCandidateLimit)
-            ->get();
-
-        // 2. Keyword (FTS) Search candidates
-        $keywordChunks = DocumentChunk::with('document')
-            ->whereIn('document_id', $documentIds)
-            ->whereRaw("to_tsvector('english', content) @@ plainto_tsquery('english', ?)", [$message])
-            ->limit($this->rerankCandidateLimit)
-            ->get();
-
-        // 3. Combine and Deduplicate
-        $combinedChunks = $semanticChunks->merge($keywordChunks)->unique('id')->values();
-
-        if ($combinedChunks->isEmpty()) {
+        if ($relevantChunks->isEmpty()) {
             return [
                 'context' => '',
                 'citations' => []
             ];
         }
-
-        // 4. Rerank down to context chunk limit
-        $reranked = $this->cohere->rerank($message, $combinedChunks, $this->contextChunkLimit);
-
-        $relevantChunks = $reranked->take($this->contextChunkLimit);
 
         $contextParts = [];
         $citations = [];
@@ -149,22 +128,6 @@ class AiChatService
         ];
     }
 
-    /**
-     * Fetch the embedding vector for a query string, with a 1-hour cache.
-     *
-     * @return float[]
-     */
-    protected function getQueryEmbedding(string $message): array
-    {
-        $cacheKey = 'query_embedding:' . $this->embeddingModel . ':' . sha1($message);
-
-        return Cache::remember($cacheKey, now()->addHour(), function () use ($message) {
-            return Embeddings::for([$message])
-                ->dimensions($this->embeddingDimensions)
-                ->generate(Lab::OpenAI, $this->embeddingModel)
-                ->embeddings[0];
-        });
-    }
 
     /**
      * Filter the results of a RAG query to include only those actually cited in the response text.
