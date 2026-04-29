@@ -146,9 +146,9 @@ return [
 
         'retrieval' => [
             'dimensions'           => (int) env('AI_EMBEDDING_DIMENSIONS', 1536),
-            'similarity_threshold' => (float) env('AI_SIMILARITY_THRESHOLD', 0.3),
+            'similarity_threshold' => (float) env('AI_SIMILARITY_THRESHOLD', 0.35),
             'candidate_limit'      => (int) env('AI_RERANK_CANDIDATE_LIMIT', 25),
-            'context_limit'        => (int) env('AI_CONTEXT_CHUNK_LIMIT', 10),
+            'context_limit'        => (int) env('AI_CONTEXT_CHUNK_LIMIT', 6),
             'search_limit'         => (int) env('AI_SEARCH_LIMIT', 100),
             'expansion_count'      => (int) env('AI_EXPANSION_COUNT', 3),
         ],
@@ -159,6 +159,7 @@ return [
             'cache_expiry' => (int) env('AI_RERANK_CACHE_EXPIRY', 600), // In seconds
             'timeout'      => (int) env('AI_RERANK_TIMEOUT', 8),
             'retries'      => (int) env('AI_RERANK_RETRIES', 2),
+            'score_threshold' => (float) env('AI_RERANK_SCORE_THRESHOLD', 0.3),
         ],
 
         'timeouts' => [

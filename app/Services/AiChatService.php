@@ -40,6 +40,11 @@ class AiChatService
      */
     protected int $contextChunkLimit;
 
+    /**
+     * Minimum relevance score for reranked results.
+     */
+    protected float $rerankScoreThreshold;
+
     protected CohereService $cohere;
 
     public function __construct(
@@ -54,6 +59,7 @@ class AiChatService
         $this->similarityThreshold = config('ai.rag.retrieval.similarity_threshold');
         $this->rerankCandidateLimit = config('ai.rag.retrieval.candidate_limit');
         $this->contextChunkLimit = config('ai.rag.retrieval.context_limit');
+        $this->rerankScoreThreshold = config('ai.rag.rerank.score_threshold', 0.3);
     }
 
     /**
@@ -92,7 +98,8 @@ class AiChatService
             source: $this->source,
             chunkLimit: $this->contextChunkLimit,
             candidateLimit: $this->rerankCandidateLimit,
-            similarityThreshold: $this->similarityThreshold
+            similarityThreshold: $this->similarityThreshold,
+            rerankScoreThreshold: $this->rerankScoreThreshold
         );
 
         if ($relevantChunks->isEmpty()) {

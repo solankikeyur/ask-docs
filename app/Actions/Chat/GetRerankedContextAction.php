@@ -27,9 +27,10 @@ final readonly class GetRerankedContextAction
     public function execute(
         string $message,
         DocumentContextSource $source,
-        int $chunkLimit = 10,
+        int $chunkLimit = 5,
         int $candidateLimit = 25,
-        float $similarityThreshold = 0.3
+        float $similarityThreshold = 0.5,
+        float $rerankScoreThreshold = 0.3
     ): Collection {
         // 1. Expand Query
         $variations = (new ExpandQuery())->prompt(
@@ -92,6 +93,6 @@ final readonly class GetRerankedContextAction
 
         // 5. Rerank against ORIGINAL message
         // This ensures that even if we expanded, we still prioritize what the user actually asked.
-        return $this->cohere->rerank($message, $uniqueCandidates, $chunkLimit);
+        return $this->cohere->rerank($message, $uniqueCandidates, $chunkLimit, $rerankScoreThreshold);
     }
 }

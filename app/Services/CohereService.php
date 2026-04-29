@@ -42,7 +42,7 @@ class CohereService
      *
      * If `COHERE_API_KEY` isn't set or the call fails, this returns the original ordering.
      */
-    public function rerank(string $query, Collection|array $chunks, int $limit = 10): Collection
+    public function rerank(string $query, Collection|array $chunks, int $limit = 10, float $minScore = 0.0): Collection
     {
         $chunks = collect($chunks);
 
@@ -90,8 +90,14 @@ class CohereService
 
         foreach ($results as $item) {
             $index = is_array($item) ? ($item['index'] ?? null) : null;
+            $score = is_array($item) ? ($item['relevance_score'] ?? 0) : 0;
 
             if (!is_int($index) || !$chunks->has($index)) {
+                continue;
+            }
+
+            // Apply relevance score threshold
+            if ($score < $minScore) {
                 continue;
             }
 
@@ -99,6 +105,6 @@ class CohereService
         }
 
         // If something went wrong with indexing, fall back safely.
-        return $ordered->isEmpty() ? $chunks : $ordered;
+        return $ordered->isEmpty() ? $chunks->take($limit) : $ordered;
     }
 }
