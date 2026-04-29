@@ -18,7 +18,7 @@ class CohereService
     /**
      * Safety limit to keep rerank payloads small.
      */
-    protected int $maxCharsPerChunk = 1000;
+    protected int $maxCharsPerChunk;
 
     /**
      * The Cohere API key.
@@ -34,6 +34,7 @@ class CohereService
     {
         $this->apiKey = (string) config('services.cohere.key');
         $this->model = (string) config('services.cohere.rerank_model', 'rerank-v4.0-fast');
+        $this->maxCharsPerChunk = (int) config('ai.rag.rerank.max_chars', 1000);
     }
 
     /**
@@ -58,12 +59,12 @@ class CohereService
 
         $cacheKey = 'cohere:rerank:v2:' . sha1($this->model . '|' . $query . '|' . implode('|', $chunks->pluck('id')->map(fn($id) => (string) $id)->all()));
 
-        $results = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($query, $documents, $limit) {
+        $results = Cache::remember($cacheKey, now()->addSeconds(config('ai.rag.rerank.cache_expiry', 600)), function () use ($query, $documents, $limit) {
             try {
                 $response = Http::withToken($this->apiKey)
                     ->acceptJson()
-                    ->timeout(8)
-                    ->retry(2, 200)
+                    ->timeout(config('ai.rag.rerank.timeout', 8))
+                    ->retry(config('ai.rag.rerank.retries', 2), 200)
                     ->post(self::RERANK_URL, [
                         'model' => $this->model,
                         'query' => $query,

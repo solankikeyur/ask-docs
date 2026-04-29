@@ -13,35 +13,32 @@ class AiChatService
     /**
      * The model to use for the AI completion.
      */
-    protected string $completionModel = 'gpt-4o-mini-2024-07-18';
+    protected string $completionModel;
 
     /**
      * The model to use for embeddings.
      */
-    protected string $embeddingModel = 'text-embedding-3-small';
+    protected string $embeddingModel;
 
     /**
      * The dimensions for the embeddings.
      */
-    protected int $embeddingDimensions = 1536;
+    protected int $embeddingDimensions;
 
     /**
      * Cosine-similarity floor for vector search.
-     *
-     * Raised from 0.2 → 0.5.  With text-embedding-3-small a value below ~0.4
-     * is close to noise and drags in irrelevant chunks, hurting answer quality.
      */
-    protected float $similarityThreshold = 0.3;
+    protected float $similarityThreshold;
 
     /**
      * How many candidates to fetch from vector search before reranking.
      */
-    protected int $rerankCandidateLimit = 25;
+    protected int $rerankCandidateLimit;
 
     /**
      * How many chunks to include in the final context.
      */
-    protected int $contextChunkLimit = 10;
+    protected int $contextChunkLimit;
 
     protected CohereService $cohere;
 
@@ -50,6 +47,13 @@ class AiChatService
         protected GetRerankedContextAction $getRerankedContext
     ) {
         $this->cohere = new CohereService();
+        
+        $this->completionModel = config('ai.rag.models.completion');
+        $this->embeddingModel = config('ai.rag.models.embedding');
+        $this->embeddingDimensions = config('ai.rag.retrieval.dimensions');
+        $this->similarityThreshold = config('ai.rag.retrieval.similarity_threshold');
+        $this->rerankCandidateLimit = config('ai.rag.retrieval.candidate_limit');
+        $this->contextChunkLimit = config('ai.rag.retrieval.context_limit');
     }
 
     /**
@@ -61,17 +65,13 @@ class AiChatService
     {
         $contextResult = $this->getDocContext($message);
 
-        Log::info("Context: ", [
-            "context" => $contextResult
-        ]);
-
         $prompt = sprintf("Question: %s\n\nContext:\n%s", $message, $contextResult['context']);
 
         $stream = (new AskDoc($this->source))->stream(
             $prompt,
             model: $this->completionModel,
             provider: Lab::OpenAI,
-            timeout: 120
+            timeout: config('ai.rag.timeouts.completion', 20)
         );
 
         return [

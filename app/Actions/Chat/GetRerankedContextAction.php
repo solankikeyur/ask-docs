@@ -32,12 +32,17 @@ final readonly class GetRerankedContextAction
         float $similarityThreshold = 0.3
     ): Collection {
         // 1. Expand Query
-        $variations = (new ExpandQuery())->prompt($message, provider: Lab::OpenAI, model: 'gpt-4o-mini-2024-07-18', timeout: 120);
+        $variations = (new ExpandQuery())->prompt(
+            $message, 
+            provider: Lab::OpenAI, 
+            model: config('ai.rag.models.expansion'), 
+            timeout: config('ai.rag.timeouts.expansion', 10)
+        );
         $allQueries = array_unique(array_filter(array_merge([$message], $variations['queries'] ?? [])));
 
         // 2. Batch Get Embeddings
-        $embeddingModel = 'text-embedding-3-small';
-        $dimensions = 1536;
+        $embeddingModel = config('ai.rag.models.embedding');
+        $dimensions = config('ai.rag.retrieval.dimensions');
 
         $embeddingsResponse = Embeddings::for($allQueries)
             ->dimensions($dimensions)
@@ -61,7 +66,7 @@ final readonly class GetRerankedContextAction
                     }
                 }
             })
-            ->limit(100)
+            ->limit(config('ai.rag.retrieval.search_limit', 100))
             ->get();
 
         // 4. Keyword Search candidates (All queries at once)
@@ -72,7 +77,7 @@ final readonly class GetRerankedContextAction
                     $q->orWhereRaw("to_tsvector('english', content) @@ plainto_tsquery('english', ?)", [$query]);
                 }
             })
-            ->limit(100)
+            ->limit(config('ai.rag.retrieval.search_limit', 100))
             ->get();
 
         $allCandidates = $semanticChunks->merge($keywordChunks);

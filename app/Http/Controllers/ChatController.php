@@ -30,7 +30,7 @@ class ChatController extends Controller
     {
         $user = $request->user();
         
-        $documents = $this->documentRepository->getPaginatedForUser($user, null, 100);
+        $documents = $this->documentRepository->getPaginatedForUser($user, null, config('ai.rag.limits.pagination', 100));
 
         return Inertia::render('chat/index', [
             'documents' => DocumentResource::collection($documents),
@@ -44,7 +44,7 @@ class ChatController extends Controller
 
         $user = $request->user();
 
-        $documents = $this->documentRepository->getPaginatedForUser($user, null, 100);
+        $documents = $this->documentRepository->getPaginatedForUser($user, null, config('ai.rag.limits.pagination', 100));
 
         return Inertia::render('chat/index', [
             'documents' => DocumentResource::collection($documents),
@@ -55,6 +55,7 @@ class ChatController extends Controller
 
     public function store(StoreChatRequest $request)
     {
+        set_time_limit(0);
         $user = $request->user();
         $dto = CreateChatDTO::fromRequest($request);
 
@@ -74,7 +75,7 @@ class ChatController extends Controller
             'content' => $dto->content,
         ]);
 
-        $aiChatService = new AiChatService($chat);
+        $aiChatService = app(AiChatService::class, ['source' => $chat]);
 
         $result = $aiChatService->streamAnswer($dto->content);
         $stream = $result['stream'];

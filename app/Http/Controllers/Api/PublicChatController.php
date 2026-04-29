@@ -17,6 +17,7 @@ class PublicChatController extends Controller
      */
     public function store(Request $request, string $id)
     {
+        set_time_limit(0);
         $chatbot = Chatbot::where('id', $id)->firstOrFail();
 
         $origin = $request->header('Origin') ?? $request->header('Referer');
@@ -25,7 +26,7 @@ class PublicChatController extends Controller
         }
 
         $validated = $request->validate([
-            'message' => 'required|string|max:10000',
+            'message' => 'required|string|max:' . config('ai.rag.limits.max_message', 10000),
             'session_id' => 'nullable|string',
         ]);
 
@@ -42,7 +43,7 @@ class PublicChatController extends Controller
             'content' => $validated['message'],
         ]);
 
-        $aiChatService = new AiChatService($chatbot);
+        $aiChatService = app(AiChatService::class, ['source' => $chatbot]);
 
         $result = $aiChatService->streamAnswer($validated['message']);
         $stream = $result['stream'];
